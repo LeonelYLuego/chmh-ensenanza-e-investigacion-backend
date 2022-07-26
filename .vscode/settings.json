@@ -6,21 +6,21 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        ".vscode": true,
         "node_modules": true,
         ".eslintrc.js": true,
         ".prettierrc": true,
         "nest-cli.json": true,
         "package-lock.json": true,
-        "tsconfig.build.json": true
+        "tsconfig.build.json": true,
+        ".vscode": true
     },
     "hide-files.files": [
-        ".vscode",
         "node_modules",
         ".eslintrc.js",
         ".prettierrc",
         "nest-cli.json",
         "package-lock.json",
-        "tsconfig.build.json"
+        "tsconfig.build.json",
+        ".vscode"
     ]
 }

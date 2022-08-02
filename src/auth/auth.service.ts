@@ -28,6 +28,7 @@ export class AuthService {
     if (user) {
       return {
         token: this.jwtService.sign(user),
+        user,
       };
     }
     throw new UnauthorizedException();
@@ -35,12 +36,16 @@ export class AuthService {
 
   async authenticate(token: string): Promise<CurrentUserDto | null> {
     if (token) {
-      const payload = await this.jwtService.verify(token);
-      return {
-        _id: payload._id,
-        username: payload.username,
-        administrator: payload.administrator,
-      };
+      try {
+        const payload = await this.jwtService.verify(token);
+        return {
+          _id: payload._id,
+          username: payload.username,
+          administrator: payload.administrator,
+        };
+      } catch {
+        return null;
+      }
     }
     return null;
   }

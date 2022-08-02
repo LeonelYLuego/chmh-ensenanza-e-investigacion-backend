@@ -11,5 +11,6 @@ export const API_ENDPOINTS = {
   AUTHENTICATION: {
     BASE_PATH: `/${API_RESOURCES.AUTHENTICATION}`,
     LOG_IN: 'log-in',
+    LOGGED: 'logged'
   },
 };

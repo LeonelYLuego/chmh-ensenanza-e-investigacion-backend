@@ -14,11 +14,16 @@ export class UsersService {
     return createdUser.save();
   }
 
+  async find(): Promise<User[]> {
+    return await this.userModel.find().exec();
+  }
+
   async findOneByUsername(username: string): Promise<null | User> {
     return await this.userModel
       .findOne({
         username: username,
       })
+      .select('+password')
       .exec();
   }
 }

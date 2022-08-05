@@ -1,8 +1,11 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import { API_ENDPOINTS } from 'utils/constants/api-routes.constant';
 import { AuthService } from './auth.service';
 
+/**
+ * Validates if the current user is authorized
+ * @class Authentication Middleware
+*/
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   constructor(private authService: AuthService) {}
@@ -11,7 +14,7 @@ export class AuthMiddleware implements NestMiddleware {
     const bearerToken = req.headers.authorization as undefined | string;
     const token = !!bearerToken ? bearerToken.replace('Bearer ', '') : null;
     const user = await this.authService.authenticate(token);
-    if(user) {
+    if (user) {
       req.user = user;
       next();
     } else {

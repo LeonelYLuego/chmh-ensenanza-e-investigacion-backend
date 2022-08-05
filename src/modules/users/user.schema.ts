@@ -5,11 +5,12 @@ import { Document } from 'mongoose';
 export type UserDocument = User & Document;
 
 @Schema()
+/** @class User Schema */
 export class User {
-  @ApiProperty({type: String, description: 'User primary key'})
+  @ApiProperty({ type: String, description: 'User primary key' })
   _id: string;
 
-  @ApiProperty({type: String})
+  @ApiProperty({ type: String })
   @Prop({
     type: String,
     required: true,
@@ -24,9 +25,9 @@ export class User {
     length: 64,
     select: false,
   })
-  password: string;
+  password?: string;
 
-  @ApiProperty({type: Boolean})
+  @ApiProperty({ type: Boolean })
   @Prop({
     type: Boolean,
     required: true,
@@ -34,7 +35,7 @@ export class User {
   })
   administrator: boolean;
 
-  @ApiProperty({type: Number})
+  @ApiProperty({ type: Number })
   __v: number;
 }
 

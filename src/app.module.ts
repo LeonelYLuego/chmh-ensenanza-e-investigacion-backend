@@ -13,19 +13,24 @@ import { ModulesModule } from './modules/modules.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost/nest'),
+    MongooseModule.forRoot(
+      'mongodb://localhost/CHMH-Ensenanza-e-Investigacion',
+    ),
     AuthModule,
     ConfigModule,
     ModulesModule,
   ],
 })
+/** @Module main application module */
 export class AppModule implements NestModule {
+  // Middle configuration
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
       .exclude({
         path:
-          API_ENDPOINTS.AUTHENTICATION.BASE_PATH + '/' +
+          API_ENDPOINTS.AUTHENTICATION.BASE_PATH +
+          '/' +
           API_ENDPOINTS.AUTHENTICATION.LOG_IN,
         method: RequestMethod.POST,
       })

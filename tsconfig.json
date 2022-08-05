@@ -19,7 +19,8 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@auth/*": ["auth/*"],
-      "@users/*": ["modules/users/*"]
+      "@users/*": ["modules/users/*"],
+      "@utils/*": ["utils/*"]
     }
   }
 }

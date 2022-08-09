@@ -2,6 +2,7 @@
 export const API_RESOURCES = {
   AUTHENTICATION: 'auth',
   USERS: 'users',
+  SPECIALTIES: 'specialties',
 };
 
 /** @Constant Default API Paths Endpoints */

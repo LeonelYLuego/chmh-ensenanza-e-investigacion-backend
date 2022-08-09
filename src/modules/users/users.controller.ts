@@ -107,5 +107,28 @@ export class UsersController {
   }
 
   @Delete(DEFAULT_API_PATHS.BY_ID)
-  async delete() {}
+  @ApiOperation({
+    summary: '[Administrator] Delete an User in the database',
+    description:
+      'Deletes an `user` in the database based on the provided `_id`',
+  })
+  @ApiParam({
+    name: '_id',
+    type: String,
+    description: 'The `user` primary key',
+  })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  //It's missing the body and responses
+  @UsePipes(ValidateIdPipe)
+  async delete(
+    @CurrentUser() currentUser: CurrentUserDto,
+    @Param('_id') _id: string,
+  ): Promise<void> {
+    if (currentUser.administrator) {
+      await this.usersService.deleteOne(_id, currentUser);
+    } else throw new UnauthorizedException();
+  }
 }

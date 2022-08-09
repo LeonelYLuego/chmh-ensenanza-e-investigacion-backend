@@ -1,14 +1,17 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UpdateUserDto } from './dtos';
+import { CurrentUserDto, UpdateUserDto } from './dtos';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User, UserDocument } from './user.schema';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 /** @class Users Service */
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private usersModel: Model<UserDocument>,
+  ) {}
 
   /**
    * Finds all Users in the database
@@ -17,7 +20,7 @@ export class UsersService {
    * @returns {Promise<User[]>} The user found
    */
   async find(): Promise<User[]> {
-    return await this.userModel.find().exec();
+    return await this.usersModel.find().exec();
   }
 
   /**
@@ -28,7 +31,7 @@ export class UsersService {
    * @returns {Promise<User | null>} The found User or if it doesn't find a User it returns Null
    */
   async findOne(_id: string): Promise<User | null> {
-    return await this.userModel.findById(_id).exec();
+    return await this.usersModel.findById(_id).exec();
   }
 
   /**
@@ -39,7 +42,7 @@ export class UsersService {
    * @returns {Promise<User | null>} The found User or if it doesn't find a User it returns Null
    */
   async findOneByUsername(username: string): Promise<null | User> {
-    return await this.userModel
+    return await this.usersModel
       .findOne({
         username: username,
       })
@@ -59,7 +62,12 @@ export class UsersService {
     const findUser = await this.findOneByUsername(createUserDto.username);
     if (findUser) throw new ForbiddenException('user already exists');
     else {
-      const createdUser = new this.userModel(createUserDto);
+      const hashPassword = bcrypt.hashSync(createUserDto.password, 10);
+      const createdUser = new this.usersModel({
+        username: createUserDto.username,
+        password: hashPassword,
+        administrator: createUserDto.administrator,
+      });
       const newUser = await createdUser.save();
       return {
         _id: newUser._id,
@@ -83,12 +91,35 @@ export class UsersService {
   async updateOne(_id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(_id);
     if (user) {
+      const hashPassword = bcrypt.hashSync(updateUserDto.password, 10);
       if (
-        (await this.userModel.updateOne({ _id }, updateUserDto).exec())
-          .modifiedCount == 1
+        (
+          await this.usersModel
+            .updateOne(
+              { _id },
+              {
+                username: updateUserDto.username,
+                password: hashPassword,
+                administrator:
+                  updateUserDto.administrator ?? user.administrator,
+              },
+            )
+            .exec()
+        ).modifiedCount == 1
       ) {
         return await this.findOne(_id);
       } else throw new ForbiddenException('user not modified');
+    } else throw new ForbiddenException('user not found');
+  }
+
+  async deleteOne(_id: string, currentUser: CurrentUserDto): Promise<void> {
+    const user = await this.findOne(_id);
+    if (user) {
+      if (user._id != currentUser._id) {
+        if ((await this.usersModel.deleteOne({ _id }).exec()).deletedCount != 1)
+          throw new ForbiddenException('user not deleted');
+      } else
+        throw new ForbiddenException('the current user can not be deleted');
     } else throw new ForbiddenException('user not found');
   }
 }

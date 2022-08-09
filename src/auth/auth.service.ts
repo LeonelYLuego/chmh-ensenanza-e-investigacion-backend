@@ -4,6 +4,7 @@ import { CurrentUserDto } from '@users/dtos';
 import { UsersService } from '@users/users.service';
 import { LogInDto } from './dtos/log-in.dto';
 import { ResponseLogInDto } from './dtos/response-log-in.dto';
+import * as bcrypt from 'bcryptjs';
 
 /** @class Authentication Service */
 @Injectable()
@@ -24,7 +25,7 @@ export class AuthService {
     logInDto: LogInDto,
   ): Promise<CurrentUserDto | null> {
     const user = await this.usersService.findOneByUsername(logInDto.username);
-    if (user && user.password === logInDto.password) {
+    if (user && bcrypt.compareSync(logInDto.password, user.password)) {
       return {
         _id: user._id,
         username: user.username,

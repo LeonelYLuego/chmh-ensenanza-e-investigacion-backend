@@ -27,6 +27,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let exceptionMsg: any = exception as any;
     if (exceptionMsg.message !== undefined) exceptionMsg = exceptionMsg.message;
 
+    console.log(exception);
+
     const responseBody = {
       statusCode: httpStatus,
       timestamp: new Date().toISOString(),

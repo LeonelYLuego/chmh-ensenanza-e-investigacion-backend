@@ -1,6 +1,6 @@
 # Centenario Hospital Miguel Hidalgo - Departamento de Enseñanza e Investigación
 
-![](/documents/images/logo.jpg)
+![](/documents/images/logo.png)
 
 ## Installation
 

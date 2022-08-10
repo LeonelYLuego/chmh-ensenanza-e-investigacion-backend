@@ -102,7 +102,7 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     if (currentUser.administrator) {
-      return this.usersService.updateOne(_id, updateUserDto);
+      return this.usersService.update(_id, updateUserDto);
     } else throw new UnauthorizedException();
   }
 
@@ -128,7 +128,7 @@ export class UsersController {
     @Param('_id') _id: string,
   ): Promise<void> {
     if (currentUser.administrator) {
-      await this.usersService.deleteOne(_id, currentUser);
+      await this.usersService.delete(_id, currentUser);
     } else throw new UnauthorizedException();
   }
 }

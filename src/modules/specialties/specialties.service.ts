@@ -29,7 +29,7 @@ export class SpecialtiesService {
       .exec();
   }
 
-  async createOne(specialtyDto: SpecialtyDto): Promise<Specialty> {
+  async create(specialtyDto: SpecialtyDto): Promise<Specialty> {
     const specialty = await this.findOneByValue(specialtyDto.value);
     if (!specialty) {
       const createdSpecialty = new this.specialtiesModel(specialtyDto);
@@ -37,18 +37,20 @@ export class SpecialtiesService {
     } else throw new ForbiddenException('specialty already exists');
   }
 
-  async updateOne(_id: string, specialtyDto: SpecialtyDto): Promise<Specialty> {
+  async update(_id: string, specialtyDto: SpecialtyDto): Promise<Specialty> {
     const specialty = await this.findOne(_id);
     if (specialty) {
-      const res = await this.specialtiesModel
-        .updateOne({ _id }, specialtyDto)
-        .exec();
-      if (res.modifiedCount == 1) return await this.findOne(_id);
-      else throw new ForbiddenException('specialty not modified');
+      if (!(await this.findOneByValue(specialtyDto.value))) {
+        const res = await this.specialtiesModel
+          .updateOne({ _id }, specialtyDto)
+          .exec();
+        if (res.modifiedCount == 1) return await this.findOne(_id);
+        else throw new ForbiddenException('specialty not modified');
+      } else throw new ForbiddenException('specialty already exists');
     } else throw new ForbiddenException('specialty not found');
   }
 
-  async deleteOne(_id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     const specialty = await this.findOne(_id);
     if (specialty) {
       const res = await this.specialtiesModel.deleteOne({ _id });

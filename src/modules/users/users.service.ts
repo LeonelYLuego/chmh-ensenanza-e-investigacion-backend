@@ -88,7 +88,7 @@ export class UsersService {
    * @throws {ForbiddenException} Argument _id must exists in the database
    * @throws {ForbiddenException} User must be modified
    */
-  async updateOne(_id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(_id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(_id);
     if (user) {
       const hashPassword = bcrypt.hashSync(updateUserDto.password, 10);
@@ -112,7 +112,7 @@ export class UsersService {
     } else throw new ForbiddenException('user not found');
   }
 
-  async deleteOne(_id: string, currentUser: CurrentUserDto): Promise<void> {
+  async delete(_id: string, currentUser: CurrentUserDto): Promise<void> {
     const user = await this.findOne(_id);
     if (user) {
       if (user._id != currentUser._id) {

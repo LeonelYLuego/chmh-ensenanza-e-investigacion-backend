@@ -30,7 +30,7 @@ export class SpecialtiesController {
   @Post()
   @ApiBearerAuth()
   async create(@Body() specialtyDto: SpecialtyDto): Promise<Specialty> {
-    return await this.specialtiesService.createOne(specialtyDto);
+    return await this.specialtiesService.create(specialtyDto);
   }
 
   @Put(DEFAULT_API_PATHS.BY_ID)
@@ -40,13 +40,13 @@ export class SpecialtiesController {
     @Param('_id') _id: string,
     @Body() specialtyDto: SpecialtyDto,
   ): Promise<Specialty> {
-    return await this.specialtiesService.updateOne(_id, specialtyDto);
+    return await this.specialtiesService.update(_id, specialtyDto);
   }
 
   @Delete(DEFAULT_API_PATHS.BY_ID)
   @ApiBearerAuth()
   @ApiParam({ type: String, name: '_id' })
   async delete(@Param('_id') _id: string): Promise<void> {
-    await this.specialtiesService.deleteOne(_id);
+    await this.specialtiesService.delete(_id);
   }
 }

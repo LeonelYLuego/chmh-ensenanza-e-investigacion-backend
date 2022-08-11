@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Specialty } from 'modules/specialties/specialty.schema';
 import mongoose, { Document } from 'mongoose';
-import { Phone } from 'shared/phone/phone';
+import { Phone, PhoneSchema } from 'shared/phone/phone';
 
 export type StudentDocument = Student & Document;
 
@@ -36,7 +36,7 @@ export class Student {
   specialty: Specialty;
 
   @ApiProperty({ type: [Phone], description: 'Student phones', default: [] })
-  @Prop({ type: [Phone] })
+  @Prop({ type: [PhoneSchema] })
   phones: Phone[];
 
   @ApiProperty({ type: [String], description: 'Student emails', default: [] })

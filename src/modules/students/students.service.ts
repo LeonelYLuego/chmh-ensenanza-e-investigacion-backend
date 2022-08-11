@@ -1,26 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { Student, StudentDocument } from './student.schema';
 
 @Injectable()
 export class StudentsService {
-  create(createStudentDto: CreateStudentDto) {
-    return 'This action adds a new student';
+  constructor(
+    @InjectModel(Student.name) private studentsModel: Model<StudentDocument>,
+  ) {}
+
+  async findAll(): Promise<Student[]> {
+    return await this.studentsModel.find().exec();
   }
 
-  findAll() {
-    return `This action returns all students`;
+  async findOne(_id: string): Promise<Student> {
+    const student = await this.studentsModel.findOne({ _id }).exec();
+    if(student) return student;
+    else throw new ForbiddenException('student not found');
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} student`;
+  async create(createStudentDto: CreateStudentDto): Promise<Student> {
+    const createdStudent = new this.studentsModel(createStudentDto);
+    return await createdStudent.save();
   }
 
-  update(id: number, updateStudentDto: UpdateStudentDto) {
-    return `This action updates a #${id} student`;
+  async update(
+    _id: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<Student> {
+    const student = await this.findOne(_id);
+    if (student) {
+      if (
+        (await this.studentsModel.updateOne({ _id }, updateStudentDto))
+          .modifiedCount == 1
+      ) {
+        return await this.findOne(_id);
+      } else throw new ForbiddenException('student not modified');
+    } else throw new ForbiddenException('student not found');
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} student`;
+  async delete(_id: string): Promise<void> {
+    const student = await this.findOne(_id);
+    if (student) {
+      if ((await this.studentsModel.deleteOne({ _id })).deletedCount != 1)
+        throw new ForbiddenException('student not deleted');
+    }
+    else throw new ForbiddenException('student not found');
   }
 }

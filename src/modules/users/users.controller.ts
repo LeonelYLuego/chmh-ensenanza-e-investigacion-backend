@@ -25,7 +25,7 @@ import {
   API_RESOURCES,
   DEFAULT_API_PATHS,
 } from 'utils/constants/api-routes.constant';
-import { ValidateIdPipe } from 'utils/pipes/validate-id.pipe';
+import { ValidateIdPipe } from '@utils/pipes/validate-id.pipe';
 import { CurrentUserDto, UpdateUserDto } from './dtos';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ExceptionUserAlreadyExistsDto } from './dtos/exception-user.dto';
@@ -95,10 +95,9 @@ export class UsersController {
     description: 'Not authorized to perform the query',
   })
   //It's missing the body and responses
-  @UsePipes(ValidateIdPipe)
   async update(
     @CurrentUser() currentUser: CurrentUserDto,
-    @Param('_id') _id: string,
+    @Param('_id', ValidateIdPipe) _id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     if (currentUser.administrator) {
@@ -122,10 +121,9 @@ export class UsersController {
     description: 'Not authorized to perform the query',
   })
   //It's missing the body and responses
-  @UsePipes(ValidateIdPipe)
   async delete(
     @CurrentUser() currentUser: CurrentUserDto,
-    @Param('_id') _id: string,
+    @Param('_id', ValidateIdPipe) _id: string,
   ): Promise<void> {
     if (currentUser.administrator) {
       await this.usersService.delete(_id, currentUser);

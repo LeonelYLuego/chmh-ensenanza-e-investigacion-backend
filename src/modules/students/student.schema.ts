@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Specialty } from 'modules/specialties/specialty.schema';
 import mongoose, { Document } from 'mongoose';
-import { Phone, PhoneSchema } from 'shared/phone/phone';
 
 export type StudentDocument = Student & Document;
 
@@ -35,9 +34,23 @@ export class Student {
   })
   specialty: Specialty;
 
-  @ApiProperty({ type: [Phone], description: 'Student phones', default: [] })
-  @Prop({ type: [PhoneSchema] })
-  phones: Phone[];
+  @ApiProperty({
+    type: Number,
+    description: 'Student last year generation',
+    minimum: 1990,
+    maximum: 2100,
+  })
+  @Prop({
+    type: Number,
+    required: true,
+    min: 1990,
+    max: 2100,
+  })
+  lastYearGeneration: number;
+
+  @ApiProperty({ type: [String], description: 'Student phones', default: [] })
+  @Prop({ type: [{ type: String, length: 16 }] })
+  phones: string[];
 
   @ApiProperty({ type: [String], description: 'Student emails', default: [] })
   @Prop({ type: [{ type: String, length: 64 }] })

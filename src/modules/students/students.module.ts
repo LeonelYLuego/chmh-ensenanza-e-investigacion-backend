@@ -11,12 +11,11 @@ import {
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Student.name, schema: StudentSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Student.name, schema: StudentSchema }]),
     SpecialtiesModule,
   ],
   controllers: [StudentsController],
   providers: [StudentsService],
+  exports: [StudentsService],
 })
 export class StudentsModule {}

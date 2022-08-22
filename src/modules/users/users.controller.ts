@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   UnauthorizedException,
-  UsePipes,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -26,9 +25,14 @@ import {
   DEFAULT_API_PATHS,
 } from 'utils/constants/api-routes.constant';
 import { ValidateIdPipe } from '@utils/pipes/validate-id.pipe';
-import { CurrentUserDto, UpdateUserDto } from './dtos';
+import {
+  CurrentUserDto,
+  ExceptionCreateUserDto,
+  ExceptionDeleteUserDto,
+  ExceptionUpdateUserDto,
+  UpdateUserDto,
+} from './dtos';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { ExceptionUserAlreadyExistsDto } from './dtos/exception-user.dto';
 import { User } from './user.schema';
 import { UsersService } from './users.service';
 
@@ -37,6 +41,30 @@ import { UsersService } from './users.service';
 /** @clas Users Controller */
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @Post()
+  @ApiOperation({
+    summary: '[Administrator] Add an User to the database',
+    description: 'Creates an `user` in the database and returns the `user`',
+  })
+  @ApiBearerAuth()
+  @ApiBody({ type: CreateUserDto, description: '`user` data' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    type: ExceptionCreateUserDto,
+    description: 'The `user.username` already exists in the database',
+  })
+  @ApiCreatedResponse({ type: User, description: 'Created `user`' })
+  async create(
+    @CurrentUser() currentUser: CurrentUserDto,
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<User> {
+    if (currentUser.administrator) {
+      return this.usersService.create(createUserDto);
+    } else throw new UnauthorizedException();
+  }
 
   @Get()
   @ApiOperation({
@@ -55,35 +83,11 @@ export class UsersController {
     } else throw new UnauthorizedException();
   }
 
-  @Post()
-  @ApiOperation({
-    summary: '[Administrator] Add an User to the database',
-    description: 'Creates an `user` in the database and returns the `user`',
-  })
-  @ApiBearerAuth()
-  @ApiBody({ type: CreateUserDto, description: '`user` data' })
-  @ApiUnauthorizedResponse({
-    description: 'Not authorized to perform the query',
-  })
-  @ApiForbiddenResponse({
-    type: ExceptionUserAlreadyExistsDto,
-    description: 'The `user.username` already exists in the database',
-  })
-  @ApiCreatedResponse({ type: User, description: 'Created `user`' })
-  async create(
-    @CurrentUser() currentUser: CurrentUserDto,
-    @Body() createUserDto: CreateUserDto,
-  ): Promise<User> {
-    if (currentUser.administrator) {
-      return this.usersService.create(createUserDto);
-    } else throw new UnauthorizedException();
-  }
-
   @Put(DEFAULT_API_PATHS.BY_ID)
   @ApiOperation({
     summary: '[Administrator] Update an User in the database',
     description:
-      'Updates an `user` in the database based on the provided `_id` and returns de modified `user`',
+      'Updates an `user` in the database based on the provided `_id` and returns the modified `user`',
   })
   @ApiParam({
     name: '_id',
@@ -94,7 +98,11 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  //It's missing the body and responses
+  @ApiForbiddenResponse({
+    type: ExceptionUpdateUserDto,
+  })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiOkResponse({ type: User, description: 'The modified `user`' })
   async update(
     @CurrentUser() currentUser: CurrentUserDto,
     @Param('_id', ValidateIdPipe) _id: string,
@@ -120,7 +128,9 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  //It's missing the body and responses
+  @ApiForbiddenResponse({
+    type: ExceptionDeleteUserDto,
+  })
   async delete(
     @CurrentUser() currentUser: CurrentUserDto,
     @Param('_id', ValidateIdPipe) _id: string,

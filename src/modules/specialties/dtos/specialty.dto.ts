@@ -1,10 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsDefined, MaxLength, MinLength } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDefined, MaxLength, MinLength } from 'class-validator';
 
+/** Specialty data transfer object */
 export class SpecialtyDto {
-    @ApiProperty({type: String})
-    @IsDefined()
-    @MinLength(3)
-    @MaxLength(64)
-    value: string;
+  @ApiProperty({ type: String })
+  @IsDefined()
+  @MinLength(3)
+  @MaxLength(64)
+  value: string;
 }

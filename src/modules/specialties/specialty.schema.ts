@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
+/** Specialty document */
 export type SpecialtyDocument = Specialty & Document;
 
+/** Specialty */
 @Schema()
 export class Specialty {
   @ApiProperty({ type: String, description: 'Specialty primary key' })
@@ -19,4 +21,5 @@ export class Specialty {
   __v: number;
 }
 
+/** Specialty schema */
 export const SpecialtySchema = SchemaFactory.createForClass(Specialty);

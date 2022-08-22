@@ -3,8 +3,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Specialty } from 'modules/specialties/specialty.schema';
 import mongoose, { Document } from 'mongoose';
 
+/** Student Document */
 export type StudentDocument = Student & Document;
 
+/** Student Class */
 @Schema()
 export class Student {
   @ApiProperty({ type: String, description: 'Student primary key' })
@@ -60,4 +62,5 @@ export class Student {
   __v: number;
 }
 
+/** Student Schema */
 export const StudentSchema = SchemaFactory.createForClass(Student);

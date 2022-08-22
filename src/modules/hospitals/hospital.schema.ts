@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
+/** Hospital document */
 export type HospitalDocument = Hospital & Document;
 
+/** Director schema */
 @Schema()
 export class Director {
   @ApiProperty({ type: String, description: 'Director name', required: true })
@@ -18,6 +20,7 @@ export class Director {
   position: string;
 }
 
+/** Address schema */
 @Schema()
 export class Address {
   @ApiProperty({ type: String, description: 'Address country', required: true })
@@ -37,6 +40,7 @@ export class Address {
   street: string;
 }
 
+/** Hospital */
 @Schema()
 export class Hospital {
   @ApiProperty({ type: String, description: 'Hospital primary key' })
@@ -99,4 +103,6 @@ export class Hospital {
   @ApiProperty({ type: Number })
   __v: number;
 }
+
+/** Hospital schema */
 export const HospitalSchema = SchemaFactory.createForClass(Hospital);

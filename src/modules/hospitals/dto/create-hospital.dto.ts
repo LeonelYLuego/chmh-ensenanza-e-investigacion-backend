@@ -13,6 +13,7 @@ import {
 import { AddressDto } from './address.dto';
 import { DirectorDto } from './director.dto';
 
+/** Create Hospital data transfer object */
 export class CreateHospitalDto {
   @ApiProperty({
     type: String,

@@ -14,6 +14,7 @@ import {
   MinLength,
 } from 'class-validator';
 
+/** Create Student data transfer object */
 export class CreateStudentDto {
   @ApiProperty({
     type: String,
@@ -74,7 +75,7 @@ export class CreateStudentDto {
     description: 'Student last year generation',
     minimum: 1990,
     maximum: 2100,
-    default: 2022
+    default: 2022,
   })
   @IsDefined()
   @IsNumber()

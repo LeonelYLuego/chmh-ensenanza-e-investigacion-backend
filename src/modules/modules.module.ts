@@ -7,7 +7,14 @@ import { FilesModule } from './files/files.module';
 import { SocialServicesModule } from './social-services/social-services.module';
 
 @Module({
-  imports: [UsersModule, SpecialtiesModule, StudentsModule, HospitalsModule, FilesModule, SocialServicesModule],
+  imports: [
+    HospitalsModule,
+    SocialServicesModule,
+    SpecialtiesModule,
+    StudentsModule,
+    UsersModule,
+    FilesModule,
+  ],
   controllers: [],
   providers: [],
 })

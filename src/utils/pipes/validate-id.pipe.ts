@@ -9,7 +9,7 @@ import { validateOrReject } from 'class-validator';
  */
 export class ValidateIdPipe implements PipeTransform {
   async transform(value: unknown, metadata: ArgumentMetadata) {
-    if(metadata.type == 'query' && value == null) return null;
+    if (metadata.type == 'query' && value == null) return null;
     const idClass = plainToClass(IdDto, { _id: value });
     await validateOrReject(idClass);
     return value;

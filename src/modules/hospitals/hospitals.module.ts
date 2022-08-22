@@ -4,6 +4,7 @@ import { HospitalsController } from './hospitals.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Hospital, HospitalSchema } from './hospital.schema';
 
+/** Hospital module */
 @Module({
   imports: [
     MongooseModule.forFeature([

@@ -112,6 +112,15 @@ export class UsersService {
     } else throw new ForbiddenException('user not found');
   }
 
+  /**
+   * Deletes one User in the database based on the _id
+   * @async
+   * @param {string} _id
+   * @param {CurrentUserDto} currentUser the current user
+   * @throws {ForbiddenException} User must be deleted
+   * @throws {ForbiddenException} User must exists in the database
+   * @throws {ForbiddenException} User must no be the current user
+   */
   async delete(_id: string, currentUser: CurrentUserDto): Promise<void> {
     const user = await this.findOne(_id);
     if (user) {

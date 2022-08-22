@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsString, MaxLength, MinLength } from 'class-validator';
 
+/** Director data transfer object */
 export class DirectorDto {
   @ApiProperty({
     type: String,

@@ -4,9 +4,12 @@ import { SpecialtiesController } from './specialties.controller';
 import { Specialty, SpecialtySchema } from './specialty.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 
+/** Specialty module */
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Specialty.name, schema: SpecialtySchema }]),
+    MongooseModule.forFeature([
+      { name: Specialty.name, schema: SpecialtySchema },
+    ]),
   ],
   controllers: [SpecialtiesController],
   providers: [SpecialtiesService],

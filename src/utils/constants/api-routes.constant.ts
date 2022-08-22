@@ -4,7 +4,7 @@ export const API_RESOURCES = {
   USERS: 'users',
   SPECIALTIES: 'specialties',
   STUDENTS: 'students',
-  HOSPITALS: 'hospitals'
+  HOSPITALS: 'hospitals',
 };
 
 /** @Constant Default API Paths Endpoints */

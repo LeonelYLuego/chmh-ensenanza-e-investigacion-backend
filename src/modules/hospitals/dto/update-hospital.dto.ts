@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
-  IsDefined,
   IsEmail,
   IsOptional,
   IsString,
@@ -13,6 +12,7 @@ import {
 import { AddressDto } from './address.dto';
 import { DirectorDto } from './director.dto';
 
+/** Update Hospital data transfer object */
 export class UpdateHospitalDto {
   @ApiProperty({
     type: String,

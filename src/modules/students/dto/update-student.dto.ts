@@ -13,6 +13,7 @@ import {
   MinLength,
 } from 'class-validator';
 
+/** Update Student data transfer object */
 export class UpdateStudentDto {
   @ApiProperty({
     type: String,

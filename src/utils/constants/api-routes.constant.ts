@@ -5,6 +5,7 @@ export const API_RESOURCES = {
   SPECIALTIES: 'specialties',
   STUDENTS: 'students',
   HOSPITALS: 'hospitals',
+  SOCIAL_SERVICES: 'social-services',
 };
 
 /** @Constant Default API Paths Endpoints */

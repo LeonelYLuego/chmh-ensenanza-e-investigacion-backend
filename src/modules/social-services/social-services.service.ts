@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { HospitalsService } from 'modules/hospitals/hospitals.service';
 import { StudentsService } from 'modules/students/students.service';
@@ -27,19 +27,74 @@ export class SocialServicesService {
     return await createdSocialService.save();
   }
 
-  // findAll() {
-  //   return `This action returns all socialServices`;
-  // }
+  async findAll(
+    initialPeriod: number,
+    initialYear: number,
+    finalPeriod: number,
+    finalYear: number,
+  ): Promise<SocialService[]> {
+    if (
+      initialYear > finalYear ||
+      (initialYear == finalYear && initialPeriod >= finalPeriod)
+    )
+      throw new ForbiddenException('invalid period');
+    else {
+      return await this.socialServicesModel
+        .find({
+          $or: [
+            {
+              year: {
+                $gt: initialYear,
+                $lt: finalYear,
+              },
+            },
+            {
+              year: initialYear,
+              period: {
+                $gte: initialPeriod,
+              },
+            },
+            {
+              year: finalYear,
+              period: {
+                $lte: finalPeriod,
+              },
+            },
+          ],
+        })
+        .exec(); //Find period
+    }
+  }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} socialService`;
-  // }
+  async findOne(_id: string): Promise<SocialService> {
+    const ss = await this.socialServicesModel.findOne({ _id }).exec();
+    if (ss) return ss;
+    else throw new ForbiddenException('social service not found');
+  }
 
-  // update(id: number, updateSocialServiceDto: UpdateSocialServiceDto) {
-  //   return `This action updates a #${id} socialService`;
-  // }
+  async update(
+    _id: string,
+    updateSocialServiceDto: UpdateSocialServiceDto,
+  ): Promise<SocialService> {
+    const ss = await this.findOne(_id);
+    if (
+      (
+        await this.socialServicesModel.updateOne(
+          { _id: ss._id },
+          updateSocialServiceDto,
+        )
+      ).modifiedCount < 1
+    )
+      throw new ForbiddenException('social service not updated');
+    return await this.findOne(ss._id);
+  }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} socialService`;
-  // }
+  async remove(_id: string): Promise<void> {
+    const ss = await this.findOne(_id);
+    if (
+      (await this.socialServicesModel.deleteOne({ _id: ss._id })).deletedCount <
+      1
+    )
+      throw new ForbiddenException('social service not deleted');
+  }
 }

@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { API_ENDPOINTS } from 'utils/constants/api-routes.constant';
 import { ModulesModule } from './modules/modules.module';
+import { FilesService } from '@utils/services/files.service';
 
 @Module({
   imports: [

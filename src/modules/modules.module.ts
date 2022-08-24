@@ -3,7 +3,6 @@ import { UsersModule } from '@users/users.module';
 import { SpecialtiesModule } from './specialties/specialties.module';
 import { StudentsModule } from './students/students.module';
 import { HospitalsModule } from './hospitals/hospitals.module';
-import { FilesModule } from './files/files.module';
 import { SocialServicesModule } from './social-services/social-services.module';
 
 @Module({
@@ -13,7 +12,6 @@ import { SocialServicesModule } from './social-services/social-services.module';
     SpecialtiesModule,
     StudentsModule,
     UsersModule,
-    FilesModule,
   ],
   controllers: [],
   providers: [],

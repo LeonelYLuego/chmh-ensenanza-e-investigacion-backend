@@ -5,16 +5,19 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { SocialService, SocialServiceSchema } from './social-service.schema';
 import { StudentsModule } from 'modules/students/students.module';
 import { HospitalsModule } from 'modules/hospitals/hospitals.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { FilesService } from '@utils/services/files.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: SocialService.name, schema: SocialServiceSchema },
     ]),
+    MulterModule,
     StudentsModule,
     HospitalsModule,
   ],
   controllers: [SocialServicesController],
-  providers: [SocialServicesService],
+  providers: [SocialServicesService, FilesService],
 })
 export class SocialServicesModule {}

@@ -7,12 +7,23 @@ import {
   Delete,
   Query,
   Put,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+  Header,
 } from '@nestjs/common';
 import { SocialServicesService } from './social-services.service';
 import { CreateSocialServiceDto } from './dto/create-social-service.dto';
-import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SocialService } from './social-service.schema';
 import {
+  API_ENDPOINTS,
   API_RESOURCES,
   DEFAULT_API_PATHS,
 } from '@utils/constants/api-routes.constant';
@@ -20,6 +31,9 @@ import { ValidateYearPipe } from '@utils/pipes/validate-year.pipe';
 import { ValidatePeriodPipe } from '@utils/pipes/validate-period.pipe';
 import { ValidateIdPipe } from '@utils/pipes/validate-id.pipe';
 import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { STORAGE_PATHS } from '@utils/constants/storage.constant';
 
 @ApiTags('Social Services')
 @Controller(API_RESOURCES.SOCIAL_SERVICES)
@@ -54,12 +68,46 @@ export class SocialServicesController {
     );
   }
 
+  @Get(API_ENDPOINTS.HOSPITALS.PRESENTATION_OFFICE)
+  @ApiBearerAuth()
+  async getPresentationOffice(@Param('_id', ValidateIdPipe) _id: string) {
+    return this.socialServicesService.getPresentationOffice(_id);
+  }
+
   @Get(DEFAULT_API_PATHS.BY_ID)
   @ApiBearerAuth()
   async findOne(
     @Param('_id', ValidateIdPipe) _id: string,
   ): Promise<SocialService> {
     return await this.socialServicesService.findOne(_id);
+  }
+
+  @Put(API_ENDPOINTS.HOSPITALS.PRESENTATION_OFFICE)
+  @ApiBearerAuth()
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
+      }),
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async updatePresentationOffice(
+    @Param('_id', ValidateIdPipe) _id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<SocialService> {
+    return await this.socialServicesService.updatePresentationOffice(_id, file);
   }
 
   @Put(DEFAULT_API_PATHS.BY_ID)

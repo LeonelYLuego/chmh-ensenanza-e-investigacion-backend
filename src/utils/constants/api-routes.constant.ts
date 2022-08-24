@@ -20,4 +20,9 @@ export const API_ENDPOINTS = {
     LOG_IN: 'log-in',
     LOGGED: 'logged',
   },
+  HOSPITALS: {
+    PRESENTATION_OFFICE: `/presentation-office/${DEFAULT_API_PATHS.BY_ID}`,
+    REPORT: `/report/${DEFAULT_API_PATHS.BY_ID}`,
+    COSTANCY: `/constancy/${DEFAULT_API_PATHS.BY_ID}`,
+  }
 };

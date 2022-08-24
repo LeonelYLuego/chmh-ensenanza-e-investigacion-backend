@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { HospitalsService } from 'modules/hospitals/hospitals.service';
 import { StudentsService } from 'modules/students/students.service';
@@ -6,6 +11,9 @@ import { Model } from 'mongoose';
 import { CreateSocialServiceDto } from './dto/create-social-service.dto';
 import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
 import { SocialService, SocialServiceDocument } from './social-service.schema';
+import * as fs from 'fs';
+import { STORAGE_PATHS } from '@utils/constants/storage.constant';
+import { FilesService } from '@utils/services/files.service';
 
 @Injectable()
 export class SocialServicesService {
@@ -14,6 +22,7 @@ export class SocialServicesService {
     private socialServicesModel: Model<SocialServiceDocument>,
     private studentsService: StudentsService,
     private hospitalsService: HospitalsService,
+    private filesService: FilesService,
   ) {}
 
   async create(
@@ -96,5 +105,50 @@ export class SocialServicesService {
       1
     )
       throw new ForbiddenException('social service not deleted');
+  }
+
+  async getPresentationOffice(_id: string) {
+    const ss = await this.findOne(_id);
+    if (ss.presentationOfficeDocument) {
+      const filePath = `${STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES}/${ss.presentationOfficeDocument}`;
+      if (fs.existsSync(filePath)) {
+        const file = fs.createReadStream(filePath);
+        return new StreamableFile(file, {
+          type: 'application/pdf',
+        });
+      }
+    }
+    return null;
+  }
+
+  async updatePresentationOffice(
+    _id: string,
+    file: Express.Multer.File,
+  ): Promise<SocialService> {
+    try {
+      this.filesService.validatePDF(file);
+      const ss = await this.findOne(_id);
+      if (ss.presentationOfficeDocument)
+        this.filesService.deleteFile(
+          `${STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES}/${ss.presentationOfficeDocument}`,
+        );
+      if (
+        (
+          await this.socialServicesModel.updateOne(
+            { _id: ss._id },
+            {
+              presentationOfficeDocument: file.filename,
+            },
+          )
+        ).modifiedCount < 1
+      )
+        throw new ForbiddenException('social service not updated');
+      return await this.findOne(_id);
+    } catch (err) {
+      this.filesService.deleteFile(
+        `${STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES}/${file.filename}`,
+      );
+      throw new ForbiddenException(err);
+    }
   }
 }

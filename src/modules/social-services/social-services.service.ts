@@ -1,9 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  InternalServerErrorException,
-  StreamableFile,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { HospitalsService } from 'modules/hospitals/hospitals.service';
 import { StudentsService } from 'modules/students/students.service';
@@ -81,6 +76,21 @@ export class SocialServicesService {
     else throw new ForbiddenException('social service not found');
   }
 
+  async getPeriods(): Promise<{
+    initialYear: number;
+    finalYear: number;
+  } | null> {
+    const min = await this.socialServicesModel.findOne().sort('-year').exec();
+    const max = await this.socialServicesModel.findOne().sort('year').exec();
+    if (min && max) {
+      return {
+        initialYear: min.year,
+        finalYear: max.year,
+      };
+    }
+    return null;
+  }
+
   async update(
     _id: string,
     updateSocialServiceDto: UpdateSocialServiceDto,
@@ -107,10 +117,18 @@ export class SocialServicesService {
       throw new ForbiddenException('social service not deleted');
   }
 
-  async getPresentationOffice(_id: string) {
+  //Documents
+  private async getDocument(
+    _id: string,
+    path: string,
+    document:
+      | 'presentationOfficeDocument'
+      | 'reportDocument'
+      | 'constancyDocument',
+  ) {
     const ss = await this.findOne(_id);
-    if (ss.presentationOfficeDocument) {
-      const filePath = `${STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES}/${ss.presentationOfficeDocument}`;
+    if (ss[document]) {
+      const filePath = `${path}/${ss[document]}`;
       if (fs.existsSync(filePath)) {
         const file = fs.createReadStream(filePath);
         return new StreamableFile(file, {
@@ -121,34 +139,143 @@ export class SocialServicesService {
     return null;
   }
 
-  async updatePresentationOffice(
+  private async updateDocument(
     _id: string,
+    path: string,
     file: Express.Multer.File,
+    document:
+      | 'presentationOfficeDocument'
+      | 'reportDocument'
+      | 'constancyDocument',
   ): Promise<SocialService> {
     try {
       this.filesService.validatePDF(file);
       const ss = await this.findOne(_id);
-      if (ss.presentationOfficeDocument)
-        this.filesService.deleteFile(
-          `${STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES}/${ss.presentationOfficeDocument}`,
-        );
+      if (ss[document]) this.filesService.deleteFile(`${path}/${ss[document]}`);
+      let updateObject: object = {};
+      updateObject[document] = file.filename;
       if (
         (
           await this.socialServicesModel.updateOne(
             { _id: ss._id },
-            {
-              presentationOfficeDocument: file.filename,
-            },
+            updateObject,
           )
         ).modifiedCount < 1
       )
         throw new ForbiddenException('social service not updated');
       return await this.findOne(_id);
     } catch (err) {
-      this.filesService.deleteFile(
-        `${STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES}/${file.filename}`,
-      );
+      this.filesService.deleteFile(`${path}/${file.filename}`);
       throw new ForbiddenException(err);
     }
+  }
+
+  private async deleteDocument(
+    _id: string,
+    path: string,
+    document:
+      | 'presentationOfficeDocument'
+      | 'reportDocument'
+      | 'constancyDocument',
+  ): Promise<void> {
+    const ss = await this.findOne(_id);
+    if (ss[document]) this.filesService.deleteFile(`${path}/${ss[document]}`);
+    let updateObject: object = {};
+    updateObject[document] = null;
+    if (
+      (
+        await this.socialServicesModel
+          .updateOne({ _id: ss._id }, { presentationOfficeDocument: null })
+          .exec()
+      ).modifiedCount < 1
+    )
+      throw new ForbiddenException('social service not updated');
+  }
+
+  //Presentation Office Document
+  async getPresentationOffice(_id: string): Promise<StreamableFile | null> {
+    return await this.getDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
+      'presentationOfficeDocument',
+    );
+  }
+
+  async updatePresentationOffice(
+    _id: string,
+    file: Express.Multer.File,
+  ): Promise<SocialService> {
+    return await this.updateDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
+      file,
+      'presentationOfficeDocument',
+    );
+  }
+
+  async deletePresentationOffice(_id: string): Promise<void> {
+    return this.deleteDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
+      'presentationOfficeDocument',
+    );
+  }
+
+  //Report Document
+  async getReport(_id: string): Promise<StreamableFile | null> {
+    return await this.getDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.REPORTS,
+      'reportDocument',
+    );
+  }
+
+  async updateReport(
+    _id: string,
+    file: Express.Multer.File,
+  ): Promise<SocialService> {
+    return await this.updateDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.REPORTS,
+      file,
+      'reportDocument',
+    );
+  }
+
+  async deleteReport(_id: string) {
+    return this.deleteDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.REPORTS,
+      'reportDocument',
+    );
+  }
+
+  //Constancy Document
+  async getConstancy(_id: string): Promise<StreamableFile | null> {
+    return await this.getDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.CONSTANCIES,
+      'constancyDocument',
+    );
+  }
+
+  async updateConstancy(
+    _id: string,
+    file: Express.Multer.File,
+  ): Promise<SocialService> {
+    return await this.updateDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.CONSTANCIES,
+      file,
+      'constancyDocument',
+    );
+  }
+
+  async deleteConstancy(_id: string) {
+    return this.deleteDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.CONSTANCIES,
+      'constancyDocument',
+    );
   }
 }

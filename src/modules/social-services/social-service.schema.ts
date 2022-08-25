@@ -27,7 +27,7 @@ export class SocialService {
     description: 'Social Service period year',
   })
   @Prop({ type: Number, min: 1990, max: 2100 })
-  year: Number;
+  year: number;
 
   @ApiProperty({
     type: String,

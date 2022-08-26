@@ -9,6 +9,7 @@ import { SocialService, SocialServiceDocument } from './social-service.schema';
 import * as fs from 'fs';
 import { STORAGE_PATHS } from '@utils/constants/storage.constant';
 import { FilesService } from '@utils/services/files.service';
+import { SocialServiceBySpecialtyDto } from './dto/social-service-by-specialty.dto';
 
 @Injectable()
 export class SocialServicesService {
@@ -36,7 +37,7 @@ export class SocialServicesService {
     initialYear: number,
     finalPeriod: number,
     finalYear: number,
-  ): Promise<SocialService[]> {
+  ): Promise<SocialServiceBySpecialtyDto[]> {
     if (
       initialYear > finalYear ||
       (initialYear == finalYear && initialPeriod >= finalPeriod)
@@ -44,29 +45,87 @@ export class SocialServicesService {
       throw new ForbiddenException('invalid period');
     else {
       return await this.socialServicesModel
-        .find({
-          $or: [
-            {
-              year: {
-                $gt: initialYear,
-                $lt: finalYear,
+        .aggregate([
+          {
+            $match: {
+              $or: [
+                {
+                  year: {
+                    $gt: +initialYear,
+                    $lt: +finalYear,
+                  },
+                },
+                {
+                  year: +initialYear,
+                  period: {
+                    $gte: +initialPeriod,
+                  },
+                },
+                {
+                  year: +finalYear,
+                  period: {
+                    $lte: +finalPeriod,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $lookup: {
+              from: 'students',
+              localField: 'student',
+              foreignField: '_id',
+              as: 'student',
+            },
+          },
+          {
+            $lookup: {
+              from: 'specialties',
+              localField: 'student.specialty',
+              foreignField: '_id',
+              as: 'specialty',
+            },
+          },
+          {
+            $project: {
+              _id: '$_id',
+              specialty: { $arrayElemAt: ['$specialty', 0] },
+              period: '$period',
+              year: '$year',
+              hospital: '$hospital',
+              presentationOfficeDocument: '$presentationOfficeDocument',
+              reportDocument: '$reportDocument',
+              constancyDocument: '$constancyDocument',
+              student: { $arrayElemAt: ['$student', 0] },
+              __v: '$__v',
+            },
+          },
+          {
+            $group: {
+              _id: '$specialty._id',
+              value: { $first: '$specialty.value' },
+              socialServices: {
+                $push: {
+                  _id: '$_id',
+                  period: '$period',
+                  year: '$year',
+                  hospital: '$hospital',
+                  presentationOfficeDocument: '$presentationOfficeDocument',
+                  reportDocument: '$reportDocument',
+                  constancyDocument: '$constancyDocument',
+                  student: {
+                    _id: '$student._id',
+                    name: '$student.name',
+                    firstLastName: '$student.firstLastName',
+                    secondLastName: '$student.secondLastName',
+                  },
+                  __v: '$__v',
+                },
               },
             },
-            {
-              year: initialYear,
-              period: {
-                $gte: initialPeriod,
-              },
-            },
-            {
-              year: finalYear,
-              period: {
-                $lte: finalPeriod,
-              },
-            },
-          ],
-        })
-        .exec(); //Find period
+          },
+        ])
+        .exec();
     }
   }
 
@@ -279,3 +338,22 @@ export class SocialServicesService {
     );
   }
 }
+
+/*
+db.socialservices.aggregate([
+	{$lookup: {
+		from: 'students',
+		localField: 'student',
+		foreignField: '_id',
+		as: 'student',
+		}
+	},
+	{$project: {
+		"student": { "$arrayElemAt": [ "$student", 0 ] } 
+	}},
+	{$group: {
+		"_id": "$student.specialty",
+		field: "$_id"
+	}}
+]).pretty();
+*/

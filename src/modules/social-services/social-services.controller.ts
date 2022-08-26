@@ -17,6 +17,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiOkResponse,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -33,6 +34,7 @@ import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { STORAGE_PATHS } from '@utils/constants/storage.constant';
+import { SocialServiceBySpecialtyDto } from './dto/social-service-by-specialty.dto';
 
 @ApiTags('Social Services')
 @Controller(API_RESOURCES.SOCIAL_SERVICES)
@@ -63,12 +65,13 @@ export class SocialServicesController {
   @ApiQuery({ type: Number, name: 'initialYear' })
   @ApiQuery({ type: Number, name: 'finalPeriod' })
   @ApiQuery({ type: Number, name: 'finalYear' })
+  @ApiOkResponse({type: [SocialServiceBySpecialtyDto]})
   async findAll(
     @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
     @Query('initialYear', ValidateYearPipe) initialYear: number,
     @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,
     @Query('finalYear', ValidateYearPipe) finalYear: number,
-  ): Promise<SocialService[]> {
+  ): Promise<SocialServiceBySpecialtyDto[]> {
     return await this.socialServicesService.findAll(
       initialPeriod,
       initialYear,

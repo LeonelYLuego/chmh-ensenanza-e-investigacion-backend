@@ -54,8 +54,15 @@ export class SocialService {
   constancyDocument?: string;
 
   @ApiProperty({
-    type: String,
-    description: 'Social Service student _id',
+    oneOf: [
+      {
+        type: 'string',
+        description: 'Social Service student _id',
+      },
+      {
+        type: 'Student',
+      },
+    ],
   })
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

@@ -40,7 +40,7 @@ export class SocialServicesService {
   ): Promise<SocialServiceBySpecialtyDto[]> {
     if (
       initialYear > finalYear ||
-      (initialYear == finalYear && initialPeriod >= finalPeriod)
+      (initialYear == finalYear && initialPeriod > finalPeriod)
     )
       throw new ForbiddenException('invalid period');
     else {
@@ -56,16 +56,20 @@ export class SocialServicesService {
                   },
                 },
                 {
-                  year: +initialYear,
-                  period: {
-                    $gte: +initialPeriod,
-                  },
-                },
-                {
-                  year: +finalYear,
-                  period: {
-                    $lte: +finalPeriod,
-                  },
+                  $and: [
+                    {
+                      year: +initialYear,
+                      period: {
+                        $gte: +initialPeriod,
+                      },
+                    },
+                    {
+                      year: +finalYear,
+                      period: {
+                        $lte: +finalPeriod,
+                      },
+                    },
+                  ],
                 },
               ],
             },

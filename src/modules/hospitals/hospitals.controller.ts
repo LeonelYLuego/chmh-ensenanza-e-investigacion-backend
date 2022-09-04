@@ -22,6 +22,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
+  API_ENDPOINTS,
   API_RESOURCES,
   DEFAULT_API_PATHS,
 } from '@utils/constants/api-routes.constant';
@@ -69,6 +70,12 @@ export class HospitalsController {
   })
   async findAll(): Promise<Hospital[]> {
     return await this.hospitalsService.findAll();
+  }
+
+  @Get(API_ENDPOINTS.HOSPITALS.SOCIAL_SERVICE)
+  @ApiBearerAuth()
+  async findBySocialService(): Promise<Hospital[]> {
+    return await this.hospitalsService.findBySocialService();
   }
 
   @Get(DEFAULT_API_PATHS.BY_ID)

@@ -33,6 +33,10 @@ export class HospitalsService {
     else throw new ForbiddenException('hospital not found');
   }
 
+  async findBySocialService(): Promise<Hospital[]> {
+    return this.hospitalsModel.find({socialService: true}).exec();
+  }
+
   /**
    * Adds a Hospital in the database
    * @async

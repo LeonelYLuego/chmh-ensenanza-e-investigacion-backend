@@ -24,8 +24,12 @@ export class Student {
   @Prop({ type: String, required: true, length: 32 })
   firstLastName: string;
 
-  @ApiProperty({ type: String, description: 'Student second last name' })
-  @Prop({ type: String, required: true, length: 32 })
+  @ApiProperty({
+    type: String,
+    description: 'Student second last name',
+    required: false,
+  })
+  @Prop({ type: String, length: 32 })
   secondLastName: string;
 
   @ApiProperty({ type: String, description: 'Student specialty _id' })

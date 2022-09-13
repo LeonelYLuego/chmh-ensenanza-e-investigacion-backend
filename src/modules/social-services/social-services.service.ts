@@ -342,22 +342,3 @@ export class SocialServicesService {
     );
   }
 }
-
-/*
-db.socialservices.aggregate([
-	{$lookup: {
-		from: 'students',
-		localField: 'student',
-		foreignField: '_id',
-		as: 'student',
-		}
-	},
-	{$project: {
-		"student": { "$arrayElemAt": [ "$student", 0 ] } 
-	}},
-	{$group: {
-		"_id": "$student.specialty",
-		field: "$_id"
-	}}
-]).pretty();
-*/

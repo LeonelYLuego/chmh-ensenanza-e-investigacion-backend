@@ -58,8 +58,9 @@ export class CreateStudentDto {
     description: 'Student second last name',
     minLength: 3,
     maxLength: 32,
+    required: false,
   })
-  @IsDefined()
+  @IsOptional()
   @IsString()
   @MinLength(3)
   @MaxLength(32)

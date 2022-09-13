@@ -17,6 +17,18 @@ export class Specialty {
   })
   value: string;
 
+  @ApiProperty({
+    type: Number,
+    minimum: 1,
+    maximum: 6
+  })
+  @Prop({
+    type: Number,
+    min: 1,
+    max: 6
+  })
+  duration: number;
+
   @ApiProperty({ type: Number })
   __v: number;
 }

@@ -21,5 +21,11 @@ export class AuthMiddleware implements NestMiddleware {
       res.status(401);
       res.end();
     }
+    // req.user = {
+    //   username: 'leonel',
+    //   password: 'leonel',
+    //   administrator: true,
+    // };
+    // next();
   }
 }

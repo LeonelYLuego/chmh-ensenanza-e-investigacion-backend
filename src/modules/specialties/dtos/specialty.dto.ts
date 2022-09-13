@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, MaxLength, MinLength } from 'class-validator';
+import {
+  IsDefined,
+  IsNumber,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 /** Specialty data transfer object */
 export class SpecialtyDto {
@@ -8,4 +15,17 @@ export class SpecialtyDto {
   @MinLength(3)
   @MaxLength(64)
   value: string;
+
+  @ApiProperty({
+    type: Number,
+    description: 'Duration of the specialty in years',
+    minimum: 1,
+    maximum: 6,
+    default: 3,
+  })
+  @IsDefined()
+  @IsNumber()
+  @Min(1)
+  @Max(6)
+  duration: number;
 }

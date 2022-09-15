@@ -19,6 +19,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
+  API_ENDPOINTS,
   API_RESOURCES,
   DEFAULT_API_PATHS,
 } from '@utils/constants/api-routes.constant';
@@ -73,6 +74,12 @@ export class SpecialtiesController {
   })
   async find(): Promise<Specialty[]> {
     return await this.specialtiesService.find();
+  }
+
+  @Get(DEFAULT_API_PATHS.BY_ID)
+  @ApiBearerAuth()
+  async findOne(@Param('_id', ValidateIdPipe) _id: string): Promise<Specialty> {
+    return await this.specialtiesService.findOne(_id);
   }
 
   @Put(DEFAULT_API_PATHS.BY_ID)

@@ -37,12 +37,13 @@ export class SpecialtiesService {
    * @param {string} value value of the Specialty
    * @returns {Promise<Specialty | null>} the found Specialty
    */
-  async findOneByValue(value: string): Promise<Specialty | null> {
+  async findOneByValueAndDuration(value: string, duration: number): Promise<Specialty | null> {
     return await this.specialtiesModel
       .findOne({
         value: {
           $regex: new RegExp(`^${value.toLowerCase()}`, 'i'),
         },
+        duration,
       })
       .exec();
   }
@@ -55,7 +56,7 @@ export class SpecialtiesService {
    * @throws {ForbiddenException} Specialty value must not already exists in the database
    */
   async create(specialtyDto: SpecialtyDto): Promise<Specialty> {
-    const specialty = await this.findOneByValue(specialtyDto.value);
+    const specialty = await this.findOneByValueAndDuration(specialtyDto.value, specialtyDto.duration);
     if (!specialty) {
       const createdSpecialty = new this.specialtiesModel(specialtyDto);
       return await createdSpecialty.save();
@@ -75,7 +76,7 @@ export class SpecialtiesService {
   async update(_id: string, specialtyDto: SpecialtyDto): Promise<Specialty> {
     const specialty = await this.findOne(_id);
     if (specialty) {
-      if (!(await this.findOneByValue(specialtyDto.value))) {
+      if (!(await this.findOneByValueAndDuration(specialtyDto.value, specialtyDto.duration))) {
         const res = await this.specialtiesModel
           .updateOne({ _id }, specialtyDto)
           .exec();

@@ -4,20 +4,15 @@ import { ApiProperty } from '@nestjs/swagger';
 /** Hospital document */
 export type HospitalDocument = Hospital & Document;
 
-/** Director schema */
 @Schema()
-export class Director {
-  @ApiProperty({ type: String, description: 'Director name', required: true })
-  @Prop({ type: String, required: true, length: 64 })
-  name: string;
-
-  @ApiProperty({
-    type: String,
-    description: 'Director position',
-    required: true,
-  })
-  @Prop({ type: String, required: true, length: 64 })
+export class Receiver {
+  @ApiProperty({type: String, description: 'Receiver position'})
+  @Prop({type: String, required: true, length: 64})
   position: string;
+
+  @ApiProperty({type: String, description: 'Receiver name'})
+  @Prop({type: String, required: true, length: 128})
+  name: string;
 }
 
 /** Address schema */
@@ -59,20 +54,20 @@ export class Hospital {
   acronym?: string;
 
   @ApiProperty({
-    type: Director,
-    description: 'Hospital director',
+    type: Receiver,
+    description: 'First receiver',
     required: false,
   })
-  @Prop({ type: Director, required: false })
-  director?: Director;
+  @Prop({type: Receiver, required: false})
+  firstReceiver?: Receiver;
 
   @ApiProperty({
-    type: String,
-    description: 'Hosptial education boss',
+    type: Receiver,
+    description: 'Second receiver, with attention to',
     required: false,
   })
-  @Prop({ type: String, required: false, length: 64 })
-  educationBoss?: string;
+  @Prop({type: Receiver, required: false})
+  secondReceiver?: Receiver;
 
   @ApiProperty({
     type: Address,

@@ -41,7 +41,7 @@ export class SpecialtiesService {
     return await this.specialtiesModel
       .findOne({
         value: {
-          $regex: new RegExp(`^${value.toLowerCase()}`, 'i'),
+          $regex: new RegExp(`^${value.toLowerCase()}$`, 'i'),
         },
         duration,
       })

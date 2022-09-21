@@ -11,7 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { AddressDto } from './address.dto';
-import { DirectorDto } from './director.dto';
+import { ReceiverDto } from './receiver.dto';
 
 /** Create Hospital data transfer object */
 export class CreateHospitalDto {
@@ -41,25 +41,20 @@ export class CreateHospitalDto {
   acronym?: string;
 
   @ApiProperty({
-    type: DirectorDto,
-    description: 'Hospital director',
+    type: ReceiverDto,
+    description: 'First receiver',
     required: false,
   })
   @IsOptional()
-  director?: DirectorDto;
+  firstReceiver?: ReceiverDto;
 
   @ApiProperty({
-    type: String,
-    description: 'Hospital education boss',
+    type: ReceiverDto,
+    description: 'Second receiver, with attention to',
     required: false,
-    minLength: 3,
-    maxLength: 64,
   })
   @IsOptional()
-  @IsString()
-  @MinLength(3)
-  @MaxLength(64)
-  educationBoss: string;
+  secondReceiver?: ReceiverDto;
 
   @ApiProperty({
     type: AddressDto,

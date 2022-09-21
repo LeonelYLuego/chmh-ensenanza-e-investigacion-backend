@@ -31,7 +31,7 @@ export class StudentsService {
       })
       .populate('specialty')
       .collation({ locale: 'es' })
-      .sort('name')
+      .sort('firstLastName')
       .exec();
   }
 

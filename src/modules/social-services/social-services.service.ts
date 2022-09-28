@@ -219,14 +219,14 @@ export class SocialServicesService {
   }
 
   //Documents
-  private async getDocument(
+  async getDocument(
     _id: string,
     path: string,
     document:
       | 'presentationOfficeDocument'
       | 'reportDocument'
       | 'constancyDocument',
-  ) {
+  ): Promise<StreamableFile> {
     const ss = await this.findOne(_id);
     if (ss[document]) {
       const filePath = `${path}/${ss[document]}`;
@@ -240,7 +240,7 @@ export class SocialServicesService {
     return null;
   }
 
-  private async updateDocument(
+  async updateDocument(
     _id: string,
     path: string,
     file: Express.Multer.File,
@@ -249,6 +249,7 @@ export class SocialServicesService {
       | 'reportDocument'
       | 'constancyDocument',
   ): Promise<SocialService> {
+    console.log(document);
     try {
       this.filesService.validatePDF(file);
       const ss = await this.findOne(_id);
@@ -271,7 +272,7 @@ export class SocialServicesService {
     }
   }
 
-  private async deleteDocument(
+  async deleteDocument(
     _id: string,
     path: string,
     document:
@@ -280,103 +281,17 @@ export class SocialServicesService {
       | 'constancyDocument',
   ): Promise<void> {
     const ss = await this.findOne(_id);
-    if (ss[document]) this.filesService.deleteFile(`${path}/${ss[document]}`);
+    if (ss[document])
+      this.filesService.deleteFile(`${path}/${ss[document]}`);
     let updateObject: object = {};
     updateObject[document] = null;
     if (
       (
         await this.socialServicesModel
-          .updateOne({ _id: ss._id }, { presentationOfficeDocument: null })
+          .updateOne({ _id: ss._id }, updateObject)
           .exec()
       ).modifiedCount < 1
     )
       throw new ForbiddenException('social service not updated');
-  }
-
-  //Presentation Office Document
-  async getPresentationOffice(_id: string): Promise<StreamableFile | null> {
-    return await this.getDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
-      'presentationOfficeDocument',
-    );
-  }
-
-  async updatePresentationOffice(
-    _id: string,
-    file: Express.Multer.File,
-  ): Promise<SocialService> {
-    return await this.updateDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
-      file,
-      'presentationOfficeDocument',
-    );
-  }
-
-  async deletePresentationOffice(_id: string): Promise<void> {
-    return this.deleteDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
-      'presentationOfficeDocument',
-    );
-  }
-
-  //Report Document
-  async getReport(_id: string): Promise<StreamableFile | null> {
-    return await this.getDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.REPORTS,
-      'reportDocument',
-    );
-  }
-
-  async updateReport(
-    _id: string,
-    file: Express.Multer.File,
-  ): Promise<SocialService> {
-    return await this.updateDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.REPORTS,
-      file,
-      'reportDocument',
-    );
-  }
-
-  async deleteReport(_id: string) {
-    return this.deleteDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.REPORTS,
-      'reportDocument',
-    );
-  }
-
-  //Constancy Document
-  async getConstancy(_id: string): Promise<StreamableFile | null> {
-    return await this.getDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.CONSTANCIES,
-      'constancyDocument',
-    );
-  }
-
-  async updateConstancy(
-    _id: string,
-    file: Express.Multer.File,
-  ): Promise<SocialService> {
-    return await this.updateDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.CONSTANCIES,
-      file,
-      'constancyDocument',
-    );
-  }
-
-  async deleteConstancy(_id: string) {
-    return this.deleteDocument(
-      _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.CONSTANCIES,
-      'constancyDocument',
-    );
   }
 }

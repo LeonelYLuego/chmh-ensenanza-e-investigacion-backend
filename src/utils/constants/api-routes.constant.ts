@@ -25,8 +25,6 @@ export const API_ENDPOINTS = {
   },
   SOCIAL_SERVICES: {
     PERIODS: '/periods',
-    PRESENTATION_OFFICE: `/presentation-office/${DEFAULT_API_PATHS.BY_ID}`,
-    REPORT: `/report/${DEFAULT_API_PATHS.BY_ID}`,
-    COSTANCY: `/constancy/${DEFAULT_API_PATHS.BY_ID}`,
+    DOCUMENT: `/document/${DEFAULT_API_PATHS.BY_ID}`,
   },
 };

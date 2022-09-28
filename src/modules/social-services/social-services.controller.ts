@@ -18,6 +18,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOkResponse,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -35,6 +36,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { STORAGE_PATHS } from '@utils/constants/storage.constant';
 import { SocialServiceBySpecialtyDto } from './dto/social-service-by-specialty.dto';
+import { extname } from 'path';
+import { ValidateTypeSocialServicePipe } from './pipes/validate-type-social-service.pipe';
 
 @ApiTags('Social Services')
 @Controller(API_RESOURCES.SOCIAL_SERVICES)
@@ -65,7 +68,7 @@ export class SocialServicesController {
   @ApiQuery({ type: Number, name: 'initialYear' })
   @ApiQuery({ type: Number, name: 'finalPeriod' })
   @ApiQuery({ type: Number, name: 'finalYear' })
-  @ApiOkResponse({type: [SocialServiceBySpecialtyDto]})
+  @ApiOkResponse({ type: [SocialServiceBySpecialtyDto] })
   async findAll(
     @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
     @Query('initialYear', ValidateYearPipe) initialYear: number,
@@ -103,25 +106,41 @@ export class SocialServicesController {
     return await this.socialServicesService.remove(_id);
   }
 
-  /*
-  //Presentation Office Document
-  @Get(API_ENDPOINTS.SOCIAL_SERVICES.PRESENTATION_OFFICE)
+  //Validar type
+  @Get(API_ENDPOINTS.SOCIAL_SERVICES.DOCUMENT)
   @ApiBearerAuth()
-  async getPresentationOffice(
+  @ApiParam({ name: '_id', description: 'Social Service primary key' })
+  @ApiQuery({
+    name: 'type',
+    type: String,
+    enum: ['presentationOfficeDocument', 'reportDocument', 'constancyDocument'],
+    required: true,
+  })
+  async getDocument(
     @Param('_id', ValidateIdPipe) _id: string,
-  ): Promise<StreamableFile | null> {
-    return await this.socialServicesService.getPresentationOffice(_id);
+    @Query('type', ValidateTypeSocialServicePipe)
+    type: 'presentationOfficeDocument' | 'reportDocument' | 'constancyDocument',
+  ): Promise<StreamableFile> {
+    return await this.socialServicesService.getDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+      type,
+    );
   }
 
-  @Put(API_ENDPOINTS.SOCIAL_SERVICES.PRESENTATION_OFFICE)
+  @Put(API_ENDPOINTS.SOCIAL_SERVICES.DOCUMENT)
   @ApiBearerAuth()
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: STORAGE_PATHS.SOCIAL_SERVICES.PRESENTATION_OFFICES,
-      }),
-    }),
-  )
+  @ApiParam({
+    name: '_id',
+    type: String,
+    description: 'Social Service primary key',
+  })
+  @ApiQuery({
+    name: 'type',
+    type: String,
+    enum: ['presentationOfficeDocument', 'reportDocument', 'constancyDocument'],
+    required: true,
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -134,107 +153,56 @@ export class SocialServicesController {
       },
     },
   })
-  async updatePresentationOffice(
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async updateDocument(
     @Param('_id', ValidateIdPipe) _id: string,
     @UploadedFile() file: Express.Multer.File,
+    @Query('type', ValidateTypeSocialServicePipe)
+    type: 'presentationOfficeDocument' | 'reportDocument' | 'constancyDocument',
   ): Promise<SocialService> {
-    return await this.socialServicesService.updatePresentationOffice(_id, file);
+    return this.socialServicesService.updateDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+      file,
+      type,
+    );
   }
 
-  @Delete(API_ENDPOINTS.SOCIAL_SERVICES.PRESENTATION_OFFICE)
+  @Delete(API_ENDPOINTS.SOCIAL_SERVICES.DOCUMENT)
   @ApiBearerAuth()
-  async deletePresentationOffice(
+  @ApiParam({
+    name: '_id',
+    type: String,
+    description: 'Social Service primary key',
+  })
+  @ApiQuery({
+    name: 'type',
+    type: String,
+    enum: ['presentationOfficeDocument', 'reportDocument', 'constancyDocument'],
+    required: true,
+  })
+  async deleteDocument(
     @Param('_id', ValidateIdPipe) _id: string,
+    @Query('type')
+    type: 'presentationOfficeDocument' | 'reportDocument' | 'constancyDocument',
   ): Promise<void> {
-    return await this.socialServicesService.deletePresentationOffice(_id);
+    await this.socialServicesService.deleteDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+      type,
+    );
   }
-
-  //Report document
-  @Get(API_ENDPOINTS.SOCIAL_SERVICES.REPORT)
-  @ApiBearerAuth()
-  async getReport(
-    @Param('_id', ValidateIdPipe) _id: string,
-  ): Promise<StreamableFile | null> {
-    return await this.socialServicesService.getReport(_id);
-  }
-
-  @Put(API_ENDPOINTS.SOCIAL_SERVICES.REPORT)
-  @ApiBearerAuth()
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: STORAGE_PATHS.SOCIAL_SERVICES.REPORTS,
-      }),
-    }),
-  )
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  async updateReport(
-    @Param('_id', ValidateIdPipe) _id: string,
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<SocialService> {
-    return await this.socialServicesService.updateReport(_id, file);
-  }
-
-  @Delete(API_ENDPOINTS.SOCIAL_SERVICES.REPORT)
-  @ApiBearerAuth()
-  async deleteReport(@Param('_id', ValidateIdPipe) _id: string): Promise<void> {
-    return await this.socialServicesService.deleteReport(_id);
-  }
-
-  //Constancy document
-  @Get(API_ENDPOINTS.SOCIAL_SERVICES.COSTANCY)
-  @ApiBearerAuth()
-  async getConstancy(
-    @Param('_id', ValidateIdPipe) _id: string,
-  ): Promise<StreamableFile | null> {
-    return await this.socialServicesService.getConstancy(_id);
-  }
-
-  @Put(API_ENDPOINTS.SOCIAL_SERVICES.COSTANCY)
-  @ApiBearerAuth()
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: STORAGE_PATHS.SOCIAL_SERVICES.CONSTANCIES,
-      }),
-    }),
-  )
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  async updateConstancy(
-    @Param('_id', ValidateIdPipe) _id: string,
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<SocialService> {
-    return await this.socialServicesService.updateConstancy(_id, file);
-  }
-
-  @Delete(API_ENDPOINTS.SOCIAL_SERVICES.COSTANCY)
-  @ApiBearerAuth()
-  async deleteConstancy(
-    @Param('_id', ValidateIdPipe) _id: string,
-  ): Promise<void> {
-    return await this.socialServicesService.deleteConstancy(_id);
-  }
-  */
 }

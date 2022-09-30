@@ -249,7 +249,6 @@ export class SocialServicesService {
       | 'reportDocument'
       | 'constancyDocument',
   ): Promise<SocialService> {
-    console.log(document);
     try {
       this.filesService.validatePDF(file);
       const ss = await this.findOne(_id);

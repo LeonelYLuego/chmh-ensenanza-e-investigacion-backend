@@ -4,6 +4,7 @@ import { SpecialtiesModule } from './specialties/specialties.module';
 import { StudentsModule } from './students/students.module';
 import { HospitalsModule } from './hospitals/hospitals.module';
 import { SocialServicesModule } from './social-services/social-services.module';
+import { TemplatesModule } from './templates/templates.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { SocialServicesModule } from './social-services/social-services.module';
     SpecialtiesModule,
     StudentsModule,
     UsersModule,
+    TemplatesModule,
   ],
   controllers: [],
   providers: [],

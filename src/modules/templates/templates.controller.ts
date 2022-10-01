@@ -69,19 +69,19 @@ export class TemplatesController {
     await this.templatesService.updateTemplates(document, type, file);
   }
 
-  @Get(':document')
-  @ApiBearerAuth()
-  @ApiParam({ name: 'document', type: String, enum: ['socialService'] })
-  @ApiQuery({
-    name: 'type',
-    type: String,
-    enum: ['presentationOfficeDocument'],
-  })
-  async getDocument(
-    @Param('document') document: string,
-    @Query('type') type: string,
-  ) {
-    console.log('Validate param and query');
-    await this.templatesService.getDocument(document, type);
-  }
+  // @Get(':document')
+  // @ApiBearerAuth()
+  // @ApiParam({ name: 'document', type: String, enum: ['socialService'] })
+  // @ApiQuery({
+  //   name: 'type',
+  //   type: String,
+  //   enum: ['presentationOfficeDocument'],
+  // })
+  // async getDocument(
+  //   @Param('document') document: string,
+  //   @Query('type') type: string,
+  // ) {
+  //   console.log('Validate param and query');
+  //   await this.templatesService.getDocument(document, type);
+  // }
 }

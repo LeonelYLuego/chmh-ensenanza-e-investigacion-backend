@@ -7,6 +7,7 @@ import { StudentsModule } from 'modules/students/students.module';
 import { HospitalsModule } from 'modules/hospitals/hospitals.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { FilesService } from '@utils/services/files.service';
+import { TemplatesModule } from 'modules/templates/templates.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { FilesService } from '@utils/services/files.service';
     MulterModule,
     StudentsModule,
     HospitalsModule,
+    TemplatesModule,
   ],
   controllers: [SocialServicesController],
   providers: [SocialServicesService, FilesService],

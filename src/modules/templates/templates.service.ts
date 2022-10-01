@@ -8,6 +8,7 @@ import { TemplatesDocument, Templates } from './template.schema';
 import { FilesService } from '@utils/services/files.service';
 import * as PizZip from 'pizzip';
 const Docxtemplater = require('docxtemplater');
+import { ForbiddenException } from '@nestjs/common/exceptions';
 
 @Injectable()
 export class TemplatesService {
@@ -22,6 +23,27 @@ export class TemplatesService {
       socialService: {},
     });
     return await createdTemplates.save();
+  }
+
+  async getTemplate(document: string, type: string): Promise<any> {
+    const templates = await this.templatesModel.findOne();
+    if (templates) {
+      const documentPath = templates[document][type];
+      if (documentPath) {
+        const documentBytes = fs.readFileSync(
+          join(STORAGE_PATHS.TEMPLATES, documentPath),
+        );
+        if (documentBytes) {
+          const zip = new PizZip(documentBytes);
+          const doc = new Docxtemplater(zip, {
+            paragraphLoop: true,
+            linebreaks: true,
+          });
+          return doc;
+        }
+      }
+    }
+    throw new ForbiddenException('not template found');
   }
 
   async updateTemplates(
@@ -40,25 +62,24 @@ export class TemplatesService {
     await this.templatesModel.updateOne({ _id: templates._id }, templates);
   }
 
-  async getDocument(document: string, type: string) {
-    const templates = await this.templatesModel.findOne();
-    const documentPath = templates[document][type];
-    const documentBytes = fs.readFileSync(
-      join(STORAGE_PATHS.TEMPLATES, documentPath),
-    );
-    const zip = new PizZip(documentBytes);
-    const doc = new Docxtemplater(zip, {
-      paragraphLoop: true,
-      linebreaks: true,
-    });
-    doc.render({
-      text: 'John',
-      juan: 'Juan',
-    });
-    const buf = doc.getZip().generate({
-      type: 'nodebuffer',
-      compression: 'DEFLATE',
-    });
-    fs.writeFileSync(join(STORAGE_PATHS.TEMPLATES, 'test.docx'), buf);
-  }
+  // async getDocument(document: string, type: string) {
+  //   const templates = await this.templatesModel.findOne();
+  //   const documentPath = templates[document][type];
+  //   const documentBytes = fs.readFileSync(
+  //     join(STORAGE_PATHS.TEMPLATES, documentPath),
+  //   );
+  //   const zip = new PizZip(documentBytes);
+  //   const doc = new Docxtemplater(zip, {
+  //     paragraphLoop: true,
+  //     linebreaks: true,
+  //   });
+  //   doc.render({
+  //     nombre: 'DRA. MARÍA DE LA LUZ TORRES SOTO',
+  //   });
+  //   const buf = doc.getZip().generate({
+  //     type: 'nodebuffer',
+  //     compression: 'DEFLATE',
+  //   });
+  //   fs.writeFileSync(join(STORAGE_PATHS.TEMPLATES, 'test.docx'), buf);
+  // }
 }

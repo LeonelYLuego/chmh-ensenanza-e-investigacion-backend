@@ -7,9 +7,13 @@ import { CreateSocialServiceDto } from './dto/create-social-service.dto';
 import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
 import { SocialService, SocialServiceDocument } from './social-service.schema';
 import * as fs from 'fs';
-import { STORAGE_PATHS } from '@utils/constants/storage.constant';
 import { FilesService } from '@utils/services/files.service';
 import { SocialServiceBySpecialtyDto } from './dto/social-service-by-specialty.dto';
+import { TemplatesService } from 'modules/templates/templates.service';
+import Docxtemplater from 'docxtemplater';
+import { join } from 'path';
+import { STORAGE_PATHS } from '@utils/constants/storage.constant';
+import { Student } from 'modules/students/student.schema';
 
 @Injectable()
 export class SocialServicesService {
@@ -19,6 +23,7 @@ export class SocialServicesService {
     private studentsService: StudentsService,
     private hospitalsService: HospitalsService,
     private filesService: FilesService,
+    private templatesService: TemplatesService,
   ) {}
 
   async create(
@@ -280,8 +285,7 @@ export class SocialServicesService {
       | 'constancyDocument',
   ): Promise<void> {
     const ss = await this.findOne(_id);
-    if (ss[document])
-      this.filesService.deleteFile(`${path}/${ss[document]}`);
+    if (ss[document]) this.filesService.deleteFile(`${path}/${ss[document]}`);
     let updateObject: object = {};
     updateObject[document] = null;
     if (
@@ -292,5 +296,197 @@ export class SocialServicesService {
       ).modifiedCount < 1
     )
       throw new ForbiddenException('social service not updated');
+  }
+
+  async generateDocuments(
+    initialNumberDocumentation: number,
+    documentationDate: Date,
+    initialPeriod: number,
+    initialYear: number,
+    finalPeriod: number,
+    finalYear: number,
+  ) {
+    if (
+      initialYear > finalYear ||
+      (initialYear == finalYear && initialPeriod > finalPeriod)
+    )
+      throw new ForbiddenException('invalid period');
+    else {
+      let counter = initialNumberDocumentation;
+      const date = new Date(documentationDate);
+      const months = [
+        'enero',
+        'febrero',
+        'marzo',
+        'abril',
+        'mayo',
+        'junio',
+        'julio',
+        'agosto',
+        'septiembre',
+        'octubre',
+        'noviembre',
+        'diciembre',
+      ];
+
+      const hospitals = await this.hospitalsService.findBySocialService();
+      await Promise.all(
+        hospitals.map(async (hospital) => {
+          const socialServices = (await this.socialServicesModel
+            .aggregate([
+              {
+                $match: {
+                  $or: [
+                    {
+                      year: {
+                        $gt: +initialYear,
+                        $lt: +finalYear,
+                      },
+                    },
+                    {
+                      $and: [
+                        {
+                          year: +finalYear,
+                        },
+                        {
+                          year: +initialYear,
+                        },
+                        {
+                          period: {
+                            $gte: +initialPeriod,
+                          },
+                        },
+                        {
+                          period: {
+                            $lte: +finalPeriod,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      $and: [
+                        {
+                          year: +initialYear,
+                        },
+                        {
+                          year: {
+                            $not: { $eq: +finalYear },
+                          },
+                        },
+                        {
+                          period: {
+                            $gte: +initialPeriod,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      $and: [
+                        {
+                          year: +finalYear,
+                        },
+                        {
+                          year: {
+                            $not: { $eq: +initialYear },
+                          },
+                        },
+                        {
+                          period: {
+                            $lte: +finalPeriod,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                  hospital: hospital._id,
+                },
+              },
+              {
+                $lookup: {
+                  from: 'students',
+                  localField: 'student',
+                  foreignField: '_id',
+                  as: 'student',
+                },
+              },
+              {
+                $lookup: {
+                  from: 'specialties',
+                  localField: 'student.specialty',
+                  foreignField: '_id',
+                  as: 'specialty',
+                },
+              },
+              {
+                $project: {
+                  _id: '$_id',
+                  specialty: { $arrayElemAt: ['$specialty', 0] },
+                  period: '$period',
+                  year: '$year',
+                  hospital: '$hospital',
+                  presentationOfficeDocument: '$presentationOfficeDocument',
+                  reportDocument: '$reportDocument',
+                  constancyDocument: '$constancyDocument',
+                  student: { $arrayElemAt: ['$student', 0] },
+                  __v: '$__v',
+                },
+              },
+            ])
+            .exec()) as SocialService[];
+          await Promise.all(
+            socialServices.map(async (socialService) => {
+              const template = (await this.templatesService.getTemplate(
+                'socialService',
+                'presentationOfficeDocument',
+              )) as Docxtemplater;
+
+              template.render({
+                hospital: hospital.name.toUpperCase(),
+                numero: counter.toString(),
+                fecha: `${date.getDate()} de ${
+                  months[date.getMonth()]
+                } de ${date.getFullYear()}`,
+                'principal.nombre': hospital.firstReceiver
+                  ? hospital.firstReceiver.name.toUpperCase()
+                  : '',
+                'principal.cargo': hospital.firstReceiver
+                  ? hospital.firstReceiver.position.toUpperCase()
+                  : '',
+                'secundario.nombre': hospital.secondReceiver
+                  ? `AT'N ${hospital.secondReceiver.name.toUpperCase()}`
+                  : '',
+                'secundario.cargo': hospital.secondReceiver
+                  ? hospital.secondReceiver.position.toUpperCase()
+                  : '',
+                estudiante: `${socialService.student.name} ${
+                  socialService.student.firstLastName
+                }${
+                  socialService.student.secondLastName
+                    ? ' ' + socialService.student.secondLastName
+                    : ''
+                }`.toUpperCase(),
+                'especialidad': (socialService as any).specialty.value,
+              });
+              
+              counter++;
+
+              //Here de document is saved
+              const buffer = (await template.getZip().generate({
+                type: 'nodebuffer',
+                compression: 'DEFLATE',
+              })) as Buffer;
+
+              fs.writeFileSync(
+                join(
+                  STORAGE_PATHS.TEMPLATES,
+                  `${(socialService.student as Student).name}.docx`,
+                ),
+                buffer,
+              );
+            }),
+          );
+        }),
+      );
+    }
   }
 }

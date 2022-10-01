@@ -13,5 +13,6 @@ import { FilesService } from '@utils/services/files.service';
   ],
   controllers: [TemplatesController],
   providers: [TemplatesService, FilesService],
+  exports: [TemplatesService],
 })
 export class TemplatesModule {}

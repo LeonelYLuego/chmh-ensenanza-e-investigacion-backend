@@ -44,6 +44,32 @@ import { ValidateTypeSocialServicePipe } from './pipes/validate-type-social-serv
 export class SocialServicesController {
   constructor(private readonly socialServicesService: SocialServicesService) {}
 
+  @Get('generate')
+  @ApiBearerAuth()
+  @ApiQuery({ type: Number, name: 'initialNumberDocumentation' })
+  @ApiQuery({ type: Date, name: 'documentationDate' })
+  @ApiQuery({ type: Number, name: 'initialPeriod' })
+  @ApiQuery({ type: Number, name: 'initialYear' })
+  @ApiQuery({ type: Number, name: 'finalPeriod' })
+  @ApiQuery({ type: Number, name: 'finalYear' })
+  async generateDocuments(
+    @Query('initialNumberDocumentation') initialNumberDocumentation: number,
+    @Query('documentationDate') documentationDate: Date,
+    @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
+    @Query('initialYear', ValidateYearPipe) initialYear: number,
+    @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,
+    @Query('finalYear', ValidateYearPipe) finalYear: number,
+  ) {
+    return await this.socialServicesService.generateDocuments(
+      initialNumberDocumentation,
+      documentationDate,
+      initialPeriod,
+      initialYear,
+      finalPeriod,
+      finalYear,
+    );
+  }
+
   //CRUD
   @Post()
   @ApiBearerAuth()
@@ -106,7 +132,6 @@ export class SocialServicesController {
     return await this.socialServicesService.remove(_id);
   }
 
-  //Validar type
   @Get(API_ENDPOINTS.SOCIAL_SERVICES.DOCUMENT)
   @ApiBearerAuth()
   @ApiParam({ name: '_id', description: 'Social Service primary key' })
@@ -173,6 +198,7 @@ export class SocialServicesController {
     @Query('type', ValidateTypeSocialServicePipe)
     type: 'presentationOfficeDocument' | 'reportDocument' | 'constancyDocument',
   ): Promise<SocialService> {
+    console.log('Validate document extension');
     return this.socialServicesService.updateDocument(
       _id,
       STORAGE_PATHS.SOCIAL_SERVICES.BASE,

@@ -7,21 +7,25 @@ import { CreateSocialServiceDto } from './dto/create-social-service.dto';
 import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
 import { SocialService, SocialServiceDocument } from './social-service.schema';
 import * as fs from 'fs';
+import * as JSZip from 'jszip';
 import { FilesService } from '@utils/services/files.service';
 import { SocialServiceBySpecialtyDto } from './dto/social-service-by-specialty.dto';
 import { TemplatesService } from 'modules/templates/templates.service';
 import Docxtemplater from 'docxtemplater';
-import { join } from 'path';
-import { STORAGE_PATHS } from '@utils/constants/storage.constant';
+import { SpecialtiesService } from 'modules/specialties/specialties.service';
 import { Student } from 'modules/students/student.schema';
+import { SocialServicesQueries } from './services/queries.service';
+import { Hospital } from 'modules/hospitals/hospital.schema';
 
 @Injectable()
 export class SocialServicesService {
   constructor(
     @InjectModel(SocialService.name)
     private socialServicesModel: Model<SocialServiceDocument>,
+    private socialServicesQueries: SocialServicesQueries,
     private studentsService: StudentsService,
     private hospitalsService: HospitalsService,
+    private specialtiesService: SpecialtiesService,
     private filesService: FilesService,
     private templatesService: TemplatesService,
   ) {}
@@ -50,128 +54,14 @@ export class SocialServicesService {
       throw new ForbiddenException('invalid period');
     else {
       return await this.socialServicesModel
-        .aggregate([
-          {
-            $match: {
-              $or: [
-                {
-                  year: {
-                    $gt: +initialYear,
-                    $lt: +finalYear,
-                  },
-                },
-                {
-                  $and: [
-                    {
-                      year: +finalYear,
-                    },
-                    {
-                      year: +initialYear,
-                    },
-                    {
-                      period: {
-                        $gte: +initialPeriod,
-                      },
-                    },
-                    {
-                      period: {
-                        $lte: +finalPeriod,
-                      },
-                    },
-                  ],
-                },
-                {
-                  $and: [
-                    {
-                      year: +initialYear,
-                    },
-                    {
-                      year: {
-                        $not: { $eq: +finalYear },
-                      },
-                    },
-                    {
-                      period: {
-                        $gte: +initialPeriod,
-                      },
-                    },
-                  ],
-                },
-                {
-                  $and: [
-                    {
-                      year: +finalYear,
-                    },
-                    {
-                      year: {
-                        $not: { $eq: +initialYear },
-                      },
-                    },
-                    {
-                      period: {
-                        $lte: +finalPeriod,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          },
-          {
-            $lookup: {
-              from: 'students',
-              localField: 'student',
-              foreignField: '_id',
-              as: 'student',
-            },
-          },
-          {
-            $lookup: {
-              from: 'specialties',
-              localField: 'student.specialty',
-              foreignField: '_id',
-              as: 'specialty',
-            },
-          },
-          {
-            $project: {
-              _id: '$_id',
-              specialty: { $arrayElemAt: ['$specialty', 0] },
-              period: '$period',
-              year: '$year',
-              hospital: '$hospital',
-              presentationOfficeDocument: '$presentationOfficeDocument',
-              reportDocument: '$reportDocument',
-              constancyDocument: '$constancyDocument',
-              student: { $arrayElemAt: ['$student', 0] },
-              __v: '$__v',
-            },
-          },
-          {
-            $group: {
-              _id: '$specialty._id',
-              value: { $first: '$specialty.value' },
-              socialServices: {
-                $push: {
-                  _id: '$_id',
-                  period: '$period',
-                  year: '$year',
-                  hospital: '$hospital',
-                  presentationOfficeDocument: '$presentationOfficeDocument',
-                  reportDocument: '$reportDocument',
-                  constancyDocument: '$constancyDocument',
-                  student: {
-                    _id: '$student._id',
-                    name: '$student.name',
-                    firstLastName: '$student.firstLastName',
-                    secondLastName: '$student.secondLastName',
-                  },
-                  __v: '$__v',
-                },
-              },
-            },
-          },
-        ])
+        .aggregate(
+          this.socialServicesQueries.find(
+            initialPeriod,
+            initialYear,
+            finalPeriod,
+            finalYear,
+          ),
+        )
         .exec();
     }
   }
@@ -299,12 +189,14 @@ export class SocialServicesService {
   }
 
   async generateDocuments(
-    initialNumberDocumentation: number,
-    documentationDate: Date,
+    initialNumberOfDocuments: number,
+    dateOfDocuments: Date,
     initialPeriod: number,
     initialYear: number,
     finalPeriod: number,
     finalYear: number,
+    hospital: string | undefined,
+    specialty: string | undefined,
   ) {
     if (
       initialYear > finalYear ||
@@ -312,8 +204,8 @@ export class SocialServicesService {
     )
       throw new ForbiddenException('invalid period');
     else {
-      let counter = initialNumberDocumentation;
-      const date = new Date(documentationDate);
+      let counter = initialNumberOfDocuments;
+      const date = new Date(dateOfDocuments);
       const months = [
         'enero',
         'febrero',
@@ -328,113 +220,38 @@ export class SocialServicesService {
         'noviembre',
         'diciembre',
       ];
+      const grades = [
+        'primer',
+        'segundo',
+        'tercer',
+        'cuarto',
+        'quinto',
+        'sexto',
+      ];
 
-      const hospitals = await this.hospitalsService.findBySocialService();
+      const zip = new JSZip();
+
+      let hospitals: Hospital[] = [];
+      if (hospital)
+        hospitals.push(await this.hospitalsService.findOne(hospital));
+      else hospitals = await this.hospitalsService.findBySocialService();
       await Promise.all(
         hospitals.map(async (hospital) => {
           const socialServices = (await this.socialServicesModel
-            .aggregate([
-              {
-                $match: {
-                  $or: [
-                    {
-                      year: {
-                        $gt: +initialYear,
-                        $lt: +finalYear,
-                      },
-                    },
-                    {
-                      $and: [
-                        {
-                          year: +finalYear,
-                        },
-                        {
-                          year: +initialYear,
-                        },
-                        {
-                          period: {
-                            $gte: +initialPeriod,
-                          },
-                        },
-                        {
-                          period: {
-                            $lte: +finalPeriod,
-                          },
-                        },
-                      ],
-                    },
-                    {
-                      $and: [
-                        {
-                          year: +initialYear,
-                        },
-                        {
-                          year: {
-                            $not: { $eq: +finalYear },
-                          },
-                        },
-                        {
-                          period: {
-                            $gte: +initialPeriod,
-                          },
-                        },
-                      ],
-                    },
-                    {
-                      $and: [
-                        {
-                          year: +finalYear,
-                        },
-                        {
-                          year: {
-                            $not: { $eq: +initialYear },
-                          },
-                        },
-                        {
-                          period: {
-                            $lte: +finalPeriod,
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                  hospital: hospital._id,
-                },
-              },
-              {
-                $lookup: {
-                  from: 'students',
-                  localField: 'student',
-                  foreignField: '_id',
-                  as: 'student',
-                },
-              },
-              {
-                $lookup: {
-                  from: 'specialties',
-                  localField: 'student.specialty',
-                  foreignField: '_id',
-                  as: 'specialty',
-                },
-              },
-              {
-                $project: {
-                  _id: '$_id',
-                  specialty: { $arrayElemAt: ['$specialty', 0] },
-                  period: '$period',
-                  year: '$year',
-                  hospital: '$hospital',
-                  presentationOfficeDocument: '$presentationOfficeDocument',
-                  reportDocument: '$reportDocument',
-                  constancyDocument: '$constancyDocument',
-                  student: { $arrayElemAt: ['$student', 0] },
-                  __v: '$__v',
-                },
-              },
-            ])
+            .aggregate(
+              this.socialServicesQueries.generateDocuments(
+                initialPeriod,
+                initialYear,
+                finalPeriod,
+                finalYear,
+                hospital,
+              ),
+            )
             .exec()) as SocialService[];
           await Promise.all(
             socialServices.map(async (socialService) => {
+              if (specialty)
+                if ((socialService as any).specialty._id != specialty) return;
               const template = (await this.templatesService.getTemplate(
                 'socialService',
                 'presentationOfficeDocument',
@@ -465,28 +282,60 @@ export class SocialServicesService {
                     ? ' ' + socialService.student.secondLastName
                     : ''
                 }`.toUpperCase(),
-                'especialidad': (socialService as any).specialty.value,
+                especialidad: (socialService as any).specialty.value,
+                año: grades[
+                  this.specialtiesService.getGrade(
+                    (socialService as any).specialty,
+                    (socialService.student as any).lastYearGeneration,
+                  ) - 1
+                ],
+                periodo: this.getPeriod(
+                  socialService.period,
+                  socialService.year,
+                ),
               });
-              
+
               counter++;
 
-              //Here de document is saved
               const buffer = (await template.getZip().generate({
                 type: 'nodebuffer',
                 compression: 'DEFLATE',
               })) as Buffer;
 
-              fs.writeFileSync(
-                join(
-                  STORAGE_PATHS.TEMPLATES,
-                  `${(socialService.student as Student).name}.docx`,
-                ),
+              zip.file(
+                `${(socialService as any).specialty.value} ${
+                  (socialService.student as Student).name
+                } ${(socialService.student as Student).firstLastName} ${
+                  (socialService.student as Student).secondLastName ?? ''
+                }.docx`,
                 buffer,
               );
             }),
           );
         }),
       );
+      const content = await zip.generateAsync({ type: 'nodebuffer' });
+      return new StreamableFile(content, {
+        type: 'application/zip',
+        disposition: `attachment;filename=Oficios de Presentación.zip`,
+      });
+    }
+  }
+
+  getPeriod(period: number, year: number): string {
+    switch (period) {
+      case 0:
+        return `1° de marzo al 31 de junio de ${year}`;
+      case 1:
+        return `1° de julio al 31 de octubre de ${year}`;
+      case 2:
+        const lastDay =
+          (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 29 : 28;
+        return `1° de noviembre de ${year} al ${lastDay} de febrero de ${
+          year + 1
+        }`;
+      default:
+        return '';
     }
   }
 }

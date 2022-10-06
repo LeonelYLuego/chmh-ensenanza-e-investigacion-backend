@@ -8,6 +8,8 @@ import { HospitalsModule } from 'modules/hospitals/hospitals.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { FilesService } from '@utils/services/files.service';
 import { TemplatesModule } from 'modules/templates/templates.module';
+import { SpecialtiesModule } from 'modules/specialties/specialties.module';
+import { SocialServicesQueries } from './services/queries.service';
 
 @Module({
   imports: [
@@ -17,9 +19,10 @@ import { TemplatesModule } from 'modules/templates/templates.module';
     MulterModule,
     StudentsModule,
     HospitalsModule,
+    SpecialtiesModule,
     TemplatesModule,
   ],
   controllers: [SocialServicesController],
-  providers: [SocialServicesService, FilesService],
+  providers: [SocialServicesService, FilesService, SocialServicesQueries],
 })
 export class SocialServicesModule {}

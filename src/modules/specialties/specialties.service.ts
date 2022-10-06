@@ -37,7 +37,10 @@ export class SpecialtiesService {
    * @param {string} value value of the Specialty
    * @returns {Promise<Specialty | null>} the found Specialty
    */
-  async findOneByValueAndDuration(value: string, duration: number): Promise<Specialty | null> {
+  async findOneByValueAndDuration(
+    value: string,
+    duration: number,
+  ): Promise<Specialty | null> {
     return await this.specialtiesModel
       .findOne({
         value: {
@@ -56,7 +59,10 @@ export class SpecialtiesService {
    * @throws {ForbiddenException} Specialty value must not already exists in the database
    */
   async create(specialtyDto: SpecialtyDto): Promise<Specialty> {
-    const specialty = await this.findOneByValueAndDuration(specialtyDto.value, specialtyDto.duration);
+    const specialty = await this.findOneByValueAndDuration(
+      specialtyDto.value,
+      specialtyDto.duration,
+    );
     if (!specialty) {
       const createdSpecialty = new this.specialtiesModel(specialtyDto);
       return await createdSpecialty.save();
@@ -76,7 +82,12 @@ export class SpecialtiesService {
   async update(_id: string, specialtyDto: SpecialtyDto): Promise<Specialty> {
     const specialty = await this.findOne(_id);
     if (specialty) {
-      if (!(await this.findOneByValueAndDuration(specialtyDto.value, specialtyDto.duration))) {
+      if (
+        !(await this.findOneByValueAndDuration(
+          specialtyDto.value,
+          specialtyDto.duration,
+        ))
+      ) {
         const res = await this.specialtiesModel
           .updateOne({ _id }, specialtyDto)
           .exec();
@@ -98,5 +109,13 @@ export class SpecialtiesService {
       if (res.deletedCount != 1)
         throw new ForbiddenException('specialty not deleted');
     } else throw new ForbiddenException('specialty not found');
+  }
+
+  getGrade(specialty: Specialty, lastYearGeneration: number): number {
+    const today = new Date();
+    let month = today.getMonth() + 1,
+      year = today.getFullYear();
+    if (month == 1 || month == 2) year -= 1;
+    return -(lastYearGeneration - specialty.duration - year - 1);
   }
 }

@@ -46,27 +46,33 @@ export class SocialServicesController {
 
   @Get('generate')
   @ApiBearerAuth()
-  @ApiQuery({ type: Number, name: 'initialNumberDocumentation' })
-  @ApiQuery({ type: Date, name: 'documentationDate' })
+  @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
+  @ApiQuery({ type: Date, name: 'dateOfDocuments' })
   @ApiQuery({ type: Number, name: 'initialPeriod' })
   @ApiQuery({ type: Number, name: 'initialYear' })
   @ApiQuery({ type: Number, name: 'finalPeriod' })
   @ApiQuery({ type: Number, name: 'finalYear' })
+  @ApiQuery({ type: String, name: 'hospital', required: false })
+  @ApiQuery({type: String, name: 'specialty', required: false})
   async generateDocuments(
-    @Query('initialNumberDocumentation') initialNumberDocumentation: number,
-    @Query('documentationDate') documentationDate: Date,
+    @Query('initialNumberOfDocuments') initialNumberOfDocuments: number, //Falta validar esto
+    @Query('dateOfDocuments') dateOfDocuments: Date, //Falta validar esto
     @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
     @Query('initialYear', ValidateYearPipe) initialYear: number,
     @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,
     @Query('finalYear', ValidateYearPipe) finalYear: number,
+    @Query('hospital',ValidateIdPipe) hospital: string,
+    @Query('specialty', ValidateIdPipe) specialty: string,
   ) {
     return await this.socialServicesService.generateDocuments(
-      initialNumberDocumentation,
-      documentationDate,
+      initialNumberOfDocuments,
+      dateOfDocuments,
       initialPeriod,
       initialYear,
       finalPeriod,
       finalYear,
+      hospital,
+      specialty
     );
   }
 

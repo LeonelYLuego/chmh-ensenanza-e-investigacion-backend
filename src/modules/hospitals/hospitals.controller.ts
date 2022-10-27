@@ -7,9 +7,6 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { HospitalsService } from './hospitals.service';
-import { CreateHospitalDto } from './dto/create-hospital.dto';
-import { UpdateHospitalDto } from './dto/update-hospital.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,21 +18,16 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import {
-  API_ENDPOINTS,
-  API_RESOURCES,
-  DEFAULT_API_PATHS,
-} from '@utils/constants/api-routes.constant';
+import { API_ENDPOINTS } from '@utils/constants';
+import { HttpResponse } from '@utils/dtos';
+import { ValidateIdPipe } from '@utils/pipes';
+import { CreateHospitalDto } from './dto/create-hospital.dto';
+import { UpdateHospitalDto } from './dto/update-hospital.dto';
 import { Hospital } from './hospital.schema';
-import { ValidateIdPipe } from '@utils/pipes/validate-id.pipe';
-import {
-  ExceptionDeleteHospitalDto,
-  ExceptionFindHospitalDto,
-  ExceptionUpdateHospitalDto,
-} from './dto/exception-hospital.dto';
+import { HospitalsService } from './hospitals.service';
 
 @ApiTags('Hospitals')
-@Controller(API_RESOURCES.HOSPITALS)
+@Controller(API_ENDPOINTS.HOSPITALS.BASE_PATH)
 export class HospitalsController {
   constructor(private readonly hospitalsService: HospitalsService) {}
 
@@ -53,49 +45,74 @@ export class HospitalsController {
   })
   async create(
     @Body() createHospitalDto: CreateHospitalDto,
-  ): Promise<Hospital> {
-    return await this.hospitalsService.create(createHospitalDto);
+  ): Promise<HttpResponse<Hospital>> {
+    return {
+      data: await this.hospitalsService.create(createHospitalDto),
+    };
   }
 
   @Get()
   @ApiOperation({
     summary: '[Users] Find all Hospitals in the database',
     description:
-      'Finds in the database al `hospitals` and returns an array of `hospitals`',
+      'Finds in the database all `hospitals` and returns an array of `hospitals`',
   })
   @ApiBearerAuth()
   @ApiOkResponse({ type: [Hospital] })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async findAll(): Promise<Hospital[]> {
-    return await this.hospitalsService.findAll();
+  async findAll(): Promise<HttpResponse<Hospital[]>> {
+    return {
+      data: await this.hospitalsService.findAll(),
+    };
   }
 
   @Get(API_ENDPOINTS.HOSPITALS.SOCIAL_SERVICE)
+  @ApiOperation({
+    summary: '[Users] Find Social Service Hospitals in the database',
+    description:
+      'Finds in the database all social service `hospitals` and returns an array of `hospitals`',
+  })
   @ApiBearerAuth()
-  async findBySocialService(): Promise<Hospital[]> {
-    return await this.hospitalsService.findBySocialService();
+  @ApiOkResponse({ type: [Hospital] })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  async findBySocialService(): Promise<HttpResponse<Hospital[]>> {
+    return {
+      data: await this.hospitalsService.findBySocialService(),
+    };
   }
 
-  @Get(DEFAULT_API_PATHS.BY_ID)
+  @Get(`:${API_ENDPOINTS.HOSPITALS.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Find a Hospital in the database',
     description:
       'Finds in the database a `hospital` based on the provided `_id` and returns the found `hospital`',
   })
   @ApiBearerAuth()
-  @ApiParam({ type: String, name: '_id', description: 'Hospital primary key' })
+  @ApiParam({
+    type: String,
+    name: API_ENDPOINTS.HOSPITALS.BY_ID,
+    description: 'Hospital primary key',
+  })
   @ApiOkResponse({ type: Hospital, description: 'The found Hospital' })
-  @ApiForbiddenResponse({ type: ExceptionFindHospitalDto })
+  @ApiForbiddenResponse({
+    description: '`hospital not found`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async findOne(@Param('_id', ValidateIdPipe) _id: string): Promise<Hospital> {
-    return await this.hospitalsService.findOne(_id);
+  async findOne(
+    @Param(API_ENDPOINTS.HOSPITALS.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<Hospital>> {
+    return {
+      data: await this.hospitalsService.findOne(_id),
+    };
   }
 
-  @Put(DEFAULT_API_PATHS.BY_ID)
+  @Put(`:${API_ENDPOINTS.HOSPITALS.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Update a Hospital in the database',
     description:
@@ -104,36 +121,50 @@ export class HospitalsController {
   @ApiBearerAuth()
   @ApiParam({
     type: String,
-    name: '_id',
+    name: API_ENDPOINTS.HOSPITALS.BY_ID,
     description: '`hospital` primary key',
   })
   @ApiBody({ type: UpdateHospitalDto, description: '`hospital` data' })
   @ApiOkResponse({ type: Hospital, description: 'The updated `hospital`' })
-  @ApiForbiddenResponse({ type: ExceptionUpdateHospitalDto })
+  @ApiForbiddenResponse({})
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
+  @ApiForbiddenResponse({
+    description: '`hospital not found` `hospital not modified`',
+  })
   async update(
-    @Param('_id', ValidateIdPipe) _id: string,
+    @Param(API_ENDPOINTS.HOSPITALS.BY_ID, ValidateIdPipe) _id: string,
     @Body() updateHospitalDto: UpdateHospitalDto,
-  ): Promise<Hospital> {
-    return await this.hospitalsService.update(_id, updateHospitalDto);
+  ): Promise<HttpResponse<Hospital>> {
+    return {
+      data: await this.hospitalsService.update(_id, updateHospitalDto),
+    };
   }
 
-  @Delete(DEFAULT_API_PATHS.BY_ID)
+  @Delete(`:${API_ENDPOINTS.HOSPITALS.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Delete a Hospital in the database',
     description:
       'Deletes a `hospital` in the database based on the provided `_id`',
   })
   @ApiBearerAuth()
-  @ApiParam({ type: String, name: '_id', description: 'Hospital primary key' })
+  @ApiParam({
+    type: String,
+    name: API_ENDPOINTS.HOSPITALS.BY_ID,
+    description: 'Hospital primary key',
+  })
   @ApiOkResponse()
-  @ApiForbiddenResponse({ type: ExceptionDeleteHospitalDto })
+  @ApiForbiddenResponse({
+    description: '`hospital not found` `hospital not deleted`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async remove(@Param('_id', ValidateIdPipe) _id: string): Promise<void> {
+  async remove(
+    @Param(API_ENDPOINTS.HOSPITALS.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<undefined>> {
     await this.hospitalsService.remove(_id);
+    return {};
   }
 }

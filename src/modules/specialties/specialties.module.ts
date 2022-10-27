@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
-import { SpecialtiesService } from './specialties.service';
-import { SpecialtiesController } from './specialties.controller';
-import { Specialty, SpecialtySchema } from './specialty.schema';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { SpecialtiesController } from "./specialties.controller";
+import { SpecialtiesService } from "./specialties.service";
+import { Specialty, SpecialtySchema } from "./specialty.schema";
+
 
 /** Specialty module */
 @Module({

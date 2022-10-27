@@ -8,7 +8,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-/** @class Update User data transfer object */
+/** Update User data transfer object */
 export class UpdateUserDto {
   @ApiProperty({ type: String, minLength: 3, maxLength: 64, required: false })
   @IsOptional()

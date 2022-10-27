@@ -25,6 +25,7 @@ export class AuthService {
     logInDto: LogInDto,
   ): Promise<CurrentUserDto | null> {
     const user = await this.usersService.findOneByUsername(logInDto.username);
+    //Compares with bcrypt if passwords are the same
     if (user && bcrypt.compareSync(logInDto.password, user.password)) {
       return {
         _id: user._id,
@@ -63,11 +64,14 @@ export class AuthService {
   async authenticate(token: string): Promise<CurrentUserDto | null> {
     if (token) {
       try {
+        //Verifies if the token is valid
         const payload = await this.jwtService.verify(token);
+        //Finds the user
         const user = await this.usersService.findOneByUsername(
           payload.username,
         );
         if (user) {
+          //Returns the found user
           return {
             _id: payload._id,
             username: payload.username,

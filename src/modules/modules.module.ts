@@ -1,11 +1,13 @@
-import { Module } from '@nestjs/common';
-import { UsersModule } from '@users/users.module';
-import { SpecialtiesModule } from './specialties/specialties.module';
-import { StudentsModule } from './students/students.module';
-import { HospitalsModule } from './hospitals/hospitals.module';
-import { SocialServicesModule } from './social-services/social-services.module';
-import { TemplatesModule } from './templates/templates.module';
+import { Module } from "@nestjs/common";
+import { HospitalsModule } from "./hospitals";
+import { SocialServicesModule } from "./social-services";
+import { SpecialtiesModule } from "./specialties";
+import { StudentsModule } from "./students";
+import { TemplatesModule } from "./templates";
+import { UsersModule } from "./users";
 
+
+/** @module Modules */
 @Module({
   imports: [
     HospitalsModule,
@@ -18,5 +20,4 @@ import { TemplatesModule } from './templates/templates.module';
   controllers: [],
   providers: [],
 })
-/** @Module User's Module */
 export class ModulesModule {}

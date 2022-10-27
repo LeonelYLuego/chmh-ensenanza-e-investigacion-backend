@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 /**
  * Validates if the current user is authorized
  * @class Authentication Middleware
-*/
+ */
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   constructor(private authService: AuthService) {}

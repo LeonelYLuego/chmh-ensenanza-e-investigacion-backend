@@ -6,8 +6,8 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { User, UserDocument } from './user.schema';
 import * as bcrypt from 'bcryptjs';
 
+/** Users Service */
 @Injectable()
-/** @class Users Service */
 export class UsersService {
   constructor(
     @InjectModel(User.name) private usersModel: Model<UserDocument>,
@@ -16,7 +16,6 @@ export class UsersService {
   /**
    * Finds all Users in the database
    * @async
-   * @function find
    * @returns {Promise<User[]>} The user found
    */
   async find(): Promise<User[]> {
@@ -26,7 +25,6 @@ export class UsersService {
   /**
    * Finds one User in the database based on the _id
    * @async
-   * @function findOne
    * @param {string} _id The User's _id
    * @returns {Promise<User | null>} The found User or if it doesn't find a User it returns Null
    */
@@ -37,7 +35,6 @@ export class UsersService {
   /**
    * Finds one User in the database based on the username
    * @async
-   * @function findOneByUsername
    * @param {string} username The user's name
    * @returns {Promise<User | null>} The found User or if it doesn't find a User it returns Null
    */
@@ -53,7 +50,6 @@ export class UsersService {
   /**
    * Creates a new User in the database
    * @async
-   * @function create
    * @param {CreateUserDto} createUserDto The user's data
    * @return {Promise<User>} The created user
    * @throws {ForbiddenException} Argument createUserDto.username must not exist in the database
@@ -62,6 +58,7 @@ export class UsersService {
     const findUser = await this.findOneByUsername(createUserDto.username);
     if (findUser) throw new ForbiddenException('user already exists');
     else {
+      //Encrypt password
       const hashPassword = bcrypt.hashSync(createUserDto.password, 10);
       const createdUser = new this.usersModel({
         username: createUserDto.username,
@@ -81,7 +78,6 @@ export class UsersService {
   /**
    * Update one User in the database based on the _id
    * @async
-   * @function updateOne
    * @param {string} _id The User's _id
    * @param {UpdateUserDto} updateUserDto The User's data
    * @returns {Promise<User>} The updated User

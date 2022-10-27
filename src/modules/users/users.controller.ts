@@ -20,25 +20,16 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import {
-  API_RESOURCES,
-  DEFAULT_API_PATHS,
-} from 'utils/constants/api-routes.constant';
-import { ValidateIdPipe } from '@utils/pipes/validate-id.pipe';
-import {
-  CurrentUserDto,
-  ExceptionCreateUserDto,
-  ExceptionDeleteUserDto,
-  ExceptionUpdateUserDto,
-  UpdateUserDto,
-} from './dtos';
-import { CreateUserDto } from './dtos/create-user.dto';
+import { API_ENDPOINTS } from '@utils/constants';
+import { HttpResponse } from '@utils/dtos';
+import { ValidateIdPipe } from '@utils/pipes';
+import { CreateUserDto, CurrentUserDto, UpdateUserDto } from './dtos';
 import { User } from './user.schema';
 import { UsersService } from './users.service';
 
+/** Users Controller */
 @ApiTags('Users')
-@Controller(API_RESOURCES.USERS)
-/** @clas Users Controller */
+@Controller(API_ENDPOINTS.USERS.BASE_PATH)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
@@ -53,16 +44,17 @@ export class UsersController {
     description: 'Not authorized to perform the query',
   })
   @ApiForbiddenResponse({
-    type: ExceptionCreateUserDto,
-    description: 'The `user.username` already exists in the database',
+    description: '`user already exists`',
   })
   @ApiCreatedResponse({ type: User, description: 'Created `user`' })
   async create(
     @CurrentUser() currentUser: CurrentUserDto,
     @Body() createUserDto: CreateUserDto,
-  ): Promise<User> {
+  ): Promise<HttpResponse<User>> {
     if (currentUser.administrator) {
-      return this.usersService.create(createUserDto);
+      return {
+        data: await this.usersService.create(createUserDto),
+      };
     } else throw new UnauthorizedException();
   }
 
@@ -77,20 +69,24 @@ export class UsersController {
     description: 'Not authorized to perform the query',
   })
   @ApiOkResponse({ type: [User], description: 'Array of `users`' })
-  async find(@CurrentUser() currentUser: CurrentUserDto) {
+  async find(
+    @CurrentUser() currentUser: CurrentUserDto,
+  ): Promise<HttpResponse<User[]>> {
     if (currentUser.administrator) {
-      return this.usersService.find();
+      return {
+        data: await this.usersService.find(),
+      };
     } else throw new UnauthorizedException();
   }
 
-  @Put(DEFAULT_API_PATHS.BY_ID)
+  @Put(`:${API_ENDPOINTS.USERS.BY_ID}`)
   @ApiOperation({
     summary: '[Administrator] Update an User in the database',
     description:
       'Updates an `user` in the database based on the provided `_id` and returns the modified `user`',
   })
   @ApiParam({
-    name: '_id',
+    name: API_ENDPOINTS.USERS.BY_ID,
     type: String,
     description: 'The `user` primary key',
   })
@@ -99,28 +95,30 @@ export class UsersController {
     description: 'Not authorized to perform the query',
   })
   @ApiForbiddenResponse({
-    type: ExceptionUpdateUserDto,
+    description: '`user not modified` `user not found`',
   })
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: User, description: 'The modified `user`' })
   async update(
     @CurrentUser() currentUser: CurrentUserDto,
-    @Param('_id', ValidateIdPipe) _id: string,
+    @Param(API_ENDPOINTS.USERS.BY_ID, ValidateIdPipe) _id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<HttpResponse<User>> {
     if (currentUser.administrator) {
-      return this.usersService.update(_id, updateUserDto);
+      return {
+        data: await this.usersService.update(_id, updateUserDto),
+      };
     } else throw new UnauthorizedException();
   }
 
-  @Delete(DEFAULT_API_PATHS.BY_ID)
+  @Delete(`:${API_ENDPOINTS.USERS.BY_ID}`)
   @ApiOperation({
     summary: '[Administrator] Delete an User in the database',
     description:
       'Deletes an `user` in the database based on the provided `_id`',
   })
   @ApiParam({
-    name: '_id',
+    name: API_ENDPOINTS.USERS.BY_ID,
     type: String,
     description: 'The `user` primary key',
   })
@@ -129,14 +127,16 @@ export class UsersController {
     description: 'Not authorized to perform the query',
   })
   @ApiForbiddenResponse({
-    type: ExceptionDeleteUserDto,
+    description:
+      '`user not deleted` `the current user can not be deleted` `user not found`',
   })
   async delete(
     @CurrentUser() currentUser: CurrentUserDto,
-    @Param('_id', ValidateIdPipe) _id: string,
-  ): Promise<void> {
+    @Param(API_ENDPOINTS.USERS.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<undefined>> {
     if (currentUser.administrator) {
       await this.usersService.delete(_id, currentUser);
+      return {};
     } else throw new UnauthorizedException();
   }
 }

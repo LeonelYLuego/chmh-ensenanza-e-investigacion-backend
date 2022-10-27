@@ -4,8 +4,8 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
+/** User Schema */
 @Schema()
-/** @class User Schema */
 export class User {
   @ApiProperty({ type: String, description: 'User primary key' })
   _id: string;

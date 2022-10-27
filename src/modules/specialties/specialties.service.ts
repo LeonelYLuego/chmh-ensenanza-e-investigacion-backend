@@ -1,8 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { SpecialtyDto } from './dtos/specialty.dto';
-import { Specialty, SpecialtyDocument } from './specialty.schema';
+import { ForbiddenException, Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { SpecialtyDto } from "./dtos/specialty.dto";
+import { Specialty, SpecialtyDocument } from "./specialty.schema";
+
 
 /** Specialties service */
 @Injectable()
@@ -25,10 +26,12 @@ export class SpecialtiesService {
    * Finds a Specialty in the database based on the provided _id
    * @async
    * @param {string} _id _id of the Specialty
-   * @returns {Promise<Specialty | null>} the found Specialty
+   * @returns {Promise<Specialty>} the found Specialty
    */
-  async findOne(_id: string): Promise<Specialty | null> {
-    return await this.specialtiesModel.findOne({ _id }).exec();
+  async findOne(_id: string): Promise<Specialty> {
+    const result = await this.specialtiesModel.findOne({ _id }).exec();
+    if (result) return result;
+    else throw new ForbiddenException('specialty not found');
   }
 
   /**
@@ -41,6 +44,7 @@ export class SpecialtiesService {
     value: string,
     duration: number,
   ): Promise<Specialty | null> {
+    //Finds all values with lowercase
     return await this.specialtiesModel
       .findOne({
         value: {
@@ -111,10 +115,17 @@ export class SpecialtiesService {
     } else throw new ForbiddenException('specialty not found');
   }
 
+  /**
+   * Gets a grade by specialty
+   * @param {Specialty} specialty
+   * @param {number} lastYearGeneration
+   * @returns {number} the grade
+   */
   getGrade(specialty: Specialty, lastYearGeneration: number): number {
     const today = new Date();
     let month = today.getMonth() + 1,
       year = today.getFullYear();
+    //If the month is january or february
     if (month == 1 || month == 2) year -= 1;
     return -(lastYearGeneration - specialty.duration - year - 1);
   }

@@ -1,6 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { SpecialtiesService } from 'modules/specialties/specialties.service';
 import { Model } from 'mongoose';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -10,7 +9,6 @@ import { Student, StudentDocument } from './student.schema';
 export class StudentsService {
   constructor(
     @InjectModel(Student.name) private studentsModel: Model<StudentDocument>,
-    private specialtiesService: SpecialtiesService,
   ) {}
 
   /**

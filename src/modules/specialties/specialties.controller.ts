@@ -18,23 +18,15 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import {
-  API_ENDPOINTS,
-  API_RESOURCES,
-  DEFAULT_API_PATHS,
-} from '@utils/constants/api-routes.constant';
-import { ValidateIdPipe } from '@utils/pipes/validate-id.pipe';
-import {
-  ExceptionCreateSpecialtyDto,
-  ExceptionDeleteSpecialtyDto,
-  ExceptionUpdateSpecialtyDto,
-} from './dtos/exception-specialty.dto';
+import { API_ENDPOINTS } from '@utils/constants';
+import { HttpResponse } from '@utils/dtos';
+import { ValidateIdPipe } from '@utils/pipes';
 import { SpecialtyDto } from './dtos/specialty.dto';
 import { SpecialtiesService } from './specialties.service';
 import { Specialty } from './specialty.schema';
 
 @ApiTags('Specialties')
-@Controller(API_RESOURCES.SPECIALTIES)
+@Controller(API_ENDPOINTS.SPECIALTIES.BASE_PATH)
 export class SpecialtiesController {
   constructor(private readonly specialtiesService: SpecialtiesService) {}
 
@@ -50,12 +42,18 @@ export class SpecialtiesController {
     type: Specialty,
     description: 'The created `specialty`',
   })
-  @ApiForbiddenResponse({ type: ExceptionCreateSpecialtyDto })
+  @ApiForbiddenResponse({
+    description: '`specialty already exists`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async create(@Body() specialtyDto: SpecialtyDto): Promise<Specialty> {
-    return await this.specialtiesService.create(specialtyDto);
+  async create(
+    @Body() specialtyDto: SpecialtyDto,
+  ): Promise<HttpResponse<Specialty>> {
+    return {
+      data: await this.specialtiesService.create(specialtyDto),
+    };
   }
 
   @Get()
@@ -72,17 +70,42 @@ export class SpecialtiesController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async find(): Promise<Specialty[]> {
-    return await this.specialtiesService.find();
+  async find(): Promise<HttpResponse<Specialty[]>> {
+    return {
+      data: await this.specialtiesService.find(),
+    };
   }
 
-  @Get(DEFAULT_API_PATHS.BY_ID)
+  @Get(`:${API_ENDPOINTS.SPECIALTIES.BY_ID}`)
+  @ApiOperation({
+    summary: '[Users] Find a Specialty in the database',
+    description: 'Finds in the database a `specialty` and returns it',
+  })
   @ApiBearerAuth()
-  async findOne(@Param('_id', ValidateIdPipe) _id: string): Promise<Specialty> {
-    return await this.specialtiesService.findOne(_id);
+  @ApiParam({
+    type: String,
+    name: API_ENDPOINTS.SPECIALTIES.BY_ID,
+    description: '`specialty` primary key',
+  })
+  @ApiOkResponse({
+    type: Specialty,
+    description: '`specialty` primary key',
+  })
+  @ApiForbiddenResponse({
+    description: '`specialty not found`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  async findOne(
+    @Param(API_ENDPOINTS.SPECIALTIES.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<Specialty>> {
+    return {
+      data: await this.specialtiesService.findOne(_id),
+    };
   }
 
-  @Put(DEFAULT_API_PATHS.BY_ID)
+  @Put(`:${API_ENDPOINTS.SPECIALTIES.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Update a Student in the database',
     description:
@@ -91,22 +114,27 @@ export class SpecialtiesController {
   @ApiBearerAuth()
   @ApiParam({
     type: String,
-    name: '_id',
+    name: API_ENDPOINTS.SPECIALTIES.BY_ID,
     description: '`specialty` primary key',
   })
   @ApiBody({ type: SpecialtyDto, description: '`specialty` data' })
-  @ApiForbiddenResponse({ type: ExceptionUpdateSpecialtyDto })
+  @ApiForbiddenResponse({
+    description:
+      '`specialty not modified` `specialty already exists` `specialty not found`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
   async update(
-    @Param('_id', ValidateIdPipe) _id: string,
+    @Param(API_ENDPOINTS.SPECIALTIES.BY_ID, ValidateIdPipe) _id: string,
     @Body() specialtyDto: SpecialtyDto,
-  ): Promise<Specialty> {
-    return await this.specialtiesService.update(_id, specialtyDto);
+  ): Promise<HttpResponse<Specialty>> {
+    return {
+      data: await this.specialtiesService.update(_id, specialtyDto),
+    };
   }
 
-  @Delete(DEFAULT_API_PATHS.BY_ID)
+  @Delete(`:${API_ENDPOINTS.SPECIALTIES.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Delete a Specialty in the database',
     description:
@@ -115,15 +143,20 @@ export class SpecialtiesController {
   @ApiBearerAuth()
   @ApiParam({
     type: String,
-    name: '_id',
+    name: API_ENDPOINTS.SPECIALTIES.BY_ID,
     description: '_id of the `specialty`',
   })
   @ApiOkResponse()
-  @ApiForbiddenResponse({ type: ExceptionDeleteSpecialtyDto })
+  @ApiForbiddenResponse({
+    description: '`specialty not deleted` `specialty not found`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async delete(@Param('_id', ValidateIdPipe) _id: string): Promise<void> {
+  async delete(
+    @Param(API_ENDPOINTS.SPECIALTIES.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<undefined>> {
     await this.specialtiesService.delete(_id);
+    return {};
   }
 }

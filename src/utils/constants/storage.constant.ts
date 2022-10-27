@@ -1,6 +1,4 @@
 export const STORAGE_PATHS = {
-  SOCIAL_SERVICES: {
-    BASE: './files/social-services',
-  },
+  SOCIAL_SERVICES: './files/social-services',
   TEMPLATES: './files/templates'
 };

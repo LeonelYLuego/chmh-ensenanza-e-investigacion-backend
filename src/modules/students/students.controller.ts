@@ -8,9 +8,6 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { StudentsService } from './students.service';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -23,26 +20,22 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import {
-  API_RESOURCES,
-  DEFAULT_API_PATHS,
-} from '@utils/constants/api-routes.constant';
+import { API_ENDPOINTS } from '@utils/constants';
+import { HttpResponse } from '@utils/dtos';
+import { ValidateIdPipe, ValidateYearPipe } from '@utils/pipes';
+import { CreateStudentDto } from './dto/create-student.dto';
+import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from './student.schema';
-import { ValidateIdPipe } from '@utils/pipes/validate-id.pipe';
-import { ValidateYearPipe } from '@utils/pipes/validate-year.pipe';
-import {
-  ExceptionDeleteStudentDto,
-  ExceptionUpdateStudentDto,
-} from './dto/exception-student.dto';
+import { StudentsService } from './students.service';
 
 @ApiTags('Students')
-@Controller(API_RESOURCES.STUDENTS)
+@Controller(API_ENDPOINTS.STUDENTS.BASE_PATH)
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Post()
   @ApiOperation({
-    summary: '[Users] Add a Student to the databse',
+    summary: '[Users] Add a Student to the database',
     description:
       'Creates an `student` in the database and returns the `student`',
   })
@@ -52,8 +45,12 @@ export class StudentsController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
-    return await this.studentsService.create(createStudentDto);
+  async create(
+    @Body() createStudentDto: CreateStudentDto,
+  ): Promise<HttpResponse<Student>> {
+    return {
+      data: await this.studentsService.create(createStudentDto),
+    };
   }
 
   @Get()
@@ -75,61 +72,88 @@ export class StudentsController {
   async findAll(
     @Query('specialty', ValidateIdPipe) specialtyId: string,
     @Query('lastYearGeneration', ValidateYearPipe) lastYearGeneration: number,
-  ): Promise<Student[]> {
-    return await this.studentsService.findAll(specialtyId, lastYearGeneration);
+  ): Promise<HttpResponse<Student[]>> {
+    return {
+      data: await this.studentsService.findAll(specialtyId, lastYearGeneration),
+    };
   }
 
-  @Get(DEFAULT_API_PATHS.BY_ID)
+  @Get(`:${API_ENDPOINTS.STUDENTS.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Find a Student in the database',
     description:
       'Finds in the database a `student` based on the provided `_id` and returns the `student`',
   })
   @ApiBearerAuth()
-  @ApiParam({ name: '_id', description: '`student` primary key' })
+  @ApiParam({
+    name: API_ENDPOINTS.STUDENTS.BY_ID,
+    description: '`student` primary key',
+  })
   @ApiOkResponse({ type: Student, description: 'Found `student`' })
+  @ApiForbiddenResponse({
+    description: '`student not found`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async findOne(@Param('_id', ValidateIdPipe) _id: string): Promise<Student> {
-    return await this.studentsService.findOne(_id);
+  async findOne(
+    @Param(API_ENDPOINTS.STUDENTS.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<Student>> {
+    return {
+      data: await this.studentsService.findOne(_id),
+    };
   }
 
-  @Put(DEFAULT_API_PATHS.BY_ID)
+  @Put(`:${API_ENDPOINTS.STUDENTS.BY_ID}`)
   @ApiOperation({
     summary: '[User] Update a Student in the database',
     description:
       'Updates in the database a `student` based on the provided `_id` and returns the modified `student`',
   })
   @ApiBearerAuth()
-  @ApiParam({ name: '_id', description: '`student` primary key' })
+  @ApiParam({
+    name: API_ENDPOINTS.STUDENTS.BY_ID,
+    description: '`student` primary key',
+  })
   @ApiBody({ type: UpdateStudentDto, description: '`student` data' })
   @ApiOkResponse({ type: Student, description: 'The modified `student`' })
-  @ApiForbiddenResponse({ type: ExceptionUpdateStudentDto })
+  @ApiForbiddenResponse({
+    description: '`student not modified` `student not found`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
   async update(
-    @Param('_id', ValidateIdPipe) _id: string,
+    @Param(API_ENDPOINTS.STUDENTS.BY_ID, ValidateIdPipe) _id: string,
     @Body() updateStudentDto: UpdateStudentDto,
-  ): Promise<Student> {
-    return await this.studentsService.update(_id, updateStudentDto);
+  ): Promise<HttpResponse<Student>> {
+    return {
+      data: await this.studentsService.update(_id, updateStudentDto),
+    };
   }
 
-  @Delete(DEFAULT_API_PATHS.BY_ID)
+  @Delete(`${API_ENDPOINTS.STUDENTS.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Delete a Student in the database',
     description:
       'Deletes a `student` in the database based on the provided `_id`',
   })
   @ApiBearerAuth()
-  @ApiParam({ name: '_id', description: '`student` primary key' })
-  @ApiForbiddenResponse({ type: ExceptionDeleteStudentDto })
+  @ApiParam({
+    name: API_ENDPOINTS.STUDENTS.BY_ID,
+    description: '`student` primary key',
+  })
+  @ApiForbiddenResponse({
+    description: '`student not deleted` `student not found`',
+  })
   @ApiOkResponse()
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async remove(@Param('_id', ValidateIdPipe) _id: string): Promise<void> {
-    return this.studentsService.delete(_id);
+  async remove(
+    @Param(API_ENDPOINTS.STUDENTS.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<undefined>> {
+    await this.studentsService.delete(_id);
+    return {};
   }
 }

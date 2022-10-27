@@ -9,6 +9,9 @@ async function bootstrap() {
   // Create a new application of Nestjs
   const app = await NestFactory.create(AppModule);
 
+  //Set global prefix API
+  app.setGlobalPrefix('api');
+
   // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle(
@@ -17,7 +20,8 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('docs', app, document, {
+    customSiteTitle: 'CHMH API',
     swaggerOptions: { defaultModelsExpandDepth: -1 },
   });
 

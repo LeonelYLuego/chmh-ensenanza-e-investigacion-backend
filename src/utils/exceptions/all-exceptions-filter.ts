@@ -6,9 +6,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { HttpResponse } from '@utils/dtos';
 
-@Catch()
 /** @class Catches every exception, filters it and send a specific response to the client */
+@Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
@@ -29,13 +30,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     console.log(exception);
 
-    const responseBody = {
-      statusCode: httpStatus,
-      timestamp: new Date().toISOString(),
-      path: httpAdapter.getRequestUrl(ctx.getRequest()),
-      exception: exceptionMsg,
+    const responseBody: HttpResponse<void> = {
+      error: {
+        statusCode: httpStatus,
+        timestamp: new Date().toISOString(),
+        path: httpAdapter.getRequestUrl(ctx.getRequest()),
+        exception: exceptionMsg,
+      },
     };
 
-    httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+    httpAdapter.reply(ctx.getResponse(), responseBody, 200);
   }
 }

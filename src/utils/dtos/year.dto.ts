@@ -1,6 +1,6 @@
 import { IsDefined, IsNumber, Max, Min } from 'class-validator';
 
-/** Validates a Year */
+/** @Class Validates if a year is valid */
 export class YearDto {
   @IsDefined()
   @IsNumber()

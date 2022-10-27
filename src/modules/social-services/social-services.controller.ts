@@ -53,7 +53,7 @@ export class SocialServicesController {
   @ApiQuery({ type: Number, name: 'finalPeriod' })
   @ApiQuery({ type: Number, name: 'finalYear' })
   @ApiQuery({ type: String, name: 'hospital', required: false })
-  @ApiQuery({type: String, name: 'specialty', required: false})
+  @ApiQuery({ type: String, name: 'specialty', required: false })
   async generateDocuments(
     @Query('initialNumberOfDocuments') initialNumberOfDocuments: number, //Falta validar esto
     @Query('dateOfDocuments') dateOfDocuments: Date, //Falta validar esto
@@ -61,7 +61,7 @@ export class SocialServicesController {
     @Query('initialYear', ValidateYearPipe) initialYear: number,
     @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,
     @Query('finalYear', ValidateYearPipe) finalYear: number,
-    @Query('hospital',ValidateIdPipe) hospital: string,
+    @Query('hospital', ValidateIdPipe) hospital: string,
     @Query('specialty', ValidateIdPipe) specialty: string,
   ) {
     return await this.socialServicesService.generateDocuments(
@@ -72,7 +72,7 @@ export class SocialServicesController {
       finalPeriod,
       finalYear,
       hospital,
-      specialty
+      specialty,
     );
   }
 
@@ -154,7 +154,7 @@ export class SocialServicesController {
   ): Promise<StreamableFile> {
     return await this.socialServicesService.getDocument(
       _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+      STORAGE_PATHS.SOCIAL_SERVICES,
       type,
     );
   }
@@ -187,7 +187,7 @@ export class SocialServicesController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+        destination: STORAGE_PATHS.SOCIAL_SERVICES,
         filename: (req, file, cb) => {
           const randomName = Array(32)
             .fill(null)
@@ -207,7 +207,7 @@ export class SocialServicesController {
     console.log('Validate document extension');
     return this.socialServicesService.updateDocument(
       _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+      STORAGE_PATHS.SOCIAL_SERVICES,
       file,
       type,
     );
@@ -233,7 +233,7 @@ export class SocialServicesController {
   ): Promise<void> {
     await this.socialServicesService.deleteDocument(
       _id,
-      STORAGE_PATHS.SOCIAL_SERVICES.BASE,
+      STORAGE_PATHS.SOCIAL_SERVICES,
       type,
     );
   }

@@ -18,8 +18,13 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@auth/*": ["auth/*"],
+      "@auth/*": ["integrations/auth/*"],
       "@users/*": ["modules/users/*"],
+      "@hospitals/*": ["modules/hospitals/*"],
+      "@social_services/*": ["modules/social_services/*"],
+      "@specialties/*": ["modules/specialties/*"],
+      "@templates/*": ["modules/templates/*"],
+      "@students/*": ["modules/students/*"],
       "@utils/*": ["utils/*"]
     }
   }

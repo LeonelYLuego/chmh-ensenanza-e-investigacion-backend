@@ -1,15 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { STORAGE_PATHS } from '@utils/constants/storage.constant';
+import { STORAGE_PATHS } from '@utils/constants';
+import { FilesService } from '@utils/services';
 import * as fs from 'fs';
+import { SocialServiceDocumentTypes } from 'modules/social-services';
 import { Model } from 'mongoose';
 import { join } from 'path';
-import { TemplatesDocument, Templates } from './template.schema';
-import { FilesService } from '@utils/services/files.service';
 import * as PizZip from 'pizzip';
+import { Templates, TemplatesDocument } from './template.schema';
 const Docxtemplater = require('docxtemplater');
-import { ForbiddenException } from '@nestjs/common/exceptions';
 
+/** Template service */
 @Injectable()
 export class TemplatesService {
   constructor(
@@ -18,6 +19,7 @@ export class TemplatesService {
     private filesService: FilesService,
   ) {}
 
+  /** Creates a new template */
   private async createTemplates(): Promise<Templates> {
     const createdTemplates = new this.templatesModel({
       socialService: {},
@@ -25,11 +27,24 @@ export class TemplatesService {
     return await createdTemplates.save();
   }
 
-  async getTemplate(document: string, type: string): Promise<any> {
+  /**
+   * Gets a template document
+   * @param {'socialService'} document
+   * @param {SocialServiceDocumentTypes} type document type
+   * @returns
+   * @throws {ForbiddenException} template must exist
+   */
+  async getTemplate(
+    document: 'socialService',
+    type: SocialServiceDocumentTypes,
+  ): Promise<any> {
+    //Finds the template object
     const templates = await this.templatesModel.findOne();
     if (templates) {
+      //Gets the path of the template in the server
       const documentPath = templates[document][type];
       if (documentPath) {
+        //Checks if the template exists
         const documentBytes = fs.readFileSync(
           join(STORAGE_PATHS.TEMPLATES, documentPath),
         );
@@ -46,40 +61,36 @@ export class TemplatesService {
     throw new ForbiddenException('not template found');
   }
 
+  /**
+   * Updates a document template
+   * @param {'socialService'} document
+   * @param {SocialServiceDocumentTypes} type document type
+   * @param {Express.Multer.File} file
+   */
   async updateTemplates(
     document: string,
     type: string,
     file: Express.Multer.File,
   ) {
-    let templates: Templates = await this.templatesModel.findOne();
-    if (!templates) templates = await this.createTemplates();
-    if (templates[document][type]) {
+    //Finds the template object
+    try {
+      this.filesService.validateDOCX(file);
+      let templates: Templates = await this.templatesModel.findOne();
+      if (!templates) templates = await this.createTemplates();
+      //If a template already exist, deletes it
+      if (templates[document][type]) {
+        this.filesService.deleteFile(
+          join(STORAGE_PATHS.TEMPLATES, templates[document][type]),
+        );
+      }
+      //Updates the template name
+      templates[document][type] = file.filename;
+      await this.templatesModel.updateOne({ _id: templates._id }, templates);
+    } catch (ex) {
       this.filesService.deleteFile(
-        join(STORAGE_PATHS.TEMPLATES, templates[document][type]),
+        join(STORAGE_PATHS.TEMPLATES, file.filename),
       );
+      throw ex;
     }
-    templates[document][type] = file.filename;
-    await this.templatesModel.updateOne({ _id: templates._id }, templates);
   }
-
-  // async getDocument(document: string, type: string) {
-  //   const templates = await this.templatesModel.findOne();
-  //   const documentPath = templates[document][type];
-  //   const documentBytes = fs.readFileSync(
-  //     join(STORAGE_PATHS.TEMPLATES, documentPath),
-  //   );
-  //   const zip = new PizZip(documentBytes);
-  //   const doc = new Docxtemplater(zip, {
-  //     paragraphLoop: true,
-  //     linebreaks: true,
-  //   });
-  //   doc.render({
-  //     nombre: 'DRA. MARÍA DE LA LUZ TORRES SOTO',
-  //   });
-  //   const buf = doc.getZip().generate({
-  //     type: 'nodebuffer',
-  //     compression: 'DEFLATE',
-  //   });
-  //   fs.writeFileSync(join(STORAGE_PATHS.TEMPLATES, 'test.docx'), buf);
-  // }
 }

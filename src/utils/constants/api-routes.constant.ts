@@ -6,11 +6,12 @@ export const API_RESOURCES = {
   STUDENTS: 'students',
   HOSPITALS: 'hospitals',
   SOCIAL_SERVICES: 'social-services',
+  TEMPLATES: 'templates',
 };
 
 /** @Constant Default API Paths Endpoints */
 export const DEFAULT_API_PATHS = {
-  BY_ID: ':_id',
+  BY_ID: '_id',
 };
 
 /** @Constants API Endpoints */
@@ -22,11 +23,11 @@ export const API_ENDPOINTS = {
   },
   USERS: {
     BASE_PATH: API_RESOURCES.USERS,
-    BY_ID: '_id',
+    BY_ID: DEFAULT_API_PATHS.BY_ID,
   },
   SPECIALTIES: {
     BASE_PATH: API_RESOURCES.SPECIALTIES,
-    BY_ID: '_id',
+    BY_ID: DEFAULT_API_PATHS.BY_ID,
   },
   STUDENTS: {
     BASE_PATH: API_RESOURCES.STUDENTS,
@@ -34,13 +35,18 @@ export const API_ENDPOINTS = {
   },
   HOSPITALS: {
     BASE_PATH: API_RESOURCES.HOSPITALS,
-    BY_ID: '_id',
+    BY_ID: DEFAULT_API_PATHS.BY_ID,
     SOCIAL_SERVICE: '/social-service',
   },
   SOCIAL_SERVICES: {
     BASE_PATH: API_RESOURCES.SOCIAL_SERVICES,
     BY_ID: DEFAULT_API_PATHS.BY_ID,
     PERIODS: '/periods',
-    DOCUMENT: `/document/${DEFAULT_API_PATHS.BY_ID}`,
+    GENERATE: '/generate',
+    DOCUMENT: `/document/:${DEFAULT_API_PATHS.BY_ID}`,
+  },
+  TEMPLATES: {
+    BASE_PATH: API_RESOURCES.TEMPLATES,
+    BY_DOCUMENT: 'document',
   },
 };

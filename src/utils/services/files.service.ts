@@ -14,6 +14,12 @@ export class FilesService {
       throw new ForbiddenException('file must be a pdf');
   }
 
+  /** Validates if the extension of the file is a pdf */
+  validateDOCX(file: Express.Multer.File): void {
+    if (file.mimetype != 'application/docx')
+      throw new ForbiddenException('file must be a docx');
+  }
+
   /** Deletes a file from the server */
   deleteFile(path: string): void {
     try {

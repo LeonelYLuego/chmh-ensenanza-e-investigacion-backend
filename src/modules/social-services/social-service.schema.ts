@@ -1,11 +1,13 @@
+import { Hospital } from '@hospitals/hospital.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Hospital } from 'modules/hospitals/hospital.schema';
-import { Student } from 'modules/students/student.schema';
+import { Student } from '@students/student.schema';
 import mongoose from 'mongoose';
 
+/** Social Service document */
 export type SocialServiceDocument = SocialService & Document;
 
+/** Social Service schema */
 @Schema()
 export class SocialService {
   @ApiProperty({ type: String, description: 'Social Service primary key' })
@@ -84,4 +86,5 @@ export class SocialService {
   __v: number;
 }
 
+/** Social Serivce schema */
 export const SocialServiceSchema = SchemaFactory.createForClass(SocialService);

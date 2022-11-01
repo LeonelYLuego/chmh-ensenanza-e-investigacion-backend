@@ -3,7 +3,6 @@ import {
   UseInterceptors,
   Param,
   Query,
-  Get,
   Put,
   UploadedFile,
 } from '@nestjs/common';
@@ -12,26 +11,37 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { API_ENDPOINTS } from '@utils/constants';
 import { STORAGE_PATHS } from '@utils/constants/storage.constant';
-import { ValidateTypeSocialServicePipe } from 'modules/social-services/pipes/validate-type-social-service.pipe';
+import { HttpResponse } from '@utils/dtos';
+import { ValidateSocialServiceDocumentTypePipe } from 'modules/social-services/pipes/validate-social-service-document-type.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { TemplatesService } from './templates.service';
 
 @ApiTags('Templates')
-@Controller('templates')
+@Controller(API_ENDPOINTS.TEMPLATES.BASE_PATH)
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
-  @Put(':document')
+  @Put(`:${API_ENDPOINTS.TEMPLATES.BY_DOCUMENT}`)
+  @ApiOperation({
+    summary: 'Update Document Template',
+    description: 'Updates a Document `Template` in the database',
+  })
   @ApiBearerAuth()
   @ApiParam({ name: 'document', type: String, enum: ['socialService'] })
   @ApiQuery({
     name: 'type',
+    description: 'document type',
     type: String,
     enum: ['presentationOfficeDocument'],
   })
@@ -61,27 +71,19 @@ export class TemplatesController {
       }),
     }),
   )
+  @ApiOkResponse({})
+  @ApiForbiddenResponse({
+    description: '`file must be a docx`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async updateDocument(
     @Param('document') document: string,
     @UploadedFile() file: Express.Multer.File,
-    @Query('type', ValidateTypeSocialServicePipe) type: string,
-  ) {
+    @Query('type', ValidateSocialServiceDocumentTypePipe) type: string,
+  ): Promise<HttpResponse<undefined>> {
     await this.templatesService.updateTemplates(document, type, file);
+    return {};
   }
-
-  // @Get(':document')
-  // @ApiBearerAuth()
-  // @ApiParam({ name: 'document', type: String, enum: ['socialService'] })
-  // @ApiQuery({
-  //   name: 'type',
-  //   type: String,
-  //   enum: ['presentationOfficeDocument'],
-  // })
-  // async getDocument(
-  //   @Param('document') document: string,
-  //   @Query('type') type: string,
-  // ) {
-  //   console.log('Validate param and query');
-  //   await this.templatesService.getDocument(document, type);
-  // }
 }

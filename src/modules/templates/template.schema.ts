@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
+/** Template document */
 export type TemplatesDocument = Templates & Document;
 
+/** Social Service Template schema */
 @Schema()
 export class SocialServiceTemplates {
   @ApiProperty({
@@ -13,6 +15,7 @@ export class SocialServiceTemplates {
   presentationOfficeDocument?: string;
 }
 
+/** Template schema */
 @Schema()
 export class Templates {
   @ApiProperty({ type: String, description: 'Template primary key' })
@@ -29,4 +32,5 @@ export class Templates {
   __v?: number;
 }
 
+/** Template schema */
 export const TemplateSchema = SchemaFactory.createForClass(Templates);

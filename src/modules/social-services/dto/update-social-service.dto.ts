@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId, IsNumber, IsOptional, Max, Min } from 'class-validator';
 
+/** Update Social Service data transfer object */
 export class UpdateSocialServiceDto {
   @ApiProperty({
     type: String,

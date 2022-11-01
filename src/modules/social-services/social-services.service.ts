@@ -1,22 +1,26 @@
-import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { HospitalsService } from 'modules/hospitals/hospitals.service';
-import { StudentsService } from 'modules/students/students.service';
-import { Model } from 'mongoose';
-import { CreateSocialServiceDto } from './dto/create-social-service.dto';
-import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
-import { SocialService, SocialServiceDocument } from './social-service.schema';
 import * as fs from 'fs';
 import * as JSZip from 'jszip';
-import { FilesService } from '@utils/services/files.service';
-import { SocialServiceBySpecialtyDto } from './dto/social-service-by-specialty.dto';
-import { TemplatesService } from 'modules/templates/templates.service';
 import Docxtemplater from 'docxtemplater';
-import { SpecialtiesService } from 'modules/specialties/specialties.service';
-import { Student } from 'modules/students/student.schema';
+import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { SocialService, SocialServiceDocument } from './social-service.schema';
+import { Model } from 'mongoose';
 import { SocialServicesQueries } from './services/queries.service';
-import { Hospital } from 'modules/hospitals/hospital.schema';
+import { StudentsService } from '@students/students.service';
+import { HospitalsService } from '@hospitals/hospitals.service';
+import { SpecialtiesService } from '@specialties/specialties.service';
+import { FilesService } from '@utils/services';
+import { TemplatesService } from '@templates/templates.service';
+import { CreateSocialServiceDto } from './dto/create-social-service.dto';
+import { FromPeriodToPeriodInterface } from './interfaces/from-period-to-period.interface';
+import { SocialServiceBySpecialtyDto } from './dto/social-service-by-specialty.dto';
+import { FromYearToYearDto } from './dto/from-year-to-year.dto';
+import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
+import { SocialServiceDocumentTypes } from './types/document.types';
+import { Hospital } from '@hospitals/hospital.schema';
+import { Student } from '@students/student.schema';
 
+/** Social Service service */
 @Injectable()
 export class SocialServicesService {
   constructor(
@@ -30,6 +34,12 @@ export class SocialServicesService {
     private templatesService: TemplatesService,
   ) {}
 
+  /**
+   * Creates a new Social Service
+   * @async
+   * @param {CreateSocialServiceDto} createSocialServiceDto the Social Service to create
+   * @returns {SocialService} the created Social Service
+   */
   async create(
     createSocialServiceDto: CreateSocialServiceDto,
   ): Promise<SocialService> {
@@ -41,41 +51,48 @@ export class SocialServicesService {
     return await createdSocialService.save();
   }
 
+  /**
+   * Finds all Social Services between a period to other
+   * @async
+   * @param {FromPeriodToPeriodInterface} periods periods to find
+   * @returns {SocialServiceBySpecialtyDto[]} the found Social Services
+   * @throws {ForbiddenException} the period must be valid
+   */
   async findAll(
-    initialPeriod: number,
-    initialYear: number,
-    finalPeriod: number,
-    finalYear: number,
+    periods: FromPeriodToPeriodInterface,
   ): Promise<SocialServiceBySpecialtyDto[]> {
     if (
-      initialYear > finalYear ||
-      (initialYear == finalYear && initialPeriod > finalPeriod)
+      periods.initialYear > periods.finalYear ||
+      (periods.initialYear == periods.finalYear &&
+        periods.initialPeriod > periods.finalPeriod)
     )
       throw new ForbiddenException('invalid period');
     else {
       return await this.socialServicesModel
-        .aggregate(
-          this.socialServicesQueries.find(
-            initialPeriod,
-            initialYear,
-            finalPeriod,
-            finalYear,
-          ),
-        )
+        .aggregate(this.socialServicesQueries.find(periods))
         .exec();
     }
   }
 
+  /**
+   * Finds a Social Service by id
+   * @async
+   * @param {string} _id Social Service primary key
+   * @returns {SocialService} the found Social Service
+   * @throws {ForbiddenException} Social Service must exist
+   */
   async findOne(_id: string): Promise<SocialService> {
     const ss = await this.socialServicesModel.findOne({ _id }).exec();
     if (ss) return ss;
     else throw new ForbiddenException('social service not found');
   }
 
-  async getPeriods(): Promise<{
-    initialYear: number;
-    finalYear: number;
-  } | null> {
+  /**
+   * Gets the initial and final year of the period
+   * @async
+   * @returns {FromYearToYearDto} the initial and final year
+   */
+  async getPeriods(): Promise<FromYearToYearDto> {
     const min = await this.socialServicesModel.findOne().sort('year').exec();
     const max = await this.socialServicesModel.findOne().sort('-year').exec();
     if (min && max) {
@@ -87,6 +104,14 @@ export class SocialServicesService {
     return null;
   }
 
+  /**
+   * Updates a Social Service
+   * @param {string} _id Social Service primary key
+   * @param {UpdateSocialServiceDto} updateSocialServiceDto Social Service values to update
+   * @returns {SocialService} the updated Social Service
+   * @throws {ForbiddenException} Social Service must exist
+   * @throws {ForbiddenException} Social Service must be modified
+   */
   async update(
     _id: string,
     updateSocialServiceDto: UpdateSocialServiceDto,
@@ -104,6 +129,13 @@ export class SocialServicesService {
     return await this.findOne(ss._id);
   }
 
+  /**
+   * Deletes a Social Service
+   * @async
+   * @param {string} _id
+   * @throws {ForbiddenException} Social Service must exist
+   * @throws {ForbiddenException} Social Service must be deleted
+   */
   async remove(_id: string): Promise<void> {
     const ss = await this.findOne(_id);
     if (
@@ -114,17 +146,24 @@ export class SocialServicesService {
   }
 
   //Documents
+  /**
+   * Returns a Social Service document
+   * @param {string} _id Social Service primary key
+   * @param {string} path document path
+   * @param {SocialServiceDocumentTypes} document
+   * @returns {StreamableFile} the found document
+   * @throws {ForbiddenException} document must exist
+   */
   async getDocument(
     _id: string,
     path: string,
-    document:
-      | 'presentationOfficeDocument'
-      | 'reportDocument'
-      | 'constancyDocument',
+    document: SocialServiceDocumentTypes,
   ): Promise<StreamableFile> {
     const ss = await this.findOne(_id);
+    //Checks if the Social Service has a document
     if (ss[document]) {
       const filePath = `${path}/${ss[document]}`;
+      //Checks if the document is stored in the server
       if (fs.existsSync(filePath)) {
         const file = fs.createReadStream(filePath);
         return new StreamableFile(file, {
@@ -132,25 +171,34 @@ export class SocialServicesService {
         });
       }
     }
-    return null;
+    throw new ForbiddenException('document not found');
   }
 
+  /**
+   * Update a Social Service document
+   * @param {string} _id Social Service primary key
+   * @param {string} path document path
+   * @param {Express.Multer.File} file the file to update
+   * @param {SocialServiceDocumentTypes} document document type
+   * @returns The modified Social Service
+   * @throws {ForbiddenException} Social Service must be updated
+   */
   async updateDocument(
     _id: string,
     path: string,
     file: Express.Multer.File,
-    document:
-      | 'presentationOfficeDocument'
-      | 'reportDocument'
-      | 'constancyDocument',
+    document: SocialServiceDocumentTypes,
   ): Promise<SocialService> {
     try {
+      //Validates if the file is a PDF
       this.filesService.validatePDF(file);
       const ss = await this.findOne(_id);
+      //Delete the pdf
       if (ss[document]) this.filesService.deleteFile(`${path}/${ss[document]}`);
       let updateObject: object = {};
       updateObject[document] = file.filename;
       if (
+        //Updated the Social Service with the new document
         (
           await this.socialServicesModel.updateOne(
             { _id: ss._id },
@@ -166,19 +214,25 @@ export class SocialServicesService {
     }
   }
 
+  /**
+   * Deletes a Social Service document
+   * @param {string} _id Social Service primary key
+   * @param {string} path document path
+   * @param {SocialServiceDocumentTypes} document document type
+   * @throws {ForbiddenException} Social Service must be updated
+   */
   async deleteDocument(
     _id: string,
     path: string,
-    document:
-      | 'presentationOfficeDocument'
-      | 'reportDocument'
-      | 'constancyDocument',
-  ): Promise<void> {
+    document: SocialServiceDocumentTypes,
+  ): Promise<SocialService> {
     const ss = await this.findOne(_id);
+    //Delete the file of the server
     if (ss[document]) this.filesService.deleteFile(`${path}/${ss[document]}`);
     let updateObject: object = {};
     updateObject[document] = null;
     if (
+      //Updates the Social Service
       (
         await this.socialServicesModel
           .updateOne({ _id: ss._id }, updateObject)
@@ -186,6 +240,7 @@ export class SocialServicesService {
       ).modifiedCount < 1
     )
       throw new ForbiddenException('social service not updated');
+      return await this.findOne(_id);
   }
 
   async generateDocuments(
@@ -197,7 +252,7 @@ export class SocialServicesService {
     finalYear: number,
     hospital: string | undefined,
     specialty: string | undefined,
-  ) {
+  ): Promise<StreamableFile> {
     if (
       initialYear > finalYear ||
       (initialYear == finalYear && initialPeriod > finalPeriod)
@@ -205,6 +260,7 @@ export class SocialServicesService {
       throw new ForbiddenException('invalid period');
     else {
       let counter = initialNumberOfDocuments;
+      //Gets the current date
       const date = new Date(dateOfDocuments);
       const months = [
         'enero',
@@ -229,14 +285,18 @@ export class SocialServicesService {
         'sexto',
       ];
 
+      //Creates a new zip object
       const zip = new JSZip();
 
       let hospitals: Hospital[] = [];
       if (hospital)
+        //Gets the hospital
         hospitals.push(await this.hospitalsService.findOne(hospital));
+      //Gets all Social Service Hospitals
       else hospitals = await this.hospitalsService.findBySocialService();
       await Promise.all(
         hospitals.map(async (hospital) => {
+          //Gets Social Services of each Hospital in the period
           const socialServices = (await this.socialServicesModel
             .aggregate(
               this.socialServicesQueries.generateDocuments(
@@ -250,13 +310,16 @@ export class SocialServicesService {
             .exec()) as SocialService[];
           await Promise.all(
             socialServices.map(async (socialService) => {
+              //If a Specialty parameter was provided checks if the social service is of that Specialty
               if (specialty)
                 if ((socialService as any).specialty._id != specialty) return;
+              //Gets the template
               const template = (await this.templatesService.getTemplate(
                 'socialService',
                 'presentationOfficeDocument',
               )) as Docxtemplater;
 
+              //Replaces tags in the template document with the information
               template.render({
                 hospital: hospital.name.toUpperCase(),
                 numero: counter.toString(),
@@ -295,13 +358,16 @@ export class SocialServicesService {
                 ),
               });
 
+              //Increments the document number
               counter++;
 
+              //Converts the document to binary
               const buffer = (await template.getZip().generate({
                 type: 'nodebuffer',
                 compression: 'DEFLATE',
               })) as Buffer;
 
+              //Adds the generated document to the zip and saves it with the name of the student
               zip.file(
                 `${(socialService as any).specialty.value} ${
                   (socialService.student as Student).name
@@ -314,7 +380,11 @@ export class SocialServicesService {
           );
         }),
       );
+
+      //Generates the zip file
       const content = await zip.generateAsync({ type: 'nodebuffer' });
+
+      //Returns the zip file as StremeableFile and with the specified name
       return new StreamableFile(content, {
         type: 'application/zip',
         disposition: `attachment;filename=Oficios de Presentación.zip`,
@@ -322,7 +392,13 @@ export class SocialServicesService {
     }
   }
 
-  getPeriod(period: number, year: number): string {
+  /**
+   * Converts the period tag to string
+   * @param {number} period
+   * @param {number} year
+   * @returns The period as string
+   */
+  private getPeriod(period: number, year: number): string {
     switch (period) {
       case 0:
         return `1° de marzo al 31 de junio de ${year}`;

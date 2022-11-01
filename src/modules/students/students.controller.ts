@@ -132,7 +132,7 @@ export class StudentsController {
     };
   }
 
-  @Delete(`${API_ENDPOINTS.STUDENTS.BY_ID}`)
+  @Delete(`:${API_ENDPOINTS.STUDENTS.BY_ID}`)
   @ApiOperation({
     summary: '[Users] Delete a Student in the database',
     description:

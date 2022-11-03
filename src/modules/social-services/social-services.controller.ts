@@ -32,6 +32,8 @@ import {
   ValidatePeriodPipe,
   ValidateYearPipe,
 } from '@utils/pipes';
+import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
+import { ValidateNumberPipe } from '@utils/pipes/validate-number.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreateSocialServiceDto } from './dto/create-social-service.dto';
@@ -135,7 +137,7 @@ export class SocialServicesController {
   })
   @ApiBearerAuth()
   @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
-  @ApiQuery({ type: Date, name: 'dateOfDocuments' })
+  @ApiQuery({ type: String, name: 'dateOfDocuments', example: '20/02/2022' })
   @ApiQuery({ type: Number, name: 'initialPeriod' })
   @ApiQuery({ type: Number, name: 'initialYear' })
   @ApiQuery({ type: Number, name: 'finalPeriod' })
@@ -149,27 +151,25 @@ export class SocialServicesController {
     description: 'Not authorized to perform the query',
   })
   async generateDocuments(
-    @Query('initialNumberOfDocuments') initialNumberOfDocuments: number, //Falta validar esto
-    @Query('dateOfDocuments') dateOfDocuments: Date, //Falta validar esto
+    @Query('initialNumberOfDocuments', ValidateNumberPipe) initialNumberOfDocuments: number,
+    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date, //********************************************Falta validar esto
     @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
     @Query('initialYear', ValidateYearPipe) initialYear: number,
     @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,
     @Query('finalYear', ValidateYearPipe) finalYear: number,
     @Query('hospital', ValidateIdPipe) hospital: string,
     @Query('specialty', ValidateIdPipe) specialty: string,
-  ): Promise<HttpResponse<StreamableFile>> {
-    return {
-      data: await this.socialServicesService.generateDocuments(
-        initialNumberOfDocuments,
-        dateOfDocuments,
-        initialPeriod,
-        initialYear,
-        finalPeriod,
-        finalYear,
-        hospital,
-        specialty,
-      ),
-    };
+  ): Promise<StreamableFile> {
+    return await this.socialServicesService.generateDocuments(
+      initialNumberOfDocuments,
+      dateOfDocuments,
+      initialPeriod,
+      initialYear,
+      finalPeriod,
+      finalYear,
+      hospital,
+      specialty,
+    );
   }
 
   @Get(`:${API_ENDPOINTS.SOCIAL_SERVICES.BY_ID}`)
@@ -290,14 +290,12 @@ export class SocialServicesController {
     @Param(API_ENDPOINTS.SOCIAL_SERVICES.BY_ID, ValidateIdPipe) _id: string,
     @Query('type', ValidateSocialServiceDocumentTypePipe)
     type: SocialServiceDocumentTypes,
-  ): Promise<HttpResponse<StreamableFile>> {
-    return {
-      data: await this.socialServicesService.getDocument(
-        _id,
-        STORAGE_PATHS.SOCIAL_SERVICES,
-        type,
-      ),
-    };
+  ): Promise<StreamableFile> {
+    return await this.socialServicesService.getDocument(
+      _id,
+      STORAGE_PATHS.SOCIAL_SERVICES,
+      type,
+    );
   }
 
   @Put(API_ENDPOINTS.SOCIAL_SERVICES.DOCUMENT)

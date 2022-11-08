@@ -74,7 +74,7 @@ export class UsersController {
   ): Promise<HttpResponse<User[]>> {
     if (currentUser.administrator) {
       return {
-        data: await this.usersService.find(),
+        data: await this.usersService.findAll(),
       };
     } else throw new UnauthorizedException();
   }

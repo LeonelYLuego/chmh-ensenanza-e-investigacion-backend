@@ -1,14 +1,23 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { SocialServicesService } from 'modules/social-services';
 import { Model } from 'mongoose';
 import { CreateHospitalDto } from './dto/create-hospital.dto';
 import { UpdateHospitalDto } from './dto/update-hospital.dto';
 import { Hospital, HospitalDocument } from './hospital.schema';
 
+/** Hospitals service */
 @Injectable()
 export class HospitalsService {
   constructor(
     @InjectModel(Hospital.name) private hospitalsModel: Model<HospitalDocument>,
+    @Inject(forwardRef(() => SocialServicesService))
+    private socialServicesService: SocialServicesService,
   ) {}
 
   /**
@@ -34,7 +43,7 @@ export class HospitalsService {
   }
 
   async findBySocialService(): Promise<Hospital[]> {
-    return this.hospitalsModel.find({socialService: true}).exec();
+    return this.hospitalsModel.find({ socialService: true }).exec();
   }
 
   /**
@@ -55,7 +64,7 @@ export class HospitalsService {
    * @param {UpdateHospitalDto} updateHospitalDto Hospital data
    * @returns {Promise<Hospital>} the updated Hospital
    * @throws {ForbiddenException} Hospital must exists
-   * @throws {ForbiddenException} Hopsital must be modified
+   * @throws {ForbiddenException} Hospital must be modified
    */
   async update(
     _id: string,
@@ -78,12 +87,13 @@ export class HospitalsService {
    * @async
    * @param {string} _id _id of the Hospital
    */
-  async remove(_id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     const hospital = await this.findOne(_id);
     if (
       (await this.hospitalsModel.deleteOne({ _id: hospital._id }))
         .deletedCount != 1
     )
       throw new ForbiddenException('hospital not deleted');
+    else await this.socialServicesService.deleteByHospital(_id);
   }
 }

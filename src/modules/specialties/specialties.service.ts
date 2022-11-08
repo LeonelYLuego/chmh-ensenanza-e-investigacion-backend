@@ -1,9 +1,9 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { SpecialtyDto } from "./dtos/specialty.dto";
-import { Specialty, SpecialtyDocument } from "./specialty.schema";
-
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { StudentsService } from '@students/students.service';
+import { Model } from 'mongoose';
+import { SpecialtyDto } from './dtos/specialty.dto';
+import { Specialty, SpecialtyDocument } from './specialty.schema';
 
 /** Specialties service */
 @Injectable()
@@ -11,12 +11,13 @@ export class SpecialtiesService {
   constructor(
     @InjectModel(Specialty.name)
     private specialtiesModel: Model<SpecialtyDocument>,
+    private studentsService: StudentsService,
   ) {}
 
   /**
    * Finds all Specialties in the database
    * @async
-   * @returns {Promise<Specilaty[]>} the found Specialties
+   * @returns {Promise<Specialty[]>} the found Specialties
    */
   async find(): Promise<Specialty[]> {
     return await this.specialtiesModel.find().exec();
@@ -112,6 +113,7 @@ export class SpecialtiesService {
       const res = await this.specialtiesModel.deleteOne({ _id });
       if (res.deletedCount != 1)
         throw new ForbiddenException('specialty not deleted');
+      else await this.studentsService.deleteBySpecialty(_id);
     } else throw new ForbiddenException('specialty not found');
   }
 
@@ -125,7 +127,7 @@ export class SpecialtiesService {
     const today = new Date();
     let month = today.getMonth() + 1,
       year = today.getFullYear();
-    //If the month is january or february
+    //If the month is January or February
     if (month == 1 || month == 2) year -= 1;
     return -(lastYearGeneration - specialty.duration - year - 1);
   }

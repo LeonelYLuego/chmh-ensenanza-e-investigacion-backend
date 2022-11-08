@@ -161,10 +161,10 @@ export class HospitalsController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async remove(
+  async delete(
     @Param(API_ENDPOINTS.HOSPITALS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
-    await this.hospitalsService.remove(_id);
+    await this.hospitalsService.delete(_id);
     return {};
   }
 }

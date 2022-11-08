@@ -9,7 +9,12 @@ import { AuthModule } from '@auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { API_ENDPOINTS } from '@utils/constants/api-routes.constant';
-import { ModulesModule } from 'modules/modules.module';
+import { SocialServicesModule } from 'modules/social-services';
+import { HospitalsModule } from '@hospitals/hospitals.module';
+import { SpecialtiesModule } from '@specialties/specialties.module';
+import { StudentsModule } from '@students/students.module';
+import { UsersModule } from '@users/users.module';
+import { TemplatesModule } from '@templates/templates.module';
 
 /** main application module */
 @Module({
@@ -19,7 +24,12 @@ import { ModulesModule } from 'modules/modules.module';
     ),
     AuthModule,
     ConfigModule,
-    ModulesModule,
+    SocialServicesModule,
+    HospitalsModule,
+    SpecialtiesModule,
+    StudentsModule,
+    UsersModule,
+    TemplatesModule,
   ],
 })
 export class AppModule implements NestModule {

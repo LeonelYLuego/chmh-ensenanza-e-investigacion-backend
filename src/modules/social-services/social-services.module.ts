@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SocialServicesService } from './social-services.service';
 import { SocialServicesController } from './social-services.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -17,12 +17,13 @@ import { SocialServicesQueries } from './services/queries.service';
       { name: SocialService.name, schema: SocialServiceSchema },
     ]),
     MulterModule,
-    StudentsModule,
-    HospitalsModule,
+    forwardRef(() => HospitalsModule),
+    forwardRef(() => StudentsModule),
     SpecialtiesModule,
     TemplatesModule,
   ],
   controllers: [SocialServicesController],
   providers: [SocialServicesService, FilesService, SocialServicesQueries],
+  exports: [SocialServicesService],
 })
 export class SocialServicesModule {}

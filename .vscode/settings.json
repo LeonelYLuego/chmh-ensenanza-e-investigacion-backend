@@ -7,22 +7,30 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "tsconfig.build.json": true,
-        ".vscode": true,
         "node_modules": true,
         "package-lock.json": true,
         ".prettierrc": true,
         "nest-cli.json": true,
         ".eslintrc.js": true,
-        "dist": true
+        "dist": true,
+        ".vscode": true
     },
     "hide-files.files": [
         "tsconfig.build.json",
-        ".vscode",
         "node_modules",
         "package-lock.json",
         ".prettierrc",
         "nest-cli.json",
         ".eslintrc.js",
-        "dist"
+        "dist",
+        ".vscode"
+    ],
+    "cSpell.words": [
+        "docxtemplater",
+        "Docxtemplater",
+        "dtos",
+        "nestjs",
+        "nodebuffer",
+        "Streamable"
     ]
 }

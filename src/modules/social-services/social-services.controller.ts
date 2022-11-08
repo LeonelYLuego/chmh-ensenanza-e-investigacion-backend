@@ -131,7 +131,7 @@ export class SocialServicesController {
 
   @Get(API_ENDPOINTS.SOCIAL_SERVICES.GENERATE)
   @ApiOperation({
-    summary: '[Users] Genearte Social Service documents',
+    summary: '[Users] Generate Social Service documents',
     description:
       'Generates Social Service documents and returns them in a zip file',
   })
@@ -147,12 +147,16 @@ export class SocialServicesController {
   @ApiOkResponse({
     type: StreamableFile,
   })
+  @ApiForbiddenResponse({
+    description: '`not template found`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
   async generateDocuments(
-    @Query('initialNumberOfDocuments', ValidateNumberPipe) initialNumberOfDocuments: number,
-    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date, //********************************************Falta validar esto
+    @Query('initialNumberOfDocuments', ValidateNumberPipe)
+    initialNumberOfDocuments: number,
+    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date,
     @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
     @Query('initialYear', ValidateYearPipe) initialYear: number,
     @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,
@@ -252,10 +256,10 @@ export class SocialServicesController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async remove(
+  async delete(
     @Param(API_ENDPOINTS.SOCIAL_SERVICES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
-    await this.socialServicesService.remove(_id);
+    await this.socialServicesService.delete(_id);
     return {};
   }
 

@@ -1,7 +1,13 @@
 import * as fs from 'fs';
 import * as JSZip from 'jszip';
 import Docxtemplater from 'docxtemplater';
-import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
+import {
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SocialService, SocialServiceDocument } from './social-service.schema';
 import { Model } from 'mongoose';
@@ -26,9 +32,11 @@ export class SocialServicesService {
   constructor(
     @InjectModel(SocialService.name)
     private socialServicesModel: Model<SocialServiceDocument>,
-    private socialServicesQueries: SocialServicesQueries,
-    private studentsService: StudentsService,
+    @Inject(forwardRef(() => HospitalsService))
     private hospitalsService: HospitalsService,
+    private socialServicesQueries: SocialServicesQueries,
+    @Inject(forwardRef(() => StudentsService))
+    private studentsService: StudentsService,
     private specialtiesService: SpecialtiesService,
     private filesService: FilesService,
     private templatesService: TemplatesService,
@@ -136,13 +144,21 @@ export class SocialServicesService {
    * @throws {ForbiddenException} Social Service must exist
    * @throws {ForbiddenException} Social Service must be deleted
    */
-  async remove(_id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     const ss = await this.findOne(_id);
     if (
       (await this.socialServicesModel.deleteOne({ _id: ss._id })).deletedCount <
       1
     )
       throw new ForbiddenException('social service not deleted');
+  }
+
+  async deleteByHospital(hospital: string): Promise<void> {
+    await this.socialServicesModel.deleteMany({ hospital });
+  }
+
+  async deleteByStudent(student: string): Promise<void> {
+    await this.socialServicesModel.deleteMany({ student });
   }
 
   //Documents
@@ -240,7 +256,7 @@ export class SocialServicesService {
       ).modifiedCount < 1
     )
       throw new ForbiddenException('social service not updated');
-      return await this.findOne(_id);
+    return await this.findOne(_id);
   }
 
   async generateDocuments(
@@ -384,7 +400,7 @@ export class SocialServicesService {
       //Generates the zip file
       const content = await zip.generateAsync({ type: 'nodebuffer' });
 
-      //Returns the zip file as StremeableFile and with the specified name
+      //Returns the zip file as StreamableFile and with the specified name
       return new StreamableFile(content, {
         type: 'application/zip',
         disposition: `attachment;filename=Oficios de Presentación.zip`,

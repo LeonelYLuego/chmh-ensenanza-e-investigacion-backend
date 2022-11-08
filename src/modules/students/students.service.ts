@@ -1,5 +1,12 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { SpecialtiesService } from '@specialties/specialties.service';
+import { SocialServicesService } from 'modules/social-services';
 import { Model } from 'mongoose';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -9,6 +16,8 @@ import { Student, StudentDocument } from './student.schema';
 export class StudentsService {
   constructor(
     @InjectModel(Student.name) private studentsModel: Model<StudentDocument>,
+    @Inject(forwardRef(() => SocialServicesService))
+    private socialServicesService: SocialServicesService,
   ) {}
 
   /**
@@ -34,10 +43,10 @@ export class StudentsService {
   }
 
   /**
-   * Finds a User in the dabasase based on the provided _id
+   * Finds a User in the database based on the provided _id
    * @async
    * @param {string} _id _id of the Student
-   * @returns {Promise<Student>} the creted Student
+   * @returns {Promise<Student>} the created Student
    * @throws {ForbiddenException} Student must exists
    */
   async findOne(_id: string): Promise<Student> {
@@ -96,6 +105,11 @@ export class StudentsService {
     if (student) {
       if ((await this.studentsModel.deleteOne({ _id })).deletedCount != 1)
         throw new ForbiddenException('student not deleted');
+      else await this.socialServicesService.deleteByStudent(_id);
     } else throw new ForbiddenException('student not found');
+  }
+
+  async deleteBySpecialty(specialty: string): Promise<void> {
+    await this.studentsModel.deleteMany({ specialty });
   }
 }

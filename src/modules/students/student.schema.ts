@@ -20,7 +20,7 @@ export class Student {
   @Prop({ type: String, required: true, length: 32 })
   name: string;
 
-  @ApiProperty({ type: String, description: 'Studen first last name' })
+  @ApiProperty({ type: String, description: 'Student first last name' })
   @Prop({ type: String, required: true, length: 32 })
   firstLastName: string;
 

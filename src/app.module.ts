@@ -15,6 +15,7 @@ import { SpecialtiesModule } from '@specialties/specialties.module';
 import { StudentsModule } from '@students/students.module';
 import { UsersModule } from '@users/users.module';
 import { TemplatesModule } from '@templates/templates.module';
+import { RotationServicesModule } from 'modules/rotation-services/rotation-services.module';
 
 /** main application module */
 @Module({
@@ -30,6 +31,7 @@ import { TemplatesModule } from '@templates/templates.module';
     StudentsModule,
     UsersModule,
     TemplatesModule,
+    RotationServicesModule,
   ],
 })
 export class AppModule implements NestModule {

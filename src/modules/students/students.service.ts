@@ -5,7 +5,6 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { SpecialtiesService } from '@specialties/specialties.service';
 import { SocialServicesService } from 'modules/social-services';
 import { Model } from 'mongoose';
 import { CreateStudentDto } from './dto/create-student.dto';

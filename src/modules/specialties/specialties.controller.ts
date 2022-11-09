@@ -120,7 +120,7 @@ export class SpecialtiesController {
   @ApiBody({ type: SpecialtyDto, description: '`specialty` data' })
   @ApiForbiddenResponse({
     description:
-      '`specialty not modified` `specialty already exists` `specialty not found`',
+      '`specialty not modified` `specialty not found`',
   })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',

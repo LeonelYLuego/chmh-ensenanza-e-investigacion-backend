@@ -20,14 +20,25 @@ export class Specialty {
   @ApiProperty({
     type: Number,
     minimum: 1,
-    maximum: 6
+    maximum: 6,
   })
   @Prop({
     type: Number,
     min: 1,
-    max: 6
+    max: 6,
   })
   duration: number;
+
+  @ApiProperty({
+    type: String,
+    minLength: 3,
+    maxLength: 128,
+  })
+  @Prop({
+    type: String,
+    length: 128,
+  })
+  tenuredPostgraduateProfessor: string;
 
   @ApiProperty({ type: Number })
   __v: number;

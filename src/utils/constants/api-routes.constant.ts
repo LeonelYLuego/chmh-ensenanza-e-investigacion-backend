@@ -7,6 +7,7 @@ export const API_RESOURCES = {
   HOSPITALS: 'hospitals',
   SOCIAL_SERVICES: 'social-services',
   TEMPLATES: 'templates',
+  ROTATION_SERVICES: 'rotation-services',
 };
 
 /** @Constant Default API Paths Endpoints */
@@ -48,5 +49,9 @@ export const API_ENDPOINTS = {
   TEMPLATES: {
     BASE_PATH: API_RESOURCES.TEMPLATES,
     BY_DOCUMENT: 'document',
+  },
+  ROTATION_SERVICES: {
+    BASE_PATH: API_RESOURCES.ROTATION_SERVICES,
+    BY_ID: DEFAULT_API_PATHS.BY_ID
   },
 };

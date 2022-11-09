@@ -43,7 +43,7 @@ export class CreateStudentDto {
 
   @ApiProperty({
     type: String,
-    description: 'Studen first last name',
+    description: 'Student first last name',
     minLength: 3,
     maxLength: 32,
   })

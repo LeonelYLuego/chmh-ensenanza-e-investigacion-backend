@@ -87,18 +87,11 @@ export class SpecialtiesService {
   async update(_id: string, specialtyDto: SpecialtyDto): Promise<Specialty> {
     const specialty = await this.findOne(_id);
     if (specialty) {
-      if (
-        !(await this.findOneByValueAndDuration(
-          specialtyDto.value,
-          specialtyDto.duration,
-        ))
-      ) {
-        const res = await this.specialtiesModel
-          .updateOne({ _id }, specialtyDto)
-          .exec();
-        if (res.modifiedCount == 1) return await this.findOne(_id);
-        else throw new ForbiddenException('specialty not modified');
-      } else throw new ForbiddenException('specialty already exists');
+      const res = await this.specialtiesModel
+        .updateOne({ _id }, specialtyDto)
+        .exec();
+      if (res.modifiedCount == 1) return await this.findOne(_id);
+      else throw new ForbiddenException('specialty not modified');
     } else throw new ForbiddenException('specialty not found');
   }
 

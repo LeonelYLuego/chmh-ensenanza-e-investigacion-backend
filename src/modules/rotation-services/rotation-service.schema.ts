@@ -24,6 +24,9 @@ export class RotationService {
     length: 64,
   })
   value: string;
+
+  @ApiProperty({ type: Number })
+  __v?: number;
 }
 
 export const RotationServiceSchema =

@@ -1,13 +1,12 @@
 import * as fs from 'fs';
 import * as JSZip from 'jszip';
 import Docxtemplater from 'docxtemplater';
-
 import {
   ForbiddenException,
-  forwardRef,
   Inject,
   Injectable,
   StreamableFile,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SocialService, SocialServiceDocument } from './social-service.schema';
@@ -35,12 +34,12 @@ export class SocialServicesService {
     private socialServicesModel: Model<SocialServiceDocument>,
     @Inject(forwardRef(() => HospitalsService))
     private hospitalsService: HospitalsService,
-    private socialServicesQueries: SocialServicesQueries,
     @Inject(forwardRef(() => StudentsService))
     private studentsService: StudentsService,
     private specialtiesService: SpecialtiesService,
-    private filesService: FilesService,
     private templatesService: TemplatesService,
+    private socialServicesQueries: SocialServicesQueries,
+    private filesService: FilesService,
   ) {}
 
   /**

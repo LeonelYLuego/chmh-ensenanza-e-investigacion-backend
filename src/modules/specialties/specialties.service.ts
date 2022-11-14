@@ -1,6 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { StudentsService } from '@students/students.service';
 import { Model } from 'mongoose';
 import { SpecialtyDto } from './dtos/specialty.dto';
 import { Specialty, SpecialtyDocument } from './specialty.schema';
@@ -11,7 +10,6 @@ export class SpecialtiesService {
   constructor(
     @InjectModel(Specialty.name)
     private specialtiesModel: Model<SpecialtyDocument>,
-    private studentsService: StudentsService,
   ) {}
 
   /**
@@ -103,10 +101,9 @@ export class SpecialtiesService {
   async delete(_id: string): Promise<void> {
     const specialty = await this.findOne(_id);
     if (specialty) {
-      const res = await this.specialtiesModel.deleteOne({ _id });
-      if (res.deletedCount != 1)
+      await this.specialtiesModel.findOneAndDelete({ _id });
+      if (await this.specialtiesModel.findOne({ _id }))
         throw new ForbiddenException('specialty not deleted');
-      else await this.studentsService.deleteBySpecialty(_id);
     } else throw new ForbiddenException('specialty not found');
   }
 

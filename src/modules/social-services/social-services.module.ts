@@ -13,9 +13,11 @@ import { SocialServicesQueries } from './services/queries.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: SocialService.name, schema: SocialServiceSchema },
-    ]),
+    forwardRef(() =>
+      MongooseModule.forFeature([
+        { name: SocialService.name, schema: SocialServiceSchema },
+      ]),
+    ),
     MulterModule,
     forwardRef(() => HospitalsModule),
     forwardRef(() => StudentsModule),

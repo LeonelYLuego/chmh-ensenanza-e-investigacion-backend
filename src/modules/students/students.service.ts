@@ -1,11 +1,5 @@
-import {
-  ForbiddenException,
-  Injectable,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { SocialServicesService } from 'modules/social-services';
 import { Model } from 'mongoose';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -15,8 +9,6 @@ import { Student, StudentDocument } from './student.schema';
 export class StudentsService {
   constructor(
     @InjectModel(Student.name) private studentsModel: Model<StudentDocument>,
-    @Inject(forwardRef(() => SocialServicesService))
-    private socialServicesService: SocialServicesService,
   ) {}
 
   /**
@@ -102,9 +94,9 @@ export class StudentsService {
   async delete(_id: string): Promise<void> {
     const student = await this.findOne(_id);
     if (student) {
-      if ((await this.studentsModel.deleteOne({ _id })).deletedCount != 1)
+      await this.studentsModel.findOneAndDelete({ _id });
+      if (await this.studentsModel.findOne({ _id }))
         throw new ForbiddenException('student not deleted');
-      else await this.socialServicesService.deleteByStudent(_id);
     } else throw new ForbiddenException('student not found');
   }
 

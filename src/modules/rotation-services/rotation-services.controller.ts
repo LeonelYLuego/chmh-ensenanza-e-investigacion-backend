@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Query, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Query,
+  Param,
+  Body,
+  Delete,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -52,5 +61,36 @@ export class RotationServicesController {
     return {
       data: await this.rotationServicesService.findOne(_id),
     };
+  }
+
+  @Put(`:${API_ENDPOINTS.ROTATION_SERVICES.BY_ID}`)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: API_ENDPOINTS.ROTATION_SERVICES.BY_ID,
+    description: 'Rotation Service primary key',
+  })
+  @ApiBody({
+    type: RotationServiceDto,
+  })
+  async update(
+    @Param(API_ENDPOINTS.ROTATION_SERVICES.BY_ID, ValidateIdPipe) _id: string,
+    @Body() rotationServiceDto: RotationServiceDto,
+  ): Promise<HttpResponse<RotationService>> {
+    return {
+      data: await this.rotationServicesService.update(_id, rotationServiceDto),
+    };
+  }
+
+  @Delete(`:${API_ENDPOINTS.ROTATION_SERVICES.BY_ID}`)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: API_ENDPOINTS.ROTATION_SERVICES.BY_ID,
+    description: 'Rotation Service primary key',
+  })
+  async delete(
+    @Param(API_ENDPOINTS.ROTATION_SERVICES.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<undefined>> {
+    await this.rotationServicesService.delete(_id);
+    return {};
   }
 }

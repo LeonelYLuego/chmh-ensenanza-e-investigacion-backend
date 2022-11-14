@@ -16,8 +16,6 @@ import { Hospital, HospitalDocument } from './hospital.schema';
 export class HospitalsService {
   constructor(
     @InjectModel(Hospital.name) private hospitalsModel: Model<HospitalDocument>,
-    @Inject(forwardRef(() => SocialServicesService))
-    private socialServicesService: SocialServicesService,
   ) {}
 
   /**
@@ -89,11 +87,10 @@ export class HospitalsService {
    */
   async delete(_id: string): Promise<void> {
     const hospital = await this.findOne(_id);
-    if (
-      (await this.hospitalsModel.deleteOne({ _id: hospital._id }))
-        .deletedCount != 1
-    )
+    await this.hospitalsModel.findOneAndDelete({
+      _id: hospital._id,
+    });
+    if (await this.hospitalsModel.findOne({ _id }))
       throw new ForbiddenException('hospital not deleted');
-    else await this.socialServicesService.deleteByHospital(_id);
   }
 }

@@ -1,4 +1,7 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SpecialtiesService } from '@specialties/specialties.service';
 import { Model } from 'mongoose';
@@ -42,17 +45,17 @@ export class RotationServicesService {
   }
 
   /**
-   * 
-   * @param _id 
-   * @param rotationServiceDto 
-   * @returns 
+   *
+   * @param _id
+   * @param rotationServiceDto
+   * @returns
    * @throws {ForbiddenException} specialty must exist
    */
   async update(
     _id: string,
     rotationServiceDto: RotationServiceDto,
   ): Promise<RotationService> {
-    const rotationService = await this.rotationServicesModel.findOne({ _id });
+    const rotationService = await this.findOne(_id);
     await this.specialtiesService.findOne(rotationServiceDto.specialty);
     if (
       (
@@ -67,11 +70,17 @@ export class RotationServicesService {
   }
 
   async delete(_id: string): Promise<void> {
-    const rotationService = await this.rotationServicesModel.findOne({ _id });
+    const rotationService = await this.findOne(_id);
     if (
       (await this.rotationServicesModel.deleteOne({ _id: rotationService._id }))
         .deletedCount == 0
     )
       throw new ForbiddenException('rotation service not deleted');
+  }
+
+  async deleteBySpecialty(specialty: string): Promise<void> {
+    await this.rotationServicesModel.deleteMany({
+      specialty,
+    });
   }
 }

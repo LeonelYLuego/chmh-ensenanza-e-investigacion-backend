@@ -3,6 +3,7 @@ import {
   NestModule,
   MiddlewareConsumer,
   RequestMethod,
+  forwardRef
 } from '@nestjs/common';
 import { AuthMiddleware } from '@auth/auth.middleware';
 import { AuthModule } from '@auth/auth.module';
@@ -25,11 +26,11 @@ import { RotationServicesModule } from 'modules/rotation-services/rotation-servi
     ),
     AuthModule,
     ConfigModule,
+    UsersModule,
     SocialServicesModule,
     HospitalsModule,
     SpecialtiesModule,
     StudentsModule,
-    UsersModule,
     TemplatesModule,
     RotationServicesModule,
   ],

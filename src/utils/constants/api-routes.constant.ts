@@ -8,6 +8,7 @@ export const API_RESOURCES = {
   SOCIAL_SERVICES: 'social-services',
   TEMPLATES: 'templates',
   ROTATION_SERVICES: 'rotation-services',
+  OPTIONAL_MOBILITIES: 'optional-mobilities',
 };
 
 /** @Constant Default API Paths Endpoints */
@@ -52,6 +53,10 @@ export const API_ENDPOINTS = {
   },
   ROTATION_SERVICES: {
     BASE_PATH: API_RESOURCES.ROTATION_SERVICES,
-    BY_ID: DEFAULT_API_PATHS.BY_ID
+    BY_ID: DEFAULT_API_PATHS.BY_ID,
+  },
+  OPTIONAL_MOBILITIES: {
+    BASE_PATH: API_RESOURCES.OPTIONAL_MOBILITIES,
+    BY_ID: DEFAULT_API_PATHS.BY_ID,
   },
 };

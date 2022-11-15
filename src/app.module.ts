@@ -3,7 +3,6 @@ import {
   NestModule,
   MiddlewareConsumer,
   RequestMethod,
-  forwardRef
 } from '@nestjs/common';
 import { AuthMiddleware } from '@auth/auth.middleware';
 import { AuthModule } from '@auth/auth.module';
@@ -17,6 +16,7 @@ import { StudentsModule } from '@students/students.module';
 import { UsersModule } from '@users/users.module';
 import { TemplatesModule } from '@templates/templates.module';
 import { RotationServicesModule } from 'modules/rotation-services/rotation-services.module';
+import { OptionalMobilitiesModule } from './modules/optional-mobilities/optional-mobilities.module';
 
 /** main application module */
 @Module({
@@ -33,6 +33,7 @@ import { RotationServicesModule } from 'modules/rotation-services/rotation-servi
     StudentsModule,
     TemplatesModule,
     RotationServicesModule,
+    OptionalMobilitiesModule,
   ],
 })
 export class AppModule implements NestModule {

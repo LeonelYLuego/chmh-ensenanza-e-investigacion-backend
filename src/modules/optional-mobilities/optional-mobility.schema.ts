@@ -26,7 +26,7 @@ export class OptionalMobility {
     description: 'Optional Mobility solicitude document name',
   })
   @Prop({ type: String, required: false })
-  solicitudeDocument: string;
+  solicitudeDocument?: string;
 
   @ApiProperty({
     type: String,
@@ -34,7 +34,7 @@ export class OptionalMobility {
     description: 'Optional Mobility presentation document name',
   })
   @Prop({ type: String, required: false })
-  presentationOfficeDocument: string;
+  presentationOfficeDocument?: string;
 
   @ApiProperty({
     type: String,
@@ -42,7 +42,7 @@ export class OptionalMobility {
     description: 'Optional Mobility acceptance document name',
   })
   @Prop({ type: String, required: false })
-  acceptanceDocument: string;
+  acceptanceDocument?: string;
 
   @ApiProperty({
     type: String,
@@ -50,7 +50,7 @@ export class OptionalMobility {
     description: 'Optional Mobility evaluation document name',
   })
   @Prop({ type: String, required: false })
-  evaluationDocument: string;
+  evaluationDocument?: string;
 
   @ApiProperty({
     type: String,

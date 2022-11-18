@@ -21,6 +21,7 @@ import { API_ENDPOINTS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
 import { OptionalMobility } from './optional-mobility.schema';
 import { ValidateIdPipe } from '@utils/pipes';
+import { OptionalMobilityIntervalInterface } from './interfaces/optional-mobility-interval.interface';
 
 @ApiTags('Optional Mobilities')
 @Controller(API_ENDPOINTS.OPTIONAL_MOBILITIES.BASE_PATH)
@@ -40,6 +41,17 @@ export class OptionalMobilitiesController {
       data: await this.optionalMobilitiesService.create(
         createOptionalMobilityDto,
       ),
+    };
+  }
+
+  @Get(API_ENDPOINTS.OPTIONAL_MOBILITIES.INTERVAL)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    type: OptionalMobilityIntervalInterface,
+  })
+  async interval(): Promise<HttpResponse<OptionalMobilityIntervalInterface>> {
+    return {
+      data: await this.optionalMobilitiesService.interval(),
     };
   }
 

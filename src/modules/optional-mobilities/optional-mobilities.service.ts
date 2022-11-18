@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';
 import { UpdateOptionalMobilityDto } from './dto/update-optional-mobility.dto';
+import { OptionalMobilityIntervalInterface } from './interfaces/optional-mobility-interval.interface';
 import {
   OptionalMobility,
   OptionalMobilityDocument,
@@ -58,5 +59,19 @@ export class OptionalMobilitiesService {
     await this.optionalMobilitiesModel.findOneAndDelete({ _id });
     if (await this.optionalMobilitiesModel.findOne({ _id }))
       throw new ForbiddenException('optional mobility not deleted');
+  }
+
+  async interval(): Promise<OptionalMobilityIntervalInterface> {
+    const min = await this.optionalMobilitiesModel
+      .findOne()
+      .sort('initialDate');
+    const max = await this.optionalMobilitiesModel.findOne().sort('-finalDate');
+    if (min && max) {
+      return {
+        initialYear: min.initialDate.getFullYear(),
+        finalYear: max.finalDate.getFullYear(),
+      };
+    }
+    throw new ForbiddenException('optional mobility interval not found');
   }
 }

@@ -6,6 +6,7 @@ import {
   Put,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { OptionalMobilitiesService } from './optional-mobilities.service';
 import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';
@@ -15,6 +16,8 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { API_ENDPOINTS } from '@utils/constants';
@@ -22,6 +25,7 @@ import { HttpResponse } from '@utils/dtos';
 import { OptionalMobility } from './optional-mobility.schema';
 import { ValidateIdPipe } from '@utils/pipes';
 import { OptionalMobilityIntervalInterface } from './interfaces/optional-mobility-interval.interface';
+import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 
 @ApiTags('Optional Mobilities')
 @Controller(API_ENDPOINTS.OPTIONAL_MOBILITIES.BASE_PATH)
@@ -57,10 +61,18 @@ export class OptionalMobilitiesController {
 
   @Get()
   @ApiBearerAuth()
+  @ApiQuery({ name: 'initialDate', type: Date })
+  @ApiQuery({ name: 'finalDate', type: Date })
   @ApiOkResponse({ type: [OptionalMobility] })
-  async findAll(): Promise<HttpResponse<OptionalMobility[]>> {
+  async findAll(
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+  ): Promise<HttpResponse<OptionalMobility[]>> {
     return {
-      data: await this.optionalMobilitiesService.findAll(),
+      data: await this.optionalMobilitiesService.findAll(
+        initialDate,
+        finalDate,
+      ),
     };
   }
 

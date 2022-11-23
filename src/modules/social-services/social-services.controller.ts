@@ -32,7 +32,7 @@ import {
   ValidatePeriodPipe,
   ValidateYearPipe,
 } from '@utils/pipes';
-import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
+import { ValidateSlashDatePipe } from '@utils/pipes/validate-slash-date.pipe';
 import { ValidateNumberPipe } from '@utils/pipes/validate-number.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -156,7 +156,7 @@ export class SocialServicesController {
   async generateDocuments(
     @Query('initialNumberOfDocuments', ValidateNumberPipe)
     initialNumberOfDocuments: number,
-    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date,
+    @Query('dateOfDocuments', ValidateSlashDatePipe) dateOfDocuments: Date,
     @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
     @Query('initialYear', ValidateYearPipe) initialYear: number,
     @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,

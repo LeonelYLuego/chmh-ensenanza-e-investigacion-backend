@@ -25,8 +25,73 @@ export class OptionalMobilitiesService {
     return await optionalMobility.save();
   }
 
-  async findAll(): Promise<OptionalMobility[]> {
-    return await this.optionalMobilitiesModel.find({});
+  async findAll(
+    initialDate: Date,
+    finalDate: Date,
+  ): Promise<OptionalMobility[]> {
+    return await this.optionalMobilitiesModel.aggregate([
+      {
+        $match: {
+          initialDate: {
+            $gte: initialDate,
+          },
+          finalDate: {
+            $lte: finalDate,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'students',
+          localField: 'student',
+          foreignField: '_id',
+          as: 'student',
+        },
+      },
+      {
+        $lookup: {
+          from: 'specialties',
+          localField: 'student.specialty',
+          foreignField: '_id',
+          as: 'specialty',
+        },
+      },
+      {
+        $lookup: {
+          from: 'hospitals',
+          localField: 'hospital',
+          foreignField: '_id',
+          as: 'hospital',
+        },
+      },
+      {
+        $lookup: {
+          from: 'rotationservices',
+          localField: 'rotationService',
+          foreignField: '_id',
+          as: 'rotationService',
+        },
+      },
+      {
+        $project: {
+          _id: '$_id',
+          initialDate: '$initialDate',
+          finalDate: '$finalDate',
+          student: {
+            $arrayElemAt: ['$student', 0],
+          },
+          hospital: {
+            $arrayElemAt: ['$hospital', 0],
+          },
+          rotationService: {
+            $arrayElemAt: ['$rotationService', 0],
+          },
+          specialty: {
+            $arrayElemAt: ['$specialty', 0],
+          },
+        },
+      },
+    ]);
   }
 
   async findOne(_id: string): Promise<OptionalMobility> {

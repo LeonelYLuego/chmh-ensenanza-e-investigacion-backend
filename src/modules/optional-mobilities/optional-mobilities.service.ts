@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';
+import { OptionalMobilityBySpecialtyDto } from './dto/optional-mobility-by-specialty';
 import { UpdateOptionalMobilityDto } from './dto/update-optional-mobility.dto';
 import { OptionalMobilityIntervalInterface } from './interfaces/optional-mobility-interval.interface';
 import {
@@ -28,7 +29,7 @@ export class OptionalMobilitiesService {
   async findAll(
     initialDate: Date,
     finalDate: Date,
-  ): Promise<OptionalMobility[]> {
+  ): Promise<OptionalMobilityBySpecialtyDto[]> {
     return await this.optionalMobilitiesModel.aggregate([
       {
         $match: {
@@ -50,14 +51,6 @@ export class OptionalMobilitiesService {
       },
       {
         $lookup: {
-          from: 'specialties',
-          localField: 'student.specialty',
-          foreignField: '_id',
-          as: 'specialty',
-        },
-      },
-      {
-        $lookup: {
           from: 'hospitals',
           localField: 'hospital',
           foreignField: '_id',
@@ -73,10 +66,23 @@ export class OptionalMobilitiesService {
         },
       },
       {
+        $lookup: {
+          from: 'specialties',
+          localField: 'student.specialty',
+          foreignField: '_id',
+          as: 'specialty',
+        },
+      },
+      {
         $project: {
           _id: '$_id',
+          specialty: { $arrayElemAt: ['$specialty', 0] },
           initialDate: '$initialDate',
           finalDate: '$finalDate',
+          solicitudeDocument: '$solicitudeDocument',
+          presentationOfficeDocument: '$presentationOfficeDocument',
+          acceptanceDocument: '$acceptanceDocument',
+          evaluationDocument: '$evaluationDocument',
           student: {
             $arrayElemAt: ['$student', 0],
           },
@@ -86,8 +92,36 @@ export class OptionalMobilitiesService {
           rotationService: {
             $arrayElemAt: ['$rotationService', 0],
           },
-          specialty: {
-            $arrayElemAt: ['$specialty', 0],
+        },
+      },
+      {
+        $group: {
+          _id: '$specialty._id',
+          value: { $first: '$specialty.value' },
+          optionalMobilities: {
+            $push: {
+              _id: '$_id',
+              initialDate: '$initialDate',
+              finalDate: '$finalDate',
+              solicitudeDocument: '$solicitudeDocument',
+              presentationOfficeDocument: '$presentationOfficeDocument',
+              acceptanceDocument: '$acceptanceDocument',
+              evaluationDocument: '$evaluationDocument',
+              student: {
+                _id: '$student._id',
+                name: '$student.name',
+                firstLastName: '$student.firstLastName',
+                secondLastName: '$student.secondLastName',
+              },
+              hospital: {
+                _id: '$hospital._id',
+                name: '$hospital.name',
+              },
+              rotationService: {
+                _id: '$rotationService._id',
+                value: '$rotationService.value',
+              },
+            },
           },
         },
       },

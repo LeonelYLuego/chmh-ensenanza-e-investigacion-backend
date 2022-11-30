@@ -4,3 +4,4 @@ export * from './optional-mobilities.controller';
 export * from './optional-mobilities.module';
 export * from './optional-mobilities.service';
 export * from './optional-mobility.schema';
+export * from './dto/optional-mobility-by-specialty';

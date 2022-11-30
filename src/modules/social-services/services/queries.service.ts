@@ -139,8 +139,8 @@ export class SocialServicesQueries {
   /**
    * Returns the query to find the social services to generates the documents
    * @param {number} initialPeriod initial period to find
-   * @param {number} initialYear initial yeart to find
-   * @param {number} finalPeriod final yeart to find
+   * @param {number} initialYear initial year to find
+   * @param {number} finalPeriod final year to find
    * @param {number} finalYear final year to find
    * @param {number} hospital hospital to find
    * @returns {PipelineStage[]} the query

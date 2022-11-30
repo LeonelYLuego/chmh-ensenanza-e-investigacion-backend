@@ -26,6 +26,7 @@ import { OptionalMobility } from './optional-mobility.schema';
 import { ValidateIdPipe } from '@utils/pipes';
 import { OptionalMobilityIntervalInterface } from './interfaces/optional-mobility-interval.interface';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
+import { OptionalMobilityBySpecialtyDto } from '.';
 
 @ApiTags('Optional Mobilities')
 @Controller(API_ENDPOINTS.OPTIONAL_MOBILITIES.BASE_PATH)
@@ -67,7 +68,7 @@ export class OptionalMobilitiesController {
   async findAll(
     @Query('initialDate', ValidateDatePipe) initialDate: Date,
     @Query('finalDate', ValidateDatePipe) finalDate: Date,
-  ): Promise<HttpResponse<OptionalMobility[]>> {
+  ): Promise<HttpResponse<OptionalMobilityBySpecialtyDto[]>> {
     return {
       data: await this.optionalMobilitiesService.findAll(
         initialDate,

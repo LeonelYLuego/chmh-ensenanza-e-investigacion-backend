@@ -407,7 +407,7 @@ export class SocialServicesController {
   async deleteDocument(
     @Param(API_ENDPOINTS.SOCIAL_SERVICES.BY_ID, ValidateIdPipe) _id: string,
     @Query('type')
-    type: 'presentationOfficeDocument' | 'reportDocument' | 'constancyDocument',
+    type: SocialServiceDocumentTypes,
   ): Promise<HttpResponse<SocialService>> {
     return {
       data: await this.socialServicesService.deleteDocument(

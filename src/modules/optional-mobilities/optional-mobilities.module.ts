@@ -6,6 +6,7 @@ import {
   OptionalMobility,
   OptionalMobilitySchema,
 } from './optional-mobility.schema';
+import { FilesService } from '@utils/services';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import {
     ]),
   ],
   controllers: [OptionalMobilitiesController],
-  providers: [OptionalMobilitiesService],
+  providers: [OptionalMobilitiesService, FilesService],
 })
 export class OptionalMobilitiesModule {}

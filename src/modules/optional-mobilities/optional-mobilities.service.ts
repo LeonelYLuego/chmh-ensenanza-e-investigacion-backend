@@ -1,5 +1,7 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { FilesService } from '@utils/services';
+import * as fs from 'fs';
 import { Model } from 'mongoose';
 import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';
 import { OptionalMobilityBySpecialtyDto } from './dto/optional-mobility-by-specialty';
@@ -9,12 +11,14 @@ import {
   OptionalMobility,
   OptionalMobilityDocument,
 } from './optional-mobility.schema';
+import { OptionalMobilityDocumentTypes } from './types/optional-mobility-document.type';
 
 @Injectable()
 export class OptionalMobilitiesService {
   constructor(
     @InjectModel(OptionalMobility.name)
     private optionalMobilitiesModel: Model<OptionalMobilityDocument>,
+    private filesService: FilesService,
   ) {}
 
   async create(
@@ -33,12 +37,18 @@ export class OptionalMobilitiesService {
     return await this.optionalMobilitiesModel.aggregate([
       {
         $match: {
-          initialDate: {
-            $gte: initialDate,
-          },
-          finalDate: {
-            $lte: finalDate,
-          },
+          $and: [
+            {
+              initialDate: {
+                $gte: initialDate,
+              },
+            },
+            {
+              finalDate: {
+                $lte: finalDate,
+              },
+            },
+          ],
         },
       },
       {
@@ -172,5 +182,73 @@ export class OptionalMobilitiesService {
       };
     }
     throw new ForbiddenException('optional mobility interval not found');
+  }
+
+  async getDocument(
+    _id: string,
+    path: string,
+    document: OptionalMobilityDocumentTypes,
+  ): Promise<StreamableFile> {
+    const optionalMobility = await this.findOne(_id);
+    if (optionalMobility[document]) {
+      const filePath = `${path}/${optionalMobility[document]}`;
+      if (fs.existsSync(filePath)) {
+        const file = fs.createReadStream(filePath);
+        return new StreamableFile(file, {
+          type: 'application/pdf',
+        });
+      }
+    }
+    throw new ForbiddenException('document not found');
+  }
+
+  async updateDocument(
+    _id: string,
+    path: string,
+    file: Express.Multer.File,
+    document: OptionalMobilityDocumentTypes,
+  ): Promise<OptionalMobility> {
+    try {
+      this.filesService.validatePDF(file);
+      const optionalMobility = await this.findOne(_id);
+      if (optionalMobility[document])
+        this.filesService.deleteFile(`${path}/${optionalMobility[document]}`);
+      let updateObject: object = {};
+      updateObject[document] = file.filename;
+      if (
+        (
+          await this.optionalMobilitiesModel.updateOne(
+            { _id: optionalMobility._id },
+            updateObject,
+          )
+        ).modifiedCount < 1
+      )
+        throw new ForbiddenException('optional mobility not updated');
+      return await this.findOne(_id);
+    } catch (err) {
+      this.filesService.deleteFile(`${path}/${file.filename}`);
+    }
+  }
+
+  async deleteDocument(
+    _id: string,
+    path: string,
+    document: OptionalMobilityDocumentTypes,
+  ): Promise<OptionalMobility> {
+    const optionalMobility = await this.findOne(_id);
+    if (optionalMobility[document])
+      this.filesService.deleteFile(`${path}/${optionalMobility[document]}`);
+    let updateObject: object = {};
+    updateObject[document] = null;
+    if (
+      (
+        await this.optionalMobilitiesModel.updateOne(
+          { _id: optionalMobility._id },
+          updateObject,
+        )
+      ).modifiedCount < 1
+    )
+      throw new ForbiddenException('optional mobility not updated');
+    return await this.findOne(_id);
   }
 }

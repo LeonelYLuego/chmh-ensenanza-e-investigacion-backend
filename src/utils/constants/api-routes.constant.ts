@@ -59,5 +59,6 @@ export const API_ENDPOINTS = {
     BASE_PATH: API_RESOURCES.OPTIONAL_MOBILITIES,
     BY_ID: DEFAULT_API_PATHS.BY_ID,
     INTERVAL: '/interval',
+    DOCUMENT: `/document/:${DEFAULT_API_PATHS.BY_ID}`,
   },
 };

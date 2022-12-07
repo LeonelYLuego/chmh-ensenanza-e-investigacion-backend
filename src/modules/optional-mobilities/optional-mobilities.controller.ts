@@ -119,7 +119,10 @@ export class OptionalMobilitiesController {
   async remove(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
-    await this.optionalMobilitiesService.remove(_id);
+    await this.optionalMobilitiesService.remove(
+      _id,
+      STORAGE_PATHS.OPTIONAL_MOBILITIES,
+    );
     return {};
   }
 

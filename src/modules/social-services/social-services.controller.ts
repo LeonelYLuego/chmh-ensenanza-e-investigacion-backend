@@ -259,7 +259,7 @@ export class SocialServicesController {
   async delete(
     @Param(API_ENDPOINTS.SOCIAL_SERVICES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
-    await this.socialServicesService.delete(_id);
+    await this.socialServicesService.delete(_id, STORAGE_PATHS.SOCIAL_SERVICES);
     return {};
   }
 

@@ -34,4 +34,10 @@ export class SpecialtyDto {
   @MinLength(3)
   @MaxLength(128)
   tenuredPostgraduateProfessor: string;
+
+  @ApiProperty({ type: String })
+  @IsDefined()
+  @MinLength(3)
+  @MaxLength(128)
+  headOfService: string;
 }

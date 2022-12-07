@@ -40,6 +40,17 @@ export class Specialty {
   })
   tenuredPostgraduateProfessor: string;
 
+  @ApiProperty({
+    type: String,
+    minLength: 3,
+    maxLength: 128,
+  })
+  @Prop({
+    type: String,
+    length: 128,
+  })
+  headOfService: string;
+
   @ApiProperty({ type: Number })
   __v: number;
 }

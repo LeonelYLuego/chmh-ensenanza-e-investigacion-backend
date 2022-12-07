@@ -144,8 +144,14 @@ export class SocialServicesService {
    * @throws {ForbiddenException} Social Service must exist
    * @throws {ForbiddenException} Social Service must be deleted
    */
-  async delete(_id: string): Promise<void> {
+  async delete(_id: string, path: string): Promise<void> {
     const ss = await this.findOne(_id);
+    if (ss.constancyDocument)
+      this.filesService.deleteFile(`${path}/${ss.constancyDocument}`);
+    if (ss.presentationOfficeDocument)
+      this.filesService.deleteFile(`${path}/${ss.presentationOfficeDocument}`);
+    if (ss.reportDocument)
+      this.filesService.deleteFile(`${path}/${ss.reportDocument}`);
     if (
       (await this.socialServicesModel.deleteOne({ _id: ss._id })).deletedCount <
       1
@@ -372,6 +378,12 @@ export class SocialServicesService {
                   socialService.period,
                   socialService.year,
                 ),
+                profesor: (
+                  socialService as any
+                ).specialty.tenuredPostgraduateProfessor.toUpperCase(),
+                jefe: (
+                  socialService as any
+                ).specialty.headOfService.toUpperCase(),
               });
 
               //Increments the document number

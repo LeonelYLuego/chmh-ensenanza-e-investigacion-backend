@@ -164,8 +164,25 @@ export class OptionalMobilitiesService {
     return await this.findOne(_id);
   }
 
-  async remove(_id: string): Promise<void> {
-    await this.optionalMobilitiesModel.findOneAndDelete({ _id });
+  async remove(_id: string, path: string): Promise<void> {
+    const optionalMobility =
+      await this.optionalMobilitiesModel.findOneAndDelete({ _id });
+    if (optionalMobility.acceptanceDocument)
+      this.filesService.deleteFile(
+        `${path}/${optionalMobility.acceptanceDocument}`,
+      );
+    if (optionalMobility.evaluationDocument)
+      this.filesService.deleteFile(
+        `${path}/${optionalMobility.evaluationDocument}`,
+      );
+    if (optionalMobility.solicitudeDocument)
+      this.filesService.deleteFile(
+        `${path}/${optionalMobility.solicitudeDocument}`,
+      );
+    if (optionalMobility.presentationOfficeDocument)
+      this.filesService.deleteFile(
+        `${path}/${optionalMobility.presentationOfficeDocument}`,
+      );
     if (await this.optionalMobilitiesModel.findOne({ _id }))
       throw new ForbiddenException('optional mobility not deleted');
   }

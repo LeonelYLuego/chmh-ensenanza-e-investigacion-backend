@@ -13,6 +13,7 @@ import {
 } from './optional-mobility.schema';
 import { OptionalMobilityDocumentTypes } from './types/optional-mobility-document.type';
 
+/** Optional Mobility service */
 @Injectable()
 export class OptionalMobilitiesService {
   constructor(
@@ -21,6 +22,11 @@ export class OptionalMobilitiesService {
     private filesService: FilesService,
   ) {}
 
+  /**
+   * Creates a new Optional Mobility and saves it in the database
+   * @param createOptionalMobilityDto Optional Mobility to create
+   * @returns {OptionalMobility} the created Optional Mobility
+   */
   async create(
     createOptionalMobilityDto: CreateOptionalMobilityDto,
   ): Promise<OptionalMobility> {
@@ -30,12 +36,19 @@ export class OptionalMobilitiesService {
     return await optionalMobility.save();
   }
 
+  /**
+   * Finds all Optional Mobilities in the database
+   * @param initialDate initial date to find
+   * @param finalDate final date to find
+   * @returns {OptionalMobilityBySpecialtyDto} the found Optional Mobilities grouped by Specialty
+   */
   async findAll(
     initialDate: Date,
     finalDate: Date,
   ): Promise<OptionalMobilityBySpecialtyDto[]> {
     return await this.optionalMobilitiesModel.aggregate([
       {
+        //Find all Optional Mobility between the provided dates
         $match: {
           $and: [
             {
@@ -52,6 +65,7 @@ export class OptionalMobilitiesService {
         },
       },
       {
+        //Does an inner join with students
         $lookup: {
           from: 'students',
           localField: 'student',
@@ -84,6 +98,7 @@ export class OptionalMobilitiesService {
         },
       },
       {
+        //Gets the first element of the specialties, students, hospitals and rotation services
         $project: {
           _id: '$_id',
           specialty: { $arrayElemAt: ['$specialty', 0] },
@@ -105,6 +120,7 @@ export class OptionalMobilitiesService {
         },
       },
       {
+        //Groups Optional Mobilities by Specialty
         $group: {
           _id: '$specialty._id',
           value: { $first: '$specialty.value' },
@@ -138,6 +154,12 @@ export class OptionalMobilitiesService {
     ]);
   }
 
+  /**
+   * Finds an Optional Mobility by Id in the database
+   * @param _id
+   * @returns {OptionalMobility} the found Optional Mobility
+   * @throws {ForbiddenException} the Optional Mobility must exist
+   */
   async findOne(_id: string): Promise<OptionalMobility> {
     const optionalMobility = await this.optionalMobilitiesModel.findOne({
       _id,
@@ -147,6 +169,14 @@ export class OptionalMobilitiesService {
     return optionalMobility;
   }
 
+  /**
+   * Updates an Optional Mobility by Id in the database
+   * @param _id
+   * @param updateOptionalMobilityDto
+   * @returns {OptionalMobility} the updated Optional Mobility
+   * @throws {ForbiddenException} Optional Mobility must be modified
+   * @throws {ForbiddenException} Optional Mobility must exist
+   */
   async update(
     _id: string,
     updateOptionalMobilityDto: UpdateOptionalMobilityDto,
@@ -164,6 +194,13 @@ export class OptionalMobilitiesService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Removes an Optional Mobility by Id in the database
+   * @param _id
+   * @param path
+   * @throws {ForbiddenException} Optional Mobility must be deleted
+   * @throws {ForbiddenException} Optional Mobility must exist
+   */
   async remove(_id: string, path: string): Promise<void> {
     const optionalMobility =
       await this.optionalMobilitiesModel.findOneAndDelete({ _id });
@@ -187,6 +224,11 @@ export class OptionalMobilitiesService {
       throw new ForbiddenException('optional mobility not deleted');
   }
 
+  /**
+   * Gets the initial and final date of all Optional Mobilities
+   * @returns {OptionalMobilityIntervalInterface} The initial and final date of all Optional Mobilities
+   * @throws {ForbiddenException} must exist at least one Optional Mobility
+   */
   async interval(): Promise<OptionalMobilityIntervalInterface> {
     const min = await this.optionalMobilitiesModel
       .findOne()
@@ -201,6 +243,15 @@ export class OptionalMobilitiesService {
     throw new ForbiddenException('optional mobility interval not found');
   }
 
+  /**
+   * Gets the specified document of the Optional Mobility by Id
+   * @param _id
+   * @param path
+   * @param document
+   * @returns the found document
+   * @throws {ForbiddenException} Optional Mobility must exist
+   * @throws {ForbiddenException} document must exist
+   */
   async getDocument(
     _id: string,
     path: string,
@@ -219,6 +270,15 @@ export class OptionalMobilitiesService {
     throw new ForbiddenException('document not found');
   }
 
+  /**
+   * Updates the specified document of the Optional Mobility by Id
+   * @param _id
+   * @param path
+   * @param file
+   * @param document
+   * @returns {ForbiddenException} Optional Mobility must exist
+   * @returns {ForbiddenException} Optional Mobility must be modified
+   */
   async updateDocument(
     _id: string,
     path: string,
@@ -247,6 +307,15 @@ export class OptionalMobilitiesService {
     }
   }
 
+  /**
+   * Deletes the specified document of the Optional Mobility by Id
+   * @param _id
+   * @param path
+   * @param document
+   * @returns
+   * @throws {ForbiddenException} Optional Mobility must exist
+   * @throws {ForbiddenException} Optional Mobility must be modified
+   */
   async deleteDocument(
     _id: string,
     path: string,

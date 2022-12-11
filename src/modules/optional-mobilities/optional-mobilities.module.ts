@@ -8,6 +8,7 @@ import {
 } from './optional-mobility.schema';
 import { FilesService } from '@utils/services';
 
+/** Optional Mobilities module */
 @Module({
   imports: [
     MongooseModule.forFeatureAsync([

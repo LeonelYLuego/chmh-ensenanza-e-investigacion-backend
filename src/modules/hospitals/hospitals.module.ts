@@ -11,12 +11,6 @@ import {
 /** Hospital module */
 @Module({
   imports: [
-    // MongooseModule.forFeature([
-    //   {
-    //     name: Hospital.name,
-    //     schema: HospitalSchema,
-    //   },
-    // ]),
     forwardRef(() =>
       MongooseModule.forFeatureAsync([
         {

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsString, MaxLength, MinLength } from 'class-validator';
 
-/** Adress data transfer object */
+/** Address data transfer object */
 export class AddressDto {
   @ApiProperty({
     type: String,

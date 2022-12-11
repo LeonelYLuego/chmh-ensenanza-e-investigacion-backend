@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsDefined, IsMongoId, IsString } from 'class-validator';
 
+/** Create Optional Mobility data transfer object */
 export class CreateOptionalMobilityDto {
   @ApiProperty({ type: Date, description: 'Optional Mobility initial date' })
   @IsDefined()

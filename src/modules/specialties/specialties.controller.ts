@@ -89,7 +89,7 @@ export class SpecialtiesController {
   })
   @ApiOkResponse({
     type: Specialty,
-    description: '`specialty` primary key',
+    description: 'The found `specialty`',
   })
   @ApiForbiddenResponse({
     description: '`specialty not found`',
@@ -107,7 +107,7 @@ export class SpecialtiesController {
 
   @Put(`:${API_ENDPOINTS.SPECIALTIES.BY_ID}`)
   @ApiOperation({
-    summary: '[Users] Update a Student in the database',
+    summary: '[Users] Update a Specialty in the database',
     description:
       'Updates in the database a `specialty` based on the provided `_id` and returns the modified `specialty`',
   })

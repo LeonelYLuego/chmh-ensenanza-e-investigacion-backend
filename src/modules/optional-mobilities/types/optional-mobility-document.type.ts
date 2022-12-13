@@ -4,3 +4,10 @@ export type OptionalMobilityDocumentTypes =
   | 'presentationOfficeDocument'
   | 'acceptanceDocument'
   | 'evaluationDocument';
+
+export const OptionalMobilityDocumentTypesArray = [
+  'solicitudeDocument',
+  'presentationOfficeDocument',
+  'acceptanceDocument',
+  'evaluationDocument',
+];

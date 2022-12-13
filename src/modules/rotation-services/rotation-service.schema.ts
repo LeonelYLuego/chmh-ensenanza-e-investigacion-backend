@@ -3,8 +3,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Specialty } from '@specialties/specialty.schema';
 import mongoose from 'mongoose';
 
+/** Rotation Service document */
 export type RotationServiceDocument = RotationService & Document;
 
+/** Rotation Service schema */
 @Schema()
 export class RotationService {
   @ApiProperty({ type: String, description: 'Rotation Service primary key' })
@@ -29,5 +31,6 @@ export class RotationService {
   __v?: number;
 }
 
+/** Rotation Service schema */
 export const RotationServiceSchema =
   SchemaFactory.createForClass(RotationService);

@@ -7,6 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 
+/** Rotation Service data transfer object */
 export class RotationServiceDto {
   @ApiProperty({
     type: String,

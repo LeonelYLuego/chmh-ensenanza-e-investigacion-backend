@@ -38,7 +38,10 @@ import { OptionalMobilityBySpecialtyDto } from '.';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { OptionalMobilityDocumentTypes } from './types/optional-mobility-document.type';
+import {
+  OptionalMobilityDocumentTypes,
+  OptionalMobilityDocumentTypesArray,
+} from './types/optional-mobility-document.type';
 import { ValidateOptionalMobilityDocumentTypePipe } from './pipes/validate-optional-mobility-document.pipe';
 
 @ApiTags('Optional Mobilities')
@@ -50,10 +53,19 @@ export class OptionalMobilitiesController {
 
   @Post()
   @ApiBearerAuth()
-  @ApiOperation({summary: '[User] Add a Optional Mobility in the database', description: 'Creates a new `Optional Mobility` in the database and returns the created `Optional Mobility`'})
+  @ApiOperation({
+    summary: '[User] Add an Optional Mobility in the database',
+    description:
+      'Creates a new `Optional Mobility` in the database and returns the created `Optional Mobility`',
+  })
   @ApiBody({ type: CreateOptionalMobilityDto })
-  @ApiCreatedResponse({ type: OptionalMobility, description: 'The created `optional mobility`' })
-  @ApiUnauthorizedResponse({description: 'Not authorized to perform the query'})
+  @ApiCreatedResponse({
+    type: OptionalMobility,
+    description: 'The created `optional mobility`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async create(
     @Body() createOptionalMobilityDto: CreateOptionalMobilityDto,
   ): Promise<HttpResponse<OptionalMobility>> {
@@ -66,12 +78,18 @@ export class OptionalMobilitiesController {
 
   @Get(API_ENDPOINTS.OPTIONAL_MOBILITIES.INTERVAL)
   @ApiBearerAuth()
-  @ApiOperation({summary: '[Users] Get Optional Mobility interval', description: 'Gets from Optional Mobilities the initial and final registered date years'})
+  @ApiOperation({
+    summary: '[Users] Get Optional Mobility interval',
+    description:
+      'Gets from Optional Mobilities the initial and final registered date years',
+  })
   @ApiOkResponse({
     type: OptionalMobilityIntervalInterface,
     description: 'The first and last registered dates years',
   })
-  @ApiUnauthorizedResponse({description: 'Not authorized to perform the query'})
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async interval(): Promise<HttpResponse<OptionalMobilityIntervalInterface>> {
     return {
       data: await this.optionalMobilitiesService.interval(),
@@ -80,11 +98,20 @@ export class OptionalMobilitiesController {
 
   @Get()
   @ApiBearerAuth()
-  @ApiOperation({summary: '[Users] Find all Optional Mobilities in the database', description: 'Finds in the database all `optional mobilities` and returns an array of `optional mobilities`'})
+  @ApiOperation({
+    summary: '[Users] Find all Optional Mobilities in the database',
+    description:
+      'Finds in the database all `optional mobilities` and returns an array of `optional mobilities`',
+  })
   @ApiQuery({ name: 'initialDate', type: Date })
   @ApiQuery({ name: 'finalDate', type: Date })
-  @ApiOkResponse({ type: [OptionalMobility], description: 'Array of `optional mobilities`' })
-  @ApiUnauthorizedResponse({description: 'Not authorized to perform the query'})
+  @ApiOkResponse({
+    type: [OptionalMobility],
+    description: 'Array of `optional mobilities`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async findAll(
     @Query('initialDate', ValidateDatePipe) initialDate: Date,
     @Query('finalDate', ValidateDatePipe) finalDate: Date,
@@ -99,10 +126,19 @@ export class OptionalMobilitiesController {
 
   @Get(`:${API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID}`)
   @ApiBearerAuth()
-  @ApiOperation({summary: '[Users] Find a Optional Mobility in the database', description: 'Finds in the database an `optional mobility` based on the provided `_id` and returns the found `optional mobility`'})
-  @ApiOkResponse({ type: OptionalMobility, description: 'The found `optional mobility`' })
-  @ApiUnauthorizedResponse({description: 'Not authorized to perform the query'})
-  @ApiForbiddenResponse({description: '`optional mobility not found`'})
+  @ApiOperation({
+    summary: '[Users] Find an Optional Mobility in the database',
+    description:
+      'Finds in the database an `optional mobility` based on the provided `_id` and returns the found `optional mobility`',
+  })
+  @ApiOkResponse({
+    type: OptionalMobility,
+    description: 'The found `optional mobility`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({ description: '`optional mobility not found`' })
   async findOne(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<OptionalMobility>> {
@@ -113,11 +149,21 @@ export class OptionalMobilitiesController {
 
   @Put(`:${API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID}`)
   @ApiBearerAuth()
-  @ApiOperation({summary: '[Users] Update an Optional Mobility in the database', description: 'Updates in the database an `optional mobility` based on the provided `_id` and returns the modified `optional mobility`'})
+  @ApiOperation({
+    summary: '[Users] Update an Optional Mobility in the database',
+    description:
+      'Updates in the database an `optional mobility` based on the provided `_id` and returns the modified `optional mobility`',
+  })
   @ApiBody({ type: UpdateOptionalMobilityDto })
-  @ApiOkResponse({ type: OptionalMobility, description: 'The modified `optional mobility`' })
-  @ApiUnauthorizedResponse({description: '`optional mobility not found`'})
-  @ApiForbiddenResponse({description: '`optional mobility not found` `optional mobility not modified`'})
+  @ApiOkResponse({
+    type: OptionalMobility,
+    description: 'The modified `optional mobility`',
+  })
+  @ApiUnauthorizedResponse({ description: '`optional mobility not found`' })
+  @ApiForbiddenResponse({
+    description:
+      '`optional mobility not found` `optional mobility not modified`',
+  })
   async update(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
     @Body() updateOptionalMobilityDto: UpdateOptionalMobilityDto,
@@ -132,10 +178,19 @@ export class OptionalMobilitiesController {
 
   @Delete(`:${API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID}`)
   @ApiBearerAuth()
-  @ApiOperation({summary: '[Users] Delete an Optional Mobility in the database', description: 'Deletes an `optional mobility` in the database on the provided _id'})
+  @ApiOperation({
+    summary: '[Users] Delete an Optional Mobility in the database',
+    description:
+      'Deletes an `optional mobility` in the database on the provided _id',
+  })
   @ApiOkResponse()
-  @ApiUnauthorizedResponse({description: 'Not authorized to perform the query'})
-  @ApiForbiddenResponse({})
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description:
+      '`optional mobility not found` `optional mobility not deleted`',
+  })
   async remove(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
@@ -148,6 +203,26 @@ export class OptionalMobilitiesController {
 
   @Get(API_ENDPOINTS.OPTIONAL_MOBILITIES.DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Get an Optional Mobility document',
+    description: 'Finds in the database the document and returns it',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
+    description: '`optional mobility` primary key',
+  })
+  @ApiParam({
+    name: 'type',
+    description: 'Document type',
+    enum: OptionalMobilityDocumentTypesArray,
+  })
+  @ApiOkResponse({ type: StreamableFile, description: 'The found document' })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description: '`optional mobility not found` `document not found`',
+  })
   async getDocument(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
     @Query('type', ValidateOptionalMobilityDocumentTypePipe)
@@ -162,19 +237,34 @@ export class OptionalMobilitiesController {
 
   @Put(API_ENDPOINTS.OPTIONAL_MOBILITIES.DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Update an Optional Mobility document',
+    description:
+      'Updates in the database the document and returns the `optional mobility`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
+    description: '`optional mobility` primary key',
+  })
+  @ApiParam({
+    name: 'type',
+    description: 'Document type',
+    enum: OptionalMobilityDocumentTypesArray,
+  })
+  @ApiOkResponse({
+    type: OptionalMobility,
+    description: 'The updated `optional mobility`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description:
+      '`optional mobility not found` `optional mobility not updated` `file must be a pdf`',
+  })
   @ApiParam({
     name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
     type: String,
-  })
-  @ApiQuery({
-    name: 'type',
-    type: String,
-    enum: [
-      'solicitudeDocument',
-      'presentationOfficeDocument',
-      'acceptanceDocument',
-      'evaluationDocument',
-    ],
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -221,6 +311,31 @@ export class OptionalMobilitiesController {
 
   @Delete(API_ENDPOINTS.OPTIONAL_MOBILITIES.DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Delete an Optional Mobility document',
+    description:
+      'Deletes in the database the document and returns the `optional mobility`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
+    description: '`optional mobility` primary key',
+  })
+  @ApiParam({
+    name: 'type',
+    description: 'Document type',
+    enum: OptionalMobilityDocumentTypesArray,
+  })
+  @ApiOkResponse({
+    type: OptionalMobility,
+    description: 'The updated `optional mobility`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description:
+      '`optional mobility not found` `optional mobility not updated`',
+  })
   async deleteDocument(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
     @Query('type') type: OptionalMobilityDocumentTypes,

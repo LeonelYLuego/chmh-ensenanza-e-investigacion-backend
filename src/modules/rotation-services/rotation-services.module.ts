@@ -8,6 +8,7 @@ import {
 import { RotationServicesController } from './rotation-services.controller';
 import { RotationServicesService } from './rotation-services.service';
 
+/** Rotation Service module */
 @Module({
   imports: [
     forwardRef(() =>

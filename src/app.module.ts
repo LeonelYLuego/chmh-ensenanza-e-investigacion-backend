@@ -22,18 +22,18 @@ import { OptionalMobilitiesModule } from './modules/optional-mobilities/optional
 @Module({
   imports: [
     MongooseModule.forRoot(
-      'mongodb://localhost/CHMH-Ensenanza-e-Investigacion',
+      'mongodb://127.0.0.1/CHMH-Ensenanza-e-Investigacion',
     ),
     AuthModule,
     ConfigModule,
     UsersModule,
     SocialServicesModule,
+    OptionalMobilitiesModule,
     HospitalsModule,
     SpecialtiesModule,
     StudentsModule,
     TemplatesModule,
     RotationServicesModule,
-    OptionalMobilitiesModule,
   ],
 })
 export class AppModule implements NestModule {

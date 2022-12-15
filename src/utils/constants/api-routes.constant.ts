@@ -9,6 +9,7 @@ export const API_RESOURCES = {
   TEMPLATES: 'templates',
   ROTATION_SERVICES: 'rotation-services',
   OPTIONAL_MOBILITIES: 'optional-mobilities',
+  OBLIGATORY_MOBILITIES: 'obligatory-mobilities',
 };
 
 /** @Constant Default API Paths Endpoints */
@@ -60,5 +61,9 @@ export const API_ENDPOINTS = {
     BY_ID: DEFAULT_API_PATHS.BY_ID,
     INTERVAL: '/interval',
     DOCUMENT: `/document/:${DEFAULT_API_PATHS.BY_ID}`,
+  },
+  OBLIGATORY_MOBILITIES: {
+    BASE_PATH: API_RESOURCES.OBLIGATORY_MOBILITIES,
+    BY_ID: DEFAULT_API_PATHS.BY_ID,
   },
 };

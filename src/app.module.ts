@@ -15,8 +15,9 @@ import { SpecialtiesModule } from '@specialties/specialties.module';
 import { StudentsModule } from '@students/students.module';
 import { UsersModule } from '@users/users.module';
 import { TemplatesModule } from '@templates/templates.module';
-import { RotationServicesModule } from 'modules/rotation-services/rotation-services.module';
-import { OptionalMobilitiesModule } from './modules/optional-mobilities/optional-mobilities.module';
+import { ObligatoryMobilitiesModule } from 'modules/obligatory-mobilities/obligatory-mobilities.module';
+import { OptionalMobilitiesModule } from 'modules/optional-mobilities';
+import { RotationServicesModule } from 'modules/rotation-services';
 
 /** main application module */
 @Module({
@@ -28,6 +29,7 @@ import { OptionalMobilitiesModule } from './modules/optional-mobilities/optional
     ConfigModule,
     UsersModule,
     SocialServicesModule,
+    ObligatoryMobilitiesModule,
     OptionalMobilitiesModule,
     HospitalsModule,
     SpecialtiesModule,

@@ -8,13 +8,21 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { API_ENDPOINTS, STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
 import { ValidateIdPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
 import { ObligatoryMobilityBySpecialtyDto } from './dto/obligatory-mobility-by-specialty.dto';
+import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interval.dto';
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
 import { ObligatoryMobility } from './obligatory-mobility.schema';
@@ -36,6 +44,18 @@ export class ObligatoryMobilitiesController {
       data: await this.obligatoryMobilitiesService.create(
         createObligatoryMobilityDto,
       ),
+    };
+  }
+
+  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.INTERVAL)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: ObligatoryMobilityIntervalDto })
+  @ApiForbiddenResponse({
+    description: '`obligatory mobility interval not found`',
+  })
+  async interval(): Promise<HttpResponse<ObligatoryMobilityIntervalDto>> {
+    return {
+      data: await this.obligatoryMobilitiesService.interval(),
     };
   }
 

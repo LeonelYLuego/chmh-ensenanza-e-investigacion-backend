@@ -90,6 +90,9 @@ export class OptionalMobilitiesController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
+  @ApiForbiddenResponse({
+    description: '`optional mobility interval not found`',
+  })
   async interval(): Promise<HttpResponse<OptionalMobilityIntervalInterface>> {
     return {
       data: await this.optionalMobilitiesService.interval(),

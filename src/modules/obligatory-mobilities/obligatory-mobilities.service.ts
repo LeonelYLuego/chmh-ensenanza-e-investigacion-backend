@@ -5,6 +5,7 @@ import { FilesService } from '@utils/services';
 import { Model } from 'mongoose';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
 import { ObligatoryMobilityBySpecialtyDto } from './dto/obligatory-mobility-by-specialty.dto';
+import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interval.dto';
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import {
   ObligatoryMobility,
@@ -171,5 +172,17 @@ export class ObligatoryMobilitiesService {
     await this.obligatoryMobilitiesModel.findOneAndDelete({ _id });
     if (await this.obligatoryMobilitiesModel.findOne({ _id }))
       throw new ForbiddenException('obligatory mobility not deleted');
+  }
+
+  async interval(): Promise<ObligatoryMobilityIntervalDto> {
+    const min = await this.obligatoryMobilitiesModel.findOne().sort('initialDate');
+    const max = await this.obligatoryMobilitiesModel.findOne().sort('finalDate');
+    if(min && max) {
+      return {
+        initialYear: min.initialDate.getFullYear(),
+        finalYear: max.finalDate.getFullYear(),
+      }
+    }
+    throw new ForbiddenException('obligatory mobility interval not found')
   }
 }

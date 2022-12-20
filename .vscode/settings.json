@@ -33,6 +33,7 @@
         "nodebuffer",
         "originalname",
         "rotationservices",
-        "Streamable"
+        "Streamable",
+        "uncancel"
     ]
 }

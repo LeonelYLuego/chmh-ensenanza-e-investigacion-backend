@@ -21,7 +21,7 @@ import { HttpResponse } from '@utils/dtos';
 import { ValidateIdPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
-import { ObligatoryMobilityBySpecialtyDto } from './dto/obligatory-mobility-by-specialty.dto';
+import { ObligatoryMobilityByHospitalDto } from './dto/obligatory-mobility-by-hospital.dto';
 import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interval.dto';
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
@@ -66,7 +66,7 @@ export class ObligatoryMobilitiesController {
   async findAll(
     @Query('initialDate', ValidateDatePipe) initialDate: Date,
     @Query('finalDate', ValidateDatePipe) finalDate: Date,
-  ): Promise<HttpResponse<ObligatoryMobilityBySpecialtyDto[]>> {
+  ): Promise<HttpResponse<ObligatoryMobilityByHospitalDto[]>> {
     return {
       data: await this.obligatoryMobilitiesService.findAll(
         initialDate,

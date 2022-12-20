@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { SpecialtiesModule } from '@specialties/specialties.module';
 import { FilesService } from '@utils/services';
 import { ObligatoryMobilitiesController } from './obligatory-mobilities.controller';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
@@ -19,6 +20,7 @@ import {
         },
       },
     ]),
+    SpecialtiesModule,
   ],
   controllers: [ObligatoryMobilitiesController],
   providers: [ObligatoryMobilitiesService, FilesService],

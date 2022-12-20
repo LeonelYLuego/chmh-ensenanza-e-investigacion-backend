@@ -108,6 +108,7 @@ export class OptionalMobilitiesService {
           presentationOfficeDocument: '$presentationOfficeDocument',
           acceptanceDocument: '$acceptanceDocument',
           evaluationDocument: '$evaluationDocument',
+          canceled: '$canceled',
           student: {
             $arrayElemAt: ['$student', 0],
           },
@@ -133,6 +134,7 @@ export class OptionalMobilitiesService {
               presentationOfficeDocument: '$presentationOfficeDocument',
               acceptanceDocument: '$acceptanceDocument',
               evaluationDocument: '$evaluationDocument',
+              canceled: '$canceled',
               student: {
                 _id: '$student._id',
                 name: '$student.name',
@@ -167,6 +169,34 @@ export class OptionalMobilitiesService {
     if (!optionalMobility)
       throw new ForbiddenException('optional mobility not found');
     return optionalMobility;
+  }
+
+  async cancel(_id: string): Promise<OptionalMobility> {
+    await this.findOne(_id);
+    if (
+      (
+        await this.optionalMobilitiesModel.updateOne(
+          { _id },
+          { canceled: true },
+        )
+      ).modifiedCount == 0
+    )
+      throw new ForbiddenException('optional mobility not modified');
+    return await this.findOne(_id);
+  }
+
+  async uncancel(_id: string): Promise<OptionalMobility> {
+    await this.findOne(_id);
+    if (
+      (
+        await this.optionalMobilitiesModel.updateOne(
+          { _id },
+          { canceled: false },
+        )
+      ).modifiedCount == 0
+    )
+      throw new ForbiddenException('optional mobility not modified');
+    return await this.findOne(_id);
   }
 
   /**

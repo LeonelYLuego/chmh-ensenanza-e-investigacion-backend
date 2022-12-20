@@ -44,6 +44,7 @@ import { ValidateSocialServiceDocumentTypePipe } from './pipes/validate-social-s
 import { SocialService } from './social-service.schema';
 import { SocialServicesService } from './social-services.service';
 import { SocialServiceDocumentTypes } from './types/document.types';
+import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 
 @ApiTags('Social Services')
 @Controller(API_ENDPOINTS.SOCIAL_SERVICES.BASE_PATH)
@@ -137,7 +138,7 @@ export class SocialServicesController {
   })
   @ApiBearerAuth()
   @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
-  @ApiQuery({ type: String, name: 'dateOfDocuments', example: '20/02/2022' })
+  @ApiQuery({ type: Date, name: 'dateOfDocuments' })
   @ApiQuery({ type: Number, name: 'initialPeriod' })
   @ApiQuery({ type: Number, name: 'initialYear' })
   @ApiQuery({ type: Number, name: 'finalPeriod' })
@@ -156,7 +157,7 @@ export class SocialServicesController {
   async generateDocuments(
     @Query('initialNumberOfDocuments', ValidateNumberPipe)
     initialNumberOfDocuments: number,
-    @Query('dateOfDocuments', ValidateSlashDatePipe) dateOfDocuments: Date,
+    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date,
     @Query('initialPeriod', ValidatePeriodPipe) initialPeriod: number,
     @Query('initialYear', ValidateYearPipe) initialYear: number,
     @Query('finalPeriod', ValidatePeriodPipe) finalPeriod: number,

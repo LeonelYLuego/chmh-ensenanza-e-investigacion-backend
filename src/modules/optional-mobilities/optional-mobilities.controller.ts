@@ -150,6 +150,26 @@ export class OptionalMobilitiesController {
     };
   }
 
+  @Put(API_ENDPOINTS.OPTIONAL_MOBILITIES.CANCEL)
+  @ApiBearerAuth()
+  async cancel(
+    @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<OptionalMobility>> {
+    return {
+      data: await this.optionalMobilitiesService.cancel(_id),
+    };
+  }
+
+  @Put(API_ENDPOINTS.OPTIONAL_MOBILITIES.UNCANCEL)
+  @ApiBearerAuth()
+  async uncancel(
+    @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
+  ): Promise<HttpResponse<OptionalMobility>> {
+    return {
+      data: await this.optionalMobilitiesService.uncancel(_id),
+    };
+  }
+
   @Put(`:${API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID}`)
   @ApiBearerAuth()
   @ApiOperation({

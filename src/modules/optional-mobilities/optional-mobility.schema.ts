@@ -81,6 +81,18 @@ export class OptionalMobility {
   })
   hospital: Hospital;
 
+  @ApiProperty({
+    type: Boolean,
+    default: false,
+    required: false,
+  })
+  @Prop({
+    type: Boolean,
+    default: false,
+    required: false,
+  })
+  canceled?: boolean;
+
   @ApiProperty({})
   __v?: number;
 }

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ObligatoryMobility } from '../obligatory-mobility.schema';
 
-export class ObligatoryMobilityBySpecialtyDto {
+class ObligatoryMobilityBySpecialtyDto {
   @ApiProperty()
   _id: string;
 
@@ -10,4 +10,15 @@ export class ObligatoryMobilityBySpecialtyDto {
 
   @ApiProperty()
   obligatoryMobilities: ObligatoryMobility[];
+}
+
+export class ObligatoryMobilityByHospitalDto {
+  @ApiProperty()
+  _id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  specialties: ObligatoryMobilityBySpecialtyDto[];
 }

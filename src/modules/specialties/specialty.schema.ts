@@ -51,6 +51,16 @@ export class Specialty {
   })
   headOfService: string;
 
+  @ApiProperty({
+    type: Boolean,
+    default: false,
+  })
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  incoming: boolean;
+
   @ApiProperty({ type: Number })
   __v: number;
 }

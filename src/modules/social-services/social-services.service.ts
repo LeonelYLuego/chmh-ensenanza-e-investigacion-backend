@@ -109,7 +109,7 @@ export class SocialServicesService {
         finalYear: max.year,
       };
     }
-    return null;
+    throw new ForbiddenException('social service period not found');
   }
 
   /**

@@ -18,7 +18,7 @@ export class SpecialtiesService {
    * @returns {Promise<Specialty[]>} the found Specialties
    */
   async find(): Promise<Specialty[]> {
-    return await this.specialtiesModel.find().exec();
+    return await this.specialtiesModel.find({ incoming: false }).exec();
   }
 
   /**
@@ -28,30 +28,11 @@ export class SpecialtiesService {
    * @returns {Promise<Specialty>} the found Specialty
    */
   async findOne(_id: string): Promise<Specialty> {
-    const result = await this.specialtiesModel.findOne({ _id }).exec();
+    const result = await this.specialtiesModel
+      .findOne({ _id, incoming: false })
+      .exec();
     if (result) return result;
     else throw new ForbiddenException('specialty not found');
-  }
-
-  /**
-   * Finds a Specialty in the database based on the provided value
-   * @async
-   * @param {string} value value of the Specialty
-   * @returns {Promise<Specialty | null>} the found Specialty
-   */
-  async findOneByValueAndDuration(
-    value: string,
-    duration: number,
-  ): Promise<Specialty | null> {
-    //Finds all values with lowercase
-    return await this.specialtiesModel
-      .findOne({
-        value: {
-          $regex: new RegExp(`^${value.toLowerCase()}$`, 'i'),
-        },
-        duration,
-      })
-      .exec();
   }
 
   /**
@@ -62,14 +43,12 @@ export class SpecialtiesService {
    * @throws {ForbiddenException} Specialty value must not already exists in the database
    */
   async create(specialtyDto: SpecialtyDto): Promise<Specialty> {
-    const specialty = await this.findOneByValueAndDuration(
-      specialtyDto.value,
-      specialtyDto.duration,
-    );
-    if (!specialty) {
-      const createdSpecialty = new this.specialtiesModel(specialtyDto);
-      return await createdSpecialty.save();
-    } else throw new ForbiddenException('specialty already exists');
+    const specialty = {
+      incoming: false,
+      ...specialtyDto,
+    };
+    const createdSpecialty = new this.specialtiesModel(specialty);
+    return await createdSpecialty.save();
   }
 
   /**
@@ -120,5 +99,49 @@ export class SpecialtiesService {
     //If the month is January or February
     if (month == 1 || month == 2) year -= 1;
     return -(lastYearGeneration - specialty.duration - year - 1);
+  }
+
+  async findIncoming(): Promise<Specialty[]> {
+    return await this.specialtiesModel.find({ incoming: true }).exec();
+  }
+
+  async findOneIncoming(_id: string): Promise<Specialty> {
+    const result = await this.specialtiesModel
+      .findOne({ _id, incoming: true })
+      .exec();
+    if (result) return result;
+    else throw new ForbiddenException('specialty not found');
+  }
+
+  async createIncoming(specialtyDto: SpecialtyDto): Promise<Specialty> {
+    const specialty = {
+      incoming: true,
+      ...specialtyDto,
+    };
+    const createdSpecialty = new this.specialtiesModel(specialty);
+    return await createdSpecialty.save();
+  }
+
+  async updateIncoming(
+    _id: string,
+    specialtyDto: SpecialtyDto,
+  ): Promise<Specialty> {
+    const specialty = await this.findOneIncoming(_id);
+    if (specialty) {
+      const res = await this.specialtiesModel
+        .updateOne({ _id }, specialtyDto)
+        .exec();
+      if (res.modifiedCount == 1) return await this.findOneIncoming(_id);
+      else throw new ForbiddenException('specialty not modified');
+    } else throw new ForbiddenException('specialty not found');
+  }
+
+  async deleteIncoming(_id: string): Promise<void> {
+    const specialty = await this.findOneIncoming(_id);
+    if (specialty) {
+      await this.specialtiesModel.findOneAndDelete({ _id });
+      if (await this.specialtiesModel.findOne({ _id }))
+        throw new ForbiddenException('specialty not deleted');
+    } else throw new ForbiddenException('specialty not found');
   }
 }

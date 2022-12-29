@@ -39,10 +39,8 @@ export class ObligatoryMobilitiesService {
       [];
     const data = await this.obligatoryMobilitiesModel
       .find({
-        initialDate: {
+        date: {
           $gte: initialDate,
-        },
-        finalDate: {
           $lte: finalDate,
         },
       })
@@ -147,16 +145,12 @@ export class ObligatoryMobilitiesService {
   }
 
   async interval(): Promise<ObligatoryMobilityIntervalDto> {
-    const min = await this.obligatoryMobilitiesModel
-      .findOne()
-      .sort('initialDate');
-    const max = await this.obligatoryMobilitiesModel
-      .findOne()
-      .sort('finalDate');
+    const min = await this.obligatoryMobilitiesModel.findOne().sort('date');
+    const max = await this.obligatoryMobilitiesModel.findOne().sort('-date');
     if (min && max) {
       return {
-        initialYear: min.initialDate.getFullYear(),
-        finalYear: max.finalDate.getFullYear(),
+        initialYear: min.date.getFullYear(),
+        finalYear: max.date.getFullYear(),
       };
     }
     throw new ForbiddenException('obligatory mobility interval not found');

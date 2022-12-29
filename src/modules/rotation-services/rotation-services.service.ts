@@ -1,6 +1,7 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SpecialtiesService } from '@specialties/specialties.service';
+import { Specialty } from '@specialties/specialty.schema';
 import { Model } from 'mongoose';
 import { RotationServiceDto } from './dtos/rotation-service.dto';
 import {
@@ -22,6 +23,7 @@ export class RotationServicesService {
    * @returns {RotationService[]} The found Rotation Services
    */
   async find(specialty: string): Promise<RotationService[]> {
+    await this.specialtiesService.findOne(specialty);
     return await this.rotationServicesModel.find({ specialty });
   }
 
@@ -32,10 +34,15 @@ export class RotationServicesService {
    * @throws {ForbiddenException} Rotation Service must exist
    */
   async findOne(_id: string): Promise<RotationService> {
-    const rotationService = await this.rotationServicesModel.findOne({ _id });
-    if (!rotationService)
-      throw new ForbiddenException('rotation service not found');
-    return rotationService;
+    const rotationService = await this.rotationServicesModel.findOne({
+      _id,
+    });
+    if (rotationService && !rotationService.specialty.incoming) {
+      rotationService.specialty = rotationService.specialty
+        ._id as unknown as Specialty;
+      return rotationService;
+    }
+    throw new ForbiddenException('rotation service not found');
   }
 
   /**
@@ -101,5 +108,57 @@ export class RotationServicesService {
     await this.rotationServicesModel.deleteMany({
       specialty,
     });
+  }
+
+  async findIncoming(specialty: string): Promise<RotationService[]> {
+    await this.specialtiesService.findIncoming();
+    return await this.rotationServicesModel.find({ specialty });
+  }
+
+  async findOneIncoming(_id: string): Promise<RotationService> {
+    const rotationService = await this.rotationServicesModel.findOne({
+      _id,
+    });
+    if (rotationService && rotationService.specialty.incoming) {
+      rotationService.specialty = rotationService.specialty
+        ._id as unknown as Specialty;
+      return rotationService;
+    }
+    throw new ForbiddenException('rotation service not found');
+  }
+
+  async createIncoming(
+    rotationServiceDto: RotationServiceDto,
+  ): Promise<RotationService> {
+    await this.specialtiesService.findOneIncoming(rotationServiceDto.specialty);
+    const rotationService = new this.rotationServicesModel(rotationServiceDto);
+    return await rotationService.save();
+  }
+
+  async updateIncoming(
+    _id: string,
+    rotationServiceDto: RotationServiceDto,
+  ): Promise<RotationService> {
+    const rotationService = await this.findOneIncoming(_id);
+    await this.specialtiesService.findOneIncoming(rotationServiceDto.specialty);
+    if (
+      (
+        await this.rotationServicesModel.updateOne(
+          { _id: rotationService._id },
+          rotationServiceDto,
+        )
+      ).modifiedCount == 0
+    )
+      throw new ForbiddenException('rotation service not modified');
+    else return await this.findOneIncoming(_id);
+  }
+
+  async deleteIncoming(_id: string): Promise<void> {
+    const rotationService = await this.findOneIncoming(_id);
+    if (
+      (await this.rotationServicesModel.deleteOne({ _id: rotationService._id }))
+        .deletedCount == 0
+    )
+      throw new ForbiddenException('rotation service not deleted');
   }
 }

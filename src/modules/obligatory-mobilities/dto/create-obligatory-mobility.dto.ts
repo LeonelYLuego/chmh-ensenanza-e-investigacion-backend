@@ -2,15 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsDefined, IsMongoId, IsString } from 'class-validator';
 
 export class CreateObligatoryMobilityDto {
-  @ApiProperty({ type: Date, description: 'Obligatory Mobility initial date' })
+  @ApiProperty({ type: Date, description: 'Obligatory Mobility date' })
   @IsDefined()
   @IsDateString()
-  initialDate: Date;
-
-  @ApiProperty({ type: Date, description: 'Obligatory Mobility final date' })
-  @IsDefined()
-  @IsDateString()
-  finalDate: Date;
+  date: Date;
 
   @ApiProperty({
     type: String,

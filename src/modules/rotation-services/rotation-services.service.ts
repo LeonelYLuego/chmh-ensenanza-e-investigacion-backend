@@ -34,9 +34,11 @@ export class RotationServicesService {
    * @throws {ForbiddenException} Rotation Service must exist
    */
   async findOne(_id: string): Promise<RotationService> {
-    const rotationService = await this.rotationServicesModel.findOne({
-      _id,
-    });
+    const rotationService = await this.rotationServicesModel
+      .findOne({
+        _id,
+      })
+      .populate('specialty');
     if (rotationService && !rotationService.specialty.incoming) {
       rotationService.specialty = rotationService.specialty
         ._id as unknown as Specialty;
@@ -116,9 +118,11 @@ export class RotationServicesService {
   }
 
   async findOneIncoming(_id: string): Promise<RotationService> {
-    const rotationService = await this.rotationServicesModel.findOne({
-      _id,
-    });
+    const rotationService = await this.rotationServicesModel
+      .findOne({
+        _id,
+      })
+      .populate('specialty');
     if (rotationService && rotationService.specialty.incoming) {
       rotationService.specialty = rotationService.specialty
         ._id as unknown as Specialty;

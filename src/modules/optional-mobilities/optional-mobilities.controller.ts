@@ -10,7 +10,6 @@ import {
   UseInterceptors,
   UploadedFile,
   StreamableFile,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { OptionalMobilitiesService } from './optional-mobilities.service';
 import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';

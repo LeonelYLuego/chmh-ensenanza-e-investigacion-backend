@@ -18,6 +18,7 @@ import { TemplatesModule } from '@templates/templates.module';
 import { ObligatoryMobilitiesModule } from 'modules/obligatory-mobilities/obligatory-mobilities.module';
 import { OptionalMobilitiesModule } from 'modules/optional-mobilities';
 import { RotationServicesModule } from 'modules/rotation-services';
+import { IncomingStudentsModule } from 'modules/incoming-students/incoming-students.module';
 
 /** main application module */
 @Module({
@@ -36,6 +37,7 @@ import { RotationServicesModule } from 'modules/rotation-services';
     StudentsModule,
     TemplatesModule,
     RotationServicesModule,
+    IncomingStudentsModule,
   ],
 })
 export class AppModule implements NestModule {

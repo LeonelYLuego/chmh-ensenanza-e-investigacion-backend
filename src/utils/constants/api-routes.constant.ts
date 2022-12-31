@@ -10,6 +10,7 @@ export const API_RESOURCES = {
   ROTATION_SERVICES: 'rotation-services',
   OPTIONAL_MOBILITIES: 'optional-mobilities',
   OBLIGATORY_MOBILITIES: 'obligatory-mobilities',
+  INCOMING_STUDENTS: 'incoming-students',
 };
 
 /** @Constant Default API Paths Endpoints */
@@ -56,7 +57,7 @@ export const API_ENDPOINTS = {
   ROTATION_SERVICES: {
     BASE_PATH: API_RESOURCES.ROTATION_SERVICES,
     BY_ID: DEFAULT_API_PATHS.BY_ID,
-    INCOMING: '/incoming'
+    INCOMING: '/incoming',
   },
   OPTIONAL_MOBILITIES: {
     BASE_PATH: API_RESOURCES.OPTIONAL_MOBILITIES,
@@ -68,6 +69,11 @@ export const API_ENDPOINTS = {
   },
   OBLIGATORY_MOBILITIES: {
     BASE_PATH: API_RESOURCES.OBLIGATORY_MOBILITIES,
+    BY_ID: DEFAULT_API_PATHS.BY_ID,
+    INTERVAL: '/interval',
+  },
+  INCOMING_STUDENTS: {
+    BASE_PATH: API_RESOURCES.INCOMING_STUDENTS,
     BY_ID: DEFAULT_API_PATHS.BY_ID,
     INTERVAL: '/interval',
   },

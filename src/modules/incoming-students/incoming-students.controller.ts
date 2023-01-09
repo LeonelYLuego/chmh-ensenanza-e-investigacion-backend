@@ -80,7 +80,7 @@ export class IncomingStudentsController {
     type: IncomingStudent,
   })
   async findOne(
-    @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateDatePipe) _id: string,
+    @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<IncomingStudent>> {
     return {
       data: await this.incomingStudentsService.findOne(_id),

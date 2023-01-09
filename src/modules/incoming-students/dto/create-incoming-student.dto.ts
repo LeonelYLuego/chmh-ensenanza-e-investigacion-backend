@@ -5,20 +5,17 @@ import {
   IsDefined,
   IsEmail,
   IsMongoId,
-  IsNumber,
   IsOptional,
   IsString,
   Matches,
-  Max,
   MaxLength,
-  Min,
   MinLength,
 } from 'class-validator';
 
 export class CreateIncomingStudentDto {
   @ApiProperty({
     type: String,
-    description: 'Student code',
+    description: 'Incoming Student code',
     minLength: 3,
     maxLength: 64,
     required: false,
@@ -31,7 +28,7 @@ export class CreateIncomingStudentDto {
 
   @ApiProperty({
     type: String,
-    description: 'Student name',
+    description: 'Incoming Student name',
     minLength: 3,
     maxLength: 32,
   })
@@ -43,7 +40,7 @@ export class CreateIncomingStudentDto {
 
   @ApiProperty({
     type: String,
-    description: 'Student first last name',
+    description: 'Incoming Student first last name',
     minLength: 3,
     maxLength: 32,
   })
@@ -55,7 +52,7 @@ export class CreateIncomingStudentDto {
 
   @ApiProperty({
     type: String,
-    description: 'Student second last name',
+    description: 'Incoming Student second last name',
     minLength: 3,
     maxLength: 32,
     required: false,
@@ -67,21 +64,8 @@ export class CreateIncomingStudentDto {
   secondLastName?: string;
 
   @ApiProperty({
-    type: Number,
-    description: 'Student last year generation',
-    minimum: 1990,
-    maximum: 2100,
-    default: 2022,
-  })
-  @IsDefined()
-  @IsNumber()
-  @Min(1990)
-  @Max(2100)
-  lastYearGeneration: number;
-
-  @ApiProperty({
     type: [String],
-    description: 'Student phones',
+    description: 'Incoming Student phones',
     required: false,
   })
   @IsOptional()
@@ -96,7 +80,7 @@ export class CreateIncomingStudentDto {
 
   @ApiProperty({
     type: [String],
-    description: 'Student emails',
+    description: 'Incoming Student emails',
     required: false,
   })
   @IsOptional()
@@ -107,23 +91,23 @@ export class CreateIncomingStudentDto {
   @MaxLength(64, { each: true })
   emails: string[];
 
-  @ApiProperty({ type: Date, description: 'Optional Mobility initial date' })
+  @ApiProperty({ type: Date, description: 'Incoming Student initial date' })
   @IsDefined()
   @IsDateString()
   initialDate: Date;
 
-  @ApiProperty({ type: Date, description: 'Optional Mobility final date' })
+  @ApiProperty({ type: Date, description: 'Incoming Student final date' })
   @IsDefined()
   @IsDateString()
   finalDate: Date;
 
-  @ApiProperty({ description: 'Optional Mobility rotation service' })
+  @ApiProperty({ description: 'Incoming Student rotation service' })
   @IsDefined()
   @IsString()
   @IsMongoId()
   rotationService: string;
 
-  @ApiProperty({ description: 'Optional Mobility hospital' })
+  @ApiProperty({ description: 'Incoming Student hospital' })
   @IsDefined()
   @IsString()
   @IsMongoId()

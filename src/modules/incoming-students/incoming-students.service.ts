@@ -1,6 +1,7 @@
 import { HospitalsService } from '@hospitals/hospitals.service';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { SpecialtiesService } from '@specialties/specialties.service';
 import { FilesService } from '@utils/services';
 import { RotationServicesService } from 'modules/rotation-services';
 import { Model } from 'mongoose';
@@ -19,6 +20,7 @@ export class IncomingStudentsService {
     private incomingStudentsModel: Model<IncomingStudentDocument>,
     private rotationServicesService: RotationServicesService,
     private hospitalsService: HospitalsService,
+    private specialtiesService: SpecialtiesService,
     private filesService: FilesService,
   ) {}
 
@@ -26,33 +28,42 @@ export class IncomingStudentsService {
     createIncomingStudentDto: CreateIncomingStudentDto,
   ): Promise<IncomingStudent> {
     await this.rotationServicesService.findOneIncoming(
-      createIncomingStudentDto.hospital,
+      createIncomingStudentDto.rotationService,
     );
     await this.hospitalsService.findOne(createIncomingStudentDto.hospital);
     const createdIncomingStudent = new this.incomingStudentsModel(
       createIncomingStudentDto,
     );
-    return createdIncomingStudent;
+    return await createdIncomingStudent.save();
   }
 
   async findAll(
     initialDate: Date,
     finalDate: Date,
   ): Promise<IncomingStudent[]> {
-    return await this.incomingStudentsModel.find({
-      initialDate: {
-        $gte: initialDate,
-      },
-      finalDate: {
-        $lte: finalDate,
-      },
-    });
+    return await this.incomingStudentsModel
+      .find({
+        initialDate: {
+          $gte: initialDate,
+        },
+        finalDate: {
+          $lte: finalDate,
+        },
+      })
+      .populate('hospital')
+      .sort('initialDate');
   }
 
   async findOne(_id: string): Promise<IncomingStudent> {
-    const incomingStudent = await this.incomingStudentsModel.findOne({ _id });
+    const incomingStudent = await this.incomingStudentsModel
+      .findOne({ _id })
+      .populate('rotationService');
     if (!incomingStudent)
       throw new ForbiddenException('incoming student not found');
+    incomingStudent.rotationService.specialty =
+      await this.specialtiesService.findOneIncoming(
+        incomingStudent.rotationService.specialty as unknown as string,
+      );
     return incomingStudent;
   }
 

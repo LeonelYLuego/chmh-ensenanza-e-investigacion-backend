@@ -34,19 +34,6 @@ export class IncomingStudent {
   secondLastName?: string;
 
   @ApiProperty({
-    type: Number,
-    description: 'Incoming Student last year generation',
-    minimum: 1900,
-    maximum: 2100,
-  })
-  @Prop({
-    type: Number,
-    min: 1990,
-    max: 2100,
-  })
-  lastYearGeneration: number;
-
-  @ApiProperty({
     type: [String],
     description: 'Incoming Student phones',
     default: [],

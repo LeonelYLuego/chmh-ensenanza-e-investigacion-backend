@@ -233,7 +233,7 @@ export class OptionalMobilitiesController {
     name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
     description: '`optional mobility` primary key',
   })
-  @ApiParam({
+  @ApiQuery({
     name: 'type',
     description: 'Document type',
     enum: OptionalMobilityDocumentTypesArray,
@@ -268,7 +268,7 @@ export class OptionalMobilitiesController {
     name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
     description: '`optional mobility` primary key',
   })
-  @ApiParam({
+  @ApiQuery({
     name: 'type',
     description: 'Document type',
     enum: OptionalMobilityDocumentTypesArray,
@@ -283,10 +283,6 @@ export class OptionalMobilitiesController {
   @ApiForbiddenResponse({
     description:
       '`optional mobility not found` `optional mobility not updated` `file must be a pdf`',
-  })
-  @ApiParam({
-    name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
-    type: String,
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -342,7 +338,7 @@ export class OptionalMobilitiesController {
     name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
     description: '`optional mobility` primary key',
   })
-  @ApiParam({
+  @ApiQuery({
     name: 'type',
     description: 'Document type',
     enum: OptionalMobilityDocumentTypesArray,

@@ -1,5 +1,5 @@
 import { HospitalsService } from '@hospitals/hospitals.service';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SpecialtiesService } from '@specialties/specialties.service';
 import { FilesService } from '@utils/services';
@@ -12,6 +12,8 @@ import {
   IncomingStudent,
   IncomingStudentDocument,
 } from './incoming-student.schema';
+import { IncomingStudentDocumentTypes } from './types/incoming-student-document.type';
+import * as fs from 'fs';
 
 @Injectable()
 export class IncomingStudentsService {
@@ -57,7 +59,7 @@ export class IncomingStudentsService {
   async findOne(_id: string): Promise<IncomingStudent> {
     const incomingStudent = await this.incomingStudentsModel
       .findOne({ _id })
-      .populate('rotationService');
+      .populate('rotationService hospital');
     if (!incomingStudent)
       throw new ForbiddenException('incoming student not found');
     incomingStudent.rotationService.specialty =
@@ -119,5 +121,112 @@ export class IncomingStudentsService {
       };
     }
     throw new ForbiddenException('incoming student interval not found');
+  }
+
+  async getDocument(
+    _id: string,
+    path: string,
+    document: IncomingStudentDocumentTypes,
+  ): Promise<StreamableFile> {
+    const incomingStudent = await this.findOne(_id);
+    if (incomingStudent[document]) {
+      const filePath = `${path}/${incomingStudent[document]}`;
+      if (fs.existsSync(filePath)) {
+        const file = fs.createReadStream(filePath);
+        return new StreamableFile(file, {
+          type: 'application/pdf',
+        });
+      }
+    }
+    throw new ForbiddenException('document not found');
+  }
+
+  async updateDocument(
+    _id: string,
+    path: string,
+    file: Express.Multer.File,
+    document: IncomingStudentDocumentTypes,
+  ): Promise<IncomingStudent> {
+    try {
+      this.filesService.validatePDF(file);
+      const incomingStudent = await this.findOne(_id);
+      if (incomingStudent[document]) {
+        this.filesService.deleteFile(`${path}/${incomingStudent[document]}`);
+      }
+      let updateObject: object = {};
+      updateObject[document] = file.filename;
+      if (
+        (
+          await this.incomingStudentsModel.updateOne(
+            { _id: incomingStudent._id },
+            updateObject,
+          )
+        ).modifiedCount < 1
+      )
+        throw new ForbiddenException('incoming student not modified');
+      return await this.findOne(_id);
+    } catch (err) {
+      this.filesService.deleteFile(`${path}/${file.filename}`);
+    }
+  }
+
+  async deleteDocument(
+    _id: string,
+    path: string,
+    document: IncomingStudentDocumentTypes,
+  ): Promise<IncomingStudent> {
+    const incomingStudent = await this.findOne(_id);
+    if (incomingStudent[document])
+      this.filesService.deleteFile(`${path}/${incomingStudent[document]}`);
+    let updateObject: object = {};
+    updateObject[document] = null;
+    if (
+      (
+        await this.incomingStudentsModel.updateOne(
+          { _id: incomingStudent._id },
+          updateObject,
+        )
+      ).modifiedCount < 1
+    )
+      throw new ForbiddenException('incoming student not modified');
+    return await this.findOne(_id);
+  }
+
+  async VoBo(_id: string): Promise<IncomingStudent> {
+    const incomingStudent = await this.findOne(_id);
+    if (
+      (
+        await this.incomingStudentsModel.updateOne(
+          {
+            _id,
+          },
+          {
+            solicitudeVoBo: !incomingStudent.solicitudeVoBo,
+          },
+        )
+      ).modifiedCount < 1
+    )
+      throw new ForbiddenException('incoming student not modified');
+    return await this.findOne(_id);
+  }
+
+  async cancel(_id: string): Promise<IncomingStudent> {
+    await this.findOne(_id);
+    if (
+      (await this.incomingStudentsModel.updateOne({ _id }, { canceled: true }))
+        .modifiedCount < 1
+    )
+      throw new ForbiddenException('incoming student not modified');
+    return await this.findOne(_id);
+  }
+
+  async uncancel(_id: string): Promise<IncomingStudent> {
+    await this.findOne(_id);
+    if (
+      (await this.incomingStudentsModel.updateOne({ _id }, { canceled: false }))
+        .modifiedCount < 1
+    )
+      throw new ForbiddenException('incoming student not modified');
+    return await this.findOne(_id);
   }
 }

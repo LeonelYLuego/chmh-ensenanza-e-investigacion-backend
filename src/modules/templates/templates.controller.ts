@@ -22,6 +22,7 @@ import {
 import { API_ENDPOINTS } from '@utils/constants';
 import { STORAGE_PATHS } from '@utils/constants/storage.constant';
 import { HttpResponse } from '@utils/dtos';
+import { ValidateOptionalMobilityDocumentTypePipe } from 'modules/optional-mobilities/pipes/validate-optional-mobility-document.pipe';
 import { ValidateSocialServiceDocumentTypePipe } from 'modules/social-services/pipes/validate-social-service-document-type.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -38,12 +39,16 @@ export class TemplatesController {
     description: 'Updates a Document `Template` in the database',
   })
   @ApiBearerAuth()
-  @ApiParam({ name: 'document', type: String, enum: ['socialService'] })
+  @ApiParam({
+    name: 'document',
+    type: String,
+    enum: ['socialService', 'optionalMobility'],
+  })
   @ApiQuery({
     name: 'type',
     description: 'document type',
     type: String,
-    enum: ['presentationOfficeDocument'],
+    enum: ['presentationOfficeDocument', 'solicitudeDocument'],
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -81,7 +86,7 @@ export class TemplatesController {
   async updateDocument(
     @Param('document') document: string,
     @UploadedFile() file: Express.Multer.File,
-    @Query('type', ValidateSocialServiceDocumentTypePipe) type: string,
+    @Query('type') type: string,
   ): Promise<HttpResponse<undefined>> {
     await this.templatesService.updateTemplates(document, type, file);
     return {};

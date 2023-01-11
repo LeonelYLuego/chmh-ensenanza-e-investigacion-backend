@@ -57,6 +57,14 @@ export class UpdateHospitalDto {
   secondReceiver?: ReceiverDto;
 
   @ApiProperty({
+    type: ReceiverDto,
+    description: 'Third receiver, with attention to',
+    required: false,
+  })
+  @IsOptional()
+  thirdReceiver?: ReceiverDto;
+
+  @ApiProperty({
     type: AddressDto,
     description: 'Hospital address',
     required: false,

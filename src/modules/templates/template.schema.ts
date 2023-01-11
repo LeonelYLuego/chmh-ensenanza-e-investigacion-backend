@@ -15,6 +15,23 @@ export class SocialServiceTemplates {
   presentationOfficeDocument?: string;
 }
 
+@Schema()
+export class OptionalMobilitiesTemplates {
+  @ApiProperty({
+    type: String,
+    description: 'Optional Mobility Solicitude Template',
+  })
+  @Prop({ type: String, required: false, length: 64 })
+  solicitudeDocument?: string;
+
+  @ApiProperty({
+    type: String,
+    description: 'Optional Mobility Presentation Office Template',
+  })
+  @Prop({ type: String, required: false, length: 64 })
+  presentationOfficeDocument?: string;
+}
+
 /** Template schema */
 @Schema()
 export class Templates {
@@ -27,6 +44,13 @@ export class Templates {
   })
   @Prop({ type: SocialServiceTemplates, required: true })
   socialService: SocialServiceTemplates;
+
+  @ApiProperty({
+    type: OptionalMobilitiesTemplates,
+    description: 'Optional Mobilities Templates',
+  })
+  @Prop({ type: OptionalMobilitiesTemplates, required: true })
+  optionalMobility: OptionalMobilitiesTemplates;
 
   @ApiProperty({ type: Number })
   __v?: number;

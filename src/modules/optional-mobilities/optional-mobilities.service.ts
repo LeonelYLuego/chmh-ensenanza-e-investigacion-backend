@@ -1,7 +1,15 @@
+import { Hospital } from '@hospitals/hospital.schema';
+import { HospitalsService } from '@hospitals/hospitals.service';
 import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { SpecialtiesService } from '@specialties/specialties.service';
+import { TemplatesService } from '@templates/templates.service';
+import { dateToString, getInterval } from '@utils/functions/date.function';
+import { gradeToString } from '@utils/functions/grade.function';
 import { FilesService } from '@utils/services';
+import Docxtemplater from 'docxtemplater';
 import * as fs from 'fs';
+import * as JSZip from 'jszip';
 import { Model } from 'mongoose';
 import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';
 import { OptionalMobilityBySpecialtyDto } from './dto/optional-mobility-by-specialty';
@@ -19,6 +27,9 @@ export class OptionalMobilitiesService {
   constructor(
     @InjectModel(OptionalMobility.name)
     private optionalMobilitiesModel: Model<OptionalMobilityDocument>,
+    private hospitalsService: HospitalsService,
+    private specialtiesService: SpecialtiesService,
+    private templatesService: TemplatesService,
     private filesService: FilesService,
   ) {}
 
@@ -366,5 +377,163 @@ export class OptionalMobilitiesService {
     )
       throw new ForbiddenException('optional mobility not updated');
     return await this.findOne(_id);
+  }
+
+  async generatePresentationOfficesDocuments(
+    initialNumberOfDocuments: number,
+    dateOfDocuments: Date,
+    initialDate: Date,
+    finalDate: Date,
+    hospital?: string,
+    specialty?: string,
+  ): Promise<StreamableFile> {
+    if (initialDate.getTime() > finalDate.getTime())
+      throw new ForbiddenException('invalid interval');
+    let counter = initialNumberOfDocuments;
+    const date = new Date(dateOfDocuments);
+    const zip = new JSZip();
+    let hospitals: Hospital[] = [];
+    if (hospital) hospitals.push(await this.hospitalsService.findOne(hospital));
+    else hospitals = await this.hospitalsService.findAll();
+    await Promise.all(
+      hospitals.map(async (hospital) => {
+        const optionalMobilities =
+          (await this.optionalMobilitiesModel.aggregate([
+            {
+              $match: {
+                initialDate: {
+                  $gte: initialDate,
+                },
+                finalDate: {
+                  $lte: finalDate,
+                },
+                hospital: hospital._id,
+                canceled: false,
+              },
+            },
+            {
+              $lookup: {
+                from: 'students',
+                localField: 'student',
+                foreignField: '_id',
+                as: 'student',
+              },
+            },
+            {
+              $lookup: {
+                from: 'specialties',
+                localField: 'student.specialty',
+                foreignField: '_id',
+                as: 'specialty',
+              },
+            },
+            {
+              $lookup: {
+                from: 'rotationservices',
+                localField: 'rotationService',
+                foreignField: '_id',
+                as: 'rotationService',
+              },
+            },
+            {
+              $project: {
+                _id: '$_id',
+                student: { $arrayElemAt: ['$student', 0] },
+                specialty: { $arrayElemAt: ['$specialty', 0] },
+                initialDate: '$initialDate',
+                finalDate: '$finalDate',
+                rotationService: { $arrayElemAt: ['$rotationService', 0] },
+              },
+            },
+            {
+              $addFields: {
+                student: {
+                  specialty: '$specialty',
+                },
+              },
+            },
+            {
+              $unset: ['specialty'],
+            },
+          ])) as OptionalMobility[];
+        await Promise.all(
+          optionalMobilities.map(async (optionalMobility) => {
+            if (specialty)
+              if (optionalMobility.student.specialty._id != specialty) return;
+            const template = (await this.templatesService.getTemplate(
+              'optionalMobility',
+              'presentationOfficeDocument',
+            )) as Docxtemplater;
+            template.render({
+              hospital: hospital.name.toUpperCase(),
+              'principal.nombre': hospital.firstReceiver
+                ? hospital.firstReceiver.name.toUpperCase()
+                : '',
+              'principal.cargo': hospital.firstReceiver
+                ? hospital.firstReceiver.position.toUpperCase()
+                : '',
+              'secundario.nombre': hospital.secondReceiver
+                ? `${hospital.secondReceiver.name.toUpperCase()}`
+                : '',
+              'secundario.cargo': hospital.secondReceiver
+                ? hospital.secondReceiver.position.toUpperCase()
+                : '',
+              'terciario.nombre': hospital.thirdReceiver
+                ? `${hospital.thirdReceiver.name.toUpperCase()}`
+                : '',
+              'terciario.cargo': hospital.thirdReceiver
+                ? hospital.thirdReceiver.position.toUpperCase()
+                : '',
+              numero: counter.toString(),
+              fecha: dateToString(date),
+              estudiante: `${optionalMobility.student.name} ${
+                optionalMobility.student.firstLastName
+              }${
+                optionalMobility.student.secondLastName
+                  ? ' ' + optionalMobility.student.secondLastName
+                  : ''
+              }`.toUpperCase(),
+              especialidad: optionalMobility.student.specialty.value,
+              año: gradeToString(
+                this.specialtiesService.getGrade(
+                  optionalMobility.student.specialty,
+                  optionalMobility.student.lastYearGeneration,
+                ) - 1,
+              ),
+              periodo: getInterval(
+                optionalMobility.initialDate,
+                optionalMobility.finalDate,
+              ),
+              departamento:
+                optionalMobility.student.specialty.headOfDepartmentPosition,
+              jefeDeDepartamento:
+                optionalMobility.student.specialty.headOfDepartment.toUpperCase(),
+              profesor:
+                optionalMobility.student.specialty.tenuredPostgraduateProfessor.toUpperCase(),
+              jefeDeServicio:
+                optionalMobility.student.specialty.headOfService.toUpperCase(),
+            });
+            counter++;
+            const buffer = (await template.getZip().generate({
+              type: 'nodebuffer',
+              compression: 'DEFLATE',
+            })) as Buffer;
+            zip.file(
+              `${optionalMobility.student.specialty.value} ${
+                optionalMobility.student.name
+              } ${optionalMobility.student.firstLastName} ${
+                optionalMobility.student.secondLastName ?? ''
+              }.docx`,
+              buffer,
+            );
+          }),
+        );
+      }),
+    );
+    const content = await zip.generateAsync({ type: 'nodebuffer' });
+    return new StreamableFile(content, {
+      type: 'application/zip',
+      disposition: `attachment;filename=Oficios de Presentación.zip`,
+    });
   }
 }

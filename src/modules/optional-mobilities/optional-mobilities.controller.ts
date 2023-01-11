@@ -42,6 +42,7 @@ import {
   OptionalMobilityDocumentTypesArray,
 } from './types/optional-mobility-document.type';
 import { ValidateOptionalMobilityDocumentTypePipe } from './pipes/validate-optional-mobility-document.pipe';
+import { ValidateNumberPipe } from '@utils/pipes/validate-number.pipe';
 
 @ApiTags('Optional Mobilities')
 @Controller(API_ENDPOINTS.OPTIONAL_MOBILITIES.BASE_PATH)
@@ -124,6 +125,36 @@ export class OptionalMobilitiesController {
         finalDate,
       ),
     };
+  }
+
+  @Get(API_ENDPOINTS.OPTIONAL_MOBILITIES.GENERATE_PRESENTATION_OFFICE_DOCUMENT)
+  @ApiBearerAuth()
+  @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
+  @ApiQuery({ type: Date, name: 'dateOfDocuments' })
+  @ApiQuery({ type: Date, name: 'initialDate' })
+  @ApiQuery({ type: Date, name: 'finalDate' })
+  @ApiQuery({ type: String, name: 'hospital', required: false })
+  @ApiQuery({ type: String, name: 'specialty', required: false })
+  @ApiOkResponse({
+    type: StreamableFile,
+  })
+  async generateSolicitudeDocument(
+    @Query('initialNumberOfDocuments', ValidateNumberPipe)
+    initialNumberOfDocuments: number,
+    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date,
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+    @Query('hospital', ValidateIdPipe) hospital?: string,
+    @Query('specialty', ValidateIdPipe) specialty?: string,
+  ): Promise<StreamableFile> {
+    return await this.optionalMobilitiesService.generatePresentationOfficesDocuments(
+      initialNumberOfDocuments,
+      dateOfDocuments,
+      initialDate,
+      finalDate,
+      hospital,
+      specialty,
+    );
   }
 
   @Get(`:${API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID}`)

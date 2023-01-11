@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { STORAGE_PATHS } from '@utils/constants';
 import { FilesService } from '@utils/services';
 import * as fs from 'fs';
+import { OptionalMobilityDocumentTypes } from 'modules/optional-mobilities/types/optional-mobility-document.type';
 import { SocialServiceDocumentTypes } from 'modules/social-services';
 import { Model } from 'mongoose';
 import { join } from 'path';
@@ -23,6 +24,7 @@ export class TemplatesService {
   private async createTemplates(): Promise<Templates> {
     const createdTemplates = new this.templatesModel({
       socialService: {},
+      optionalMobility: {},
     });
     return await createdTemplates.save();
   }
@@ -35,8 +37,8 @@ export class TemplatesService {
    * @throws {ForbiddenException} template must exist
    */
   async getTemplate(
-    document: 'socialService',
-    type: SocialServiceDocumentTypes,
+    document: 'socialService' | 'optionalMobility',
+    type: SocialServiceDocumentTypes | OptionalMobilityDocumentTypes,
   ): Promise<any> {
     //Finds the template object
     const templates = await this.templatesModel.findOne();

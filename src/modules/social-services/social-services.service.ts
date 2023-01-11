@@ -25,6 +25,8 @@ import { UpdateSocialServiceDto } from './dto/update-social-service.dto';
 import { SocialServiceDocumentTypes } from './types/document.types';
 import { Hospital } from '@hospitals/hospital.schema';
 import { Student } from '@students/student.schema';
+import { dateToString, getPeriod } from '@utils/functions/date.function';
+import { gradeToString } from '@utils/functions/grade.function';
 
 /** Social Service service */
 @Injectable()
@@ -284,28 +286,6 @@ export class SocialServicesService {
       let counter = initialNumberOfDocuments;
       //Gets the current date
       const date = new Date(dateOfDocuments);
-      const months = [
-        'enero',
-        'febrero',
-        'marzo',
-        'abril',
-        'mayo',
-        'junio',
-        'julio',
-        'agosto',
-        'septiembre',
-        'octubre',
-        'noviembre',
-        'diciembre',
-      ];
-      const grades = [
-        'primer',
-        'segundo',
-        'tercer',
-        'cuarto',
-        'quinto',
-        'sexto',
-      ];
 
       //Creates a new zip object
       const zip = new JSZip();
@@ -345,9 +325,7 @@ export class SocialServicesService {
               template.render({
                 hospital: hospital.name.toUpperCase(),
                 numero: counter.toString(),
-                fecha: `${date.getDate()} de ${
-                  months[date.getMonth()]
-                } de ${date.getFullYear()}`,
+                fecha: dateToString(date),
                 'principal.nombre': hospital.firstReceiver
                   ? hospital.firstReceiver.name.toUpperCase()
                   : '',
@@ -355,10 +333,16 @@ export class SocialServicesService {
                   ? hospital.firstReceiver.position.toUpperCase()
                   : '',
                 'secundario.nombre': hospital.secondReceiver
-                  ? `AT'N ${hospital.secondReceiver.name.toUpperCase()}`
+                  ? `${hospital.secondReceiver.name.toUpperCase()}`
                   : '',
                 'secundario.cargo': hospital.secondReceiver
                   ? hospital.secondReceiver.position.toUpperCase()
+                  : '',
+                'terciario.nombre': hospital.thirdReceiver
+                  ? `${hospital.thirdReceiver.name.toUpperCase()}`
+                  : '',
+                'terciario.cargo': hospital.thirdReceiver
+                  ? hospital.thirdReceiver.position.toUpperCase()
                   : '',
                 estudiante: `${socialService.student.name} ${
                   socialService.student.firstLastName
@@ -368,20 +352,22 @@ export class SocialServicesService {
                     : ''
                 }`.toUpperCase(),
                 especialidad: (socialService as any).specialty.value,
-                año: grades[
+                año: gradeToString(
                   this.specialtiesService.getGrade(
                     (socialService as any).specialty,
                     (socialService.student as any).lastYearGeneration,
-                  ) - 1
-                ],
-                periodo: this.getPeriod(
-                  socialService.period,
-                  socialService.year,
+                  ) - 1,
                 ),
+                periodo: getPeriod(socialService.period, socialService.year),
+                departamento: (socialService as any).specialty
+                  .headOfDepartmentPosition,
+                jefeDeDepartamento: (
+                  socialService as any
+                ).specialty.headOfDepartment.toUpperCase(),
                 profesor: (
                   socialService as any
                 ).specialty.tenuredPostgraduateProfessor.toUpperCase(),
-                jefe: (
+                jefeDeServicio: (
                   socialService as any
                 ).specialty.headOfService.toUpperCase(),
               });
@@ -417,29 +403,6 @@ export class SocialServicesService {
         type: 'application/zip',
         disposition: `attachment;filename=Oficios de Presentación.zip`,
       });
-    }
-  }
-
-  /**
-   * Converts the period tag to string
-   * @param {number} period
-   * @param {number} year
-   * @returns The period as string
-   */
-  private getPeriod(period: number, year: number): string {
-    switch (period) {
-      case 0:
-        return `1° de marzo al 31 de junio de ${year}`;
-      case 1:
-        return `1° de julio al 31 de octubre de ${year}`;
-      case 2:
-        const lastDay =
-          (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 29 : 28;
-        return `1° de noviembre de ${year} al ${lastDay} de febrero de ${
-          year + 1
-        }`;
-      default:
-        return '';
     }
   }
 }

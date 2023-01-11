@@ -38,6 +38,28 @@ export class Specialty {
     type: String,
     length: 128,
   })
+  headOfDepartment: string;
+
+  @ApiProperty({
+    type: String,
+    minLength: 3,
+    maxLength: 128,
+  })
+  @Prop({
+    type: String,
+    length: 128,
+  })
+  headOfDepartmentPosition: string;
+
+  @ApiProperty({
+    type: String,
+    minLength: 3,
+    maxLength: 128,
+  })
+  @Prop({
+    type: String,
+    length: 128,
+  })
   tenuredPostgraduateProfessor: string;
 
   @ApiProperty({

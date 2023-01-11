@@ -7,6 +7,9 @@ import {
   OptionalMobilitySchema,
 } from './optional-mobility.schema';
 import { FilesService } from '@utils/services';
+import { HospitalsModule } from '@hospitals/hospitals.module';
+import { TemplatesModule } from '@templates/templates.module';
+import { SpecialtiesModule } from '@specialties/specialties.module';
 
 /** Optional Mobilities module */
 @Module({
@@ -20,6 +23,9 @@ import { FilesService } from '@utils/services';
         },
       },
     ]),
+    HospitalsModule,
+    TemplatesModule,
+    SpecialtiesModule,
   ],
   controllers: [OptionalMobilitiesController],
   providers: [OptionalMobilitiesService, FilesService],

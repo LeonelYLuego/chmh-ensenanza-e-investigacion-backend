@@ -6,12 +6,12 @@ export type HospitalDocument = Hospital & Document;
 
 @Schema()
 export class Receiver {
-  @ApiProperty({type: String, description: 'Receiver position'})
-  @Prop({type: String, required: true, length: 64})
+  @ApiProperty({ type: String, description: 'Receiver position' })
+  @Prop({ type: String, required: true, length: 64 })
   position: string;
 
-  @ApiProperty({type: String, description: 'Receiver name'})
-  @Prop({type: String, required: true, length: 128})
+  @ApiProperty({ type: String, description: 'Receiver name' })
+  @Prop({ type: String, required: true, length: 128 })
   name: string;
 }
 
@@ -58,7 +58,7 @@ export class Hospital {
     description: 'First receiver',
     required: false,
   })
-  @Prop({type: Receiver, required: false})
+  @Prop({ type: Receiver, required: false })
   firstReceiver?: Receiver;
 
   @ApiProperty({
@@ -66,8 +66,16 @@ export class Hospital {
     description: 'Second receiver, with attention to',
     required: false,
   })
-  @Prop({type: Receiver, required: false})
+  @Prop({ type: Receiver, required: false })
   secondReceiver?: Receiver;
+
+  @ApiProperty({
+    type: Receiver,
+    description: 'Third receiver, with attention to',
+    required: false,
+  })
+  @Prop({ type: Receiver, required: false })
+  thirdReceiver?: Receiver;
 
   @ApiProperty({
     type: Address,

@@ -138,6 +138,37 @@ export class OptionalMobilitiesController {
   @ApiOkResponse({
     type: StreamableFile,
   })
+  async generatePresentationOfficeDocument(
+    @Query('initialNumberOfDocuments', ValidateNumberPipe)
+    initialNumberOfDocuments: number,
+    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date,
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+    @Query('hospital', ValidateIdPipe) hospital?: string,
+    @Query('specialty', ValidateIdPipe) specialty?: string,
+  ): Promise<StreamableFile> {
+    return await this.optionalMobilitiesService.generateDocuments(
+      'presentationOfficeDocument',
+      initialNumberOfDocuments,
+      dateOfDocuments,
+      initialDate,
+      finalDate,
+      hospital,
+      specialty,
+    );
+  }
+
+  @Get(API_ENDPOINTS.OPTIONAL_MOBILITIES.GENERATE_SOLICITUDE_DOCUMENT)
+  @ApiBearerAuth()
+  @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
+  @ApiQuery({ type: Date, name: 'dateOfDocuments' })
+  @ApiQuery({ type: Date, name: 'initialDate' })
+  @ApiQuery({ type: Date, name: 'finalDate' })
+  @ApiQuery({ type: String, name: 'hospital', required: false })
+  @ApiQuery({ type: String, name: 'specialty', required: false })
+  @ApiOkResponse({
+    type: StreamableFile,
+  })
   async generateSolicitudeDocument(
     @Query('initialNumberOfDocuments', ValidateNumberPipe)
     initialNumberOfDocuments: number,
@@ -147,7 +178,8 @@ export class OptionalMobilitiesController {
     @Query('hospital', ValidateIdPipe) hospital?: string,
     @Query('specialty', ValidateIdPipe) specialty?: string,
   ): Promise<StreamableFile> {
-    return await this.optionalMobilitiesService.generatePresentationOfficesDocuments(
+    return await this.optionalMobilitiesService.generateDocuments(
+      'solicitudeDocument',
       initialNumberOfDocuments,
       dateOfDocuments,
       initialDate,

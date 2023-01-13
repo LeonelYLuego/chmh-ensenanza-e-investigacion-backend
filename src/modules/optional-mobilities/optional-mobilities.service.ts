@@ -61,14 +61,16 @@ export class OptionalMobilitiesService {
       {
         //Find all Optional Mobility between the provided dates
         $match: {
-          $and: [
+          $or: [
             {
               initialDate: {
                 $gte: initialDate,
+                $lte: finalDate,
               },
             },
             {
               finalDate: {
+                $gte: initialDate,
                 $lte: finalDate,
               },
             },
@@ -379,7 +381,8 @@ export class OptionalMobilitiesService {
     return await this.findOne(_id);
   }
 
-  async generatePresentationOfficesDocuments(
+  async generateDocuments(
+    document: 'presentationOfficeDocument' | 'solicitudeDocument',
     initialNumberOfDocuments: number,
     dateOfDocuments: Date,
     initialDate: Date,
@@ -401,12 +404,20 @@ export class OptionalMobilitiesService {
           (await this.optionalMobilitiesModel.aggregate([
             {
               $match: {
-                initialDate: {
-                  $gte: initialDate,
-                },
-                finalDate: {
-                  $lte: finalDate,
-                },
+                $or: [
+                  {
+                    initialDate: {
+                      $gte: initialDate,
+                      $lte: finalDate,
+                    },
+                  },
+                  {
+                    finalDate: {
+                      $gte: initialDate,
+                      $lte: finalDate,
+                    },
+                  },
+                ],
                 hospital: hospital._id,
                 canceled: false,
               },
@@ -462,7 +473,7 @@ export class OptionalMobilitiesService {
               if (optionalMobility.student.specialty._id != specialty) return;
             const template = (await this.templatesService.getTemplate(
               'optionalMobility',
-              'presentationOfficeDocument',
+              document,
             )) as Docxtemplater;
             template.render({
               hospital: hospital.name.toUpperCase(),
@@ -533,7 +544,11 @@ export class OptionalMobilitiesService {
     const content = await zip.generateAsync({ type: 'nodebuffer' });
     return new StreamableFile(content, {
       type: 'application/zip',
-      disposition: `attachment;filename=Oficios de Presentación.zip`,
+      disposition: `attachment;filename=${
+        document == 'presentationOfficeDocument'
+          ? 'Oficios de Presentación'
+          : 'Solicitudes'
+      }.zip`,
     });
   }
 }

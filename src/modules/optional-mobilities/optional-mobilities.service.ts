@@ -505,6 +505,7 @@ export class OptionalMobilitiesService {
                   : ''
               }`.toUpperCase(),
               especialidad: optionalMobility.student.specialty.value,
+              servicioARotar: optionalMobility.rotationService.value,
               año: gradeToString(
                 this.specialtiesService.getGrade(
                   optionalMobility.student.specialty,
@@ -524,19 +525,19 @@ export class OptionalMobilitiesService {
               jefeDeServicio:
                 optionalMobility.student.specialty.headOfService.toUpperCase(),
             });
-            counter++;
             const buffer = (await template.getZip().generate({
               type: 'nodebuffer',
               compression: 'DEFLATE',
             })) as Buffer;
             zip.file(
-              `${optionalMobility.student.specialty.value} ${
+              `${counter} ${optionalMobility.student.specialty.value} ${
                 optionalMobility.student.name
               } ${optionalMobility.student.firstLastName} ${
                 optionalMobility.student.secondLastName ?? ''
               }.docx`,
               buffer,
             );
+            counter++;
           }),
         );
       }),

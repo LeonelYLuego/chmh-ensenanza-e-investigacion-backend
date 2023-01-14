@@ -372,9 +372,6 @@ export class SocialServicesService {
                 ).specialty.headOfService.toUpperCase(),
               });
 
-              //Increments the document number
-              counter++;
-
               //Converts the document to binary
               const buffer = (await template.getZip().generate({
                 type: 'nodebuffer',
@@ -383,13 +380,16 @@ export class SocialServicesService {
 
               //Adds the generated document to the zip and saves it with the name of the student
               zip.file(
-                `${(socialService as any).specialty.value} ${
+                `${counter} ${(socialService as any).specialty.value} ${
                   (socialService.student as Student).name
                 } ${(socialService.student as Student).firstLastName} ${
                   (socialService.student as Student).secondLastName ?? ''
                 }.docx`,
                 buffer,
               );
+
+              //Increments the document number
+              counter++;
             }),
           );
         }),

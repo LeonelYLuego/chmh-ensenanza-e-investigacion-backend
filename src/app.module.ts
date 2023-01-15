@@ -19,6 +19,8 @@ import { ObligatoryMobilitiesModule } from 'modules/obligatory-mobilities/obliga
 import { OptionalMobilitiesModule } from 'modules/optional-mobilities';
 import { RotationServicesModule } from 'modules/rotation-services';
 import { IncomingStudentsModule } from 'modules/incoming-students/incoming-students.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 /** main application module */
 @Module({
@@ -38,6 +40,10 @@ import { IncomingStudentsModule } from 'modules/incoming-students/incoming-stude
     TemplatesModule,
     RotationServicesModule,
     IncomingStudentsModule,
+    ServeStaticModule.forRoot({
+      rootPath:
+        'C:/Users/leone/programs/chmh-ensenanza-e-investigacion-frontend/dist/chmh-ensenanza-e-investigacion-frontend',
+    }),
   ],
 })
 export class AppModule implements NestModule {

@@ -11,9 +11,9 @@
         ".prettierrc": true,
         "nest-cli.json": true,
         ".eslintrc.js": true,
-        "node_modules": true,
         "dist": true,
-        ".vscode": true
+        ".vscode": true,
+        "node_modules": true
     },
     "hide-files.files": [
         "tsconfig.build.json",
@@ -21,9 +21,9 @@
         ".prettierrc",
         "nest-cli.json",
         ".eslintrc.js",
-        "node_modules",
         "dist",
-        ".vscode"
+        ".vscode",
+        "node_modules"
     ],
     "cSpell.words": [
         "docxtemplater",

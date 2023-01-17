@@ -22,6 +22,7 @@ import { ValidateIdPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
 import { ObligatoryMobilityByHospitalDto } from './dto/obligatory-mobility-by-hospital.dto';
+import { ObligatoryMobilityByStudentDto } from './dto/obligatory-mobility-by-student.dto';
 import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interval.dto';
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
@@ -47,6 +48,44 @@ export class ObligatoryMobilitiesController {
     };
   }
 
+  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_HOSPITAL)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'specialty', type: String })
+  @ApiQuery({ name: 'initialDate', type: Date })
+  @ApiQuery({ name: 'finalDate', type: Date })
+  async findAllByHospital(
+    @Query('specialty', ValidateIdPipe) specialty: string,
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+  ): Promise<HttpResponse<ObligatoryMobilityByHospitalDto[]>> {
+    return {
+      data: await this.obligatoryMobilitiesService.findAllByHospital(
+        specialty,
+        initialDate,
+        finalDate,
+      ),
+    };
+  }
+
+  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_STUDENT)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'specialty', type: String })
+  @ApiQuery({ name: 'initialDate', type: Date })
+  @ApiQuery({ name: 'finalDate', type: Date })
+  async findAllByStudent(
+    @Query('specialty', ValidateIdPipe) specialty: string,
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+  ): Promise<HttpResponse<ObligatoryMobilityByStudentDto[]>> {
+    return {
+      data: await this.obligatoryMobilitiesService.findAllByStudent(
+        specialty,
+        initialDate,
+        finalDate,
+      ),
+    };
+  }
+
   @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.INTERVAL)
   @ApiBearerAuth()
   @ApiOkResponse({ type: ObligatoryMobilityIntervalDto })
@@ -56,22 +95,6 @@ export class ObligatoryMobilitiesController {
   async interval(): Promise<HttpResponse<ObligatoryMobilityIntervalDto>> {
     return {
       data: await this.obligatoryMobilitiesService.interval(),
-    };
-  }
-
-  @Get()
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'initialDate', type: Date })
-  @ApiQuery({ name: 'finalDate', type: Date })
-  async findAll(
-    @Query('initialDate', ValidateDatePipe) initialDate: Date,
-    @Query('finalDate', ValidateDatePipe) finalDate: Date,
-  ): Promise<HttpResponse<ObligatoryMobilityByHospitalDto[]>> {
-    return {
-      data: await this.obligatoryMobilitiesService.findAll(
-        initialDate,
-        finalDate,
-      ),
     };
   }
 

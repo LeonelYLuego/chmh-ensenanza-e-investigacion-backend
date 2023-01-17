@@ -42,7 +42,7 @@ import { join } from 'path';
     IncomingStudentsModule,
     ServeStaticModule.forRoot({
       rootPath:
-        'C:/Users/leone/programs/chmh-ensenanza-e-investigacion-frontend/dist/chmh-ensenanza-e-investigacion-frontend',
+        'C:/Users/leone/programs/chmh-ensenanza-e-investigacion-frontend/dist',
     }),
   ],
 })

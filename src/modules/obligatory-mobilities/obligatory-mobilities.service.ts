@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ForbiddenException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
-import { SpecialtiesService } from '@specialties/specialties.service';
 import { FilesService } from '@utils/services';
 import { Model } from 'mongoose';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
 import { ObligatoryMobilityByHospitalDto } from './dto/obligatory-mobility-by-hospital.dto';
+import { ObligatoryMobilityByStudentDto } from './dto/obligatory-mobility-by-student.dto';
 import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interval.dto';
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import {
@@ -19,7 +19,6 @@ export class ObligatoryMobilitiesService {
     @InjectModel(ObligatoryMobility.name)
     private obligatoryMobilitiesModel: Model<ObligatoryMobilityDocument>,
     private filesService: FilesService,
-    private specialtiesService: SpecialtiesService,
   ) {}
 
   async create(
@@ -31,76 +30,213 @@ export class ObligatoryMobilitiesService {
     return await obligatoryMobility.save();
   }
 
-  async findAll(
+  async findAllByHospital(
+    specialty: string,
     initialDate: Date,
     finalDate: Date,
   ): Promise<ObligatoryMobilityByHospitalDto[]> {
-    let obligatoryMobilitiesByHospitalDto: ObligatoryMobilityByHospitalDto[] =
-      [];
-    const data = await this.obligatoryMobilitiesModel
-      .find({
-        date: {
-          $gte: initialDate,
-          $lte: finalDate,
+    let obligatoryMobilitiesByHospital =
+      (await this.obligatoryMobilitiesModel.aggregate([
+        {
+          $match: {
+            $or: [
+              {
+                initialDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
+              },
+              {
+                finalDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
+              },
+            ],
+          },
         },
-      })
-      .populate('student rotationService hospital');
-    const specialties = await this.specialtiesService.find();
-    data.map((obligatoryMobility) => {
-      let hospitalIndex = obligatoryMobilitiesByHospitalDto.findIndex(
-        (hospital) => hospital._id == obligatoryMobility.hospital._id,
-      );
-      if (hospitalIndex == -1) {
-        obligatoryMobilitiesByHospitalDto.push({
-          _id: obligatoryMobility.hospital._id,
-          name: obligatoryMobility.hospital.name,
-          specialties: [],
-        });
-        hospitalIndex = obligatoryMobilitiesByHospitalDto.length - 1;
-      }
-      let specialtyIndex = obligatoryMobilitiesByHospitalDto[
-        hospitalIndex
-      ].specialties.findIndex(
-        (specialty) =>
-          specialty._id.toString() ==
-          (obligatoryMobility.student.specialty as unknown).toString(),
-      );
-      if (specialtyIndex == -1) {
-        const specialty = specialties.find(
-          (specialty) =>
-            specialty._id.toString() ==
-            (obligatoryMobility.student.specialty as unknown).toString(),
+        {
+          $lookup: {
+            from: 'rotationservices',
+            localField: 'rotationService',
+            foreignField: '_id',
+            as: 'rotationService',
+          },
+        },
+        {
+          $lookup: {
+            from: 'students',
+            localField: 'student',
+            foreignField: '_id',
+            as: 'student',
+          },
+        },
+        {
+          $lookup: {
+            from: 'hospitals',
+            localField: 'hospital',
+            foreignField: '_id',
+            as: 'hospital',
+          },
+        },
+        {
+          $project: {
+            _id: '$_id',
+            initialDate: '$initialDate',
+            finalDate: '$finalDate',
+            presentationOfficeDocument: '$presentationOfficeDocument',
+            evaluationDocument: '$evaluationDocument',
+            student: { $arrayElemAt: ['$student', 0] },
+            hospital: { $arrayElemAt: ['$hospital', 0] },
+            rotationService: { $arrayElemAt: ['$rotationService', 0] },
+          },
+        },
+        {
+          $group: {
+            _id: '$hospital._id',
+            name: { $first: '$hospital.name' },
+            obligatoryMobilities: {
+              $push: {
+                _id: '$_id',
+                initialDate: '$initialDate',
+                finalDate: '$finalDate',
+                presentationOfficeDocument: '$presentationOfficeDocument',
+                evaluationDocument: '$evaluationDocument',
+                student: '$student',
+                rotationService: '$rotationService',
+              },
+            },
+          },
+        },
+      ])) as ObligatoryMobilityByHospitalDto[];
+
+    for (let i = 0; i < obligatoryMobilitiesByHospital.length; i++) {
+      obligatoryMobilitiesByHospital[i].obligatoryMobilities =
+        obligatoryMobilitiesByHospital[i].obligatoryMobilities.filter(
+          (obligatoryMobility) =>
+            (obligatoryMobility.rotationService.specialty as unknown) ==
+            specialty,
         );
-        if (specialty) {
-          obligatoryMobilitiesByHospitalDto[hospitalIndex].specialties.push({
-            _id: specialty._id,
-            value: specialty.value,
-            obligatoryMobilities: [],
-          });
-          specialtyIndex =
-            obligatoryMobilitiesByHospitalDto[hospitalIndex].specialties
-              .length - 1;
-        } else {
-          throw new ForbiddenException('specialty not found');
-        }
-      }
-      obligatoryMobility['hospital'] = undefined;
-      obligatoryMobilitiesByHospitalDto[hospitalIndex].specialties[
-        specialtyIndex
-      ].obligatoryMobilities.push(obligatoryMobility);
-    });
-    obligatoryMobilitiesByHospitalDto.sort((a, b) =>
-      a.name.localeCompare(b.name),
+      obligatoryMobilitiesByHospital[i].obligatoryMobilities.sort(
+        (a, b) => a.finalDate.getTime() - b.finalDate.getTime(),
+      );
+      obligatoryMobilitiesByHospital[i].obligatoryMobilities.sort(
+        (a, b) => a.initialDate.getTime() - b.initialDate.getTime(),
+      );
+    }
+    for (let i = 0; i < obligatoryMobilitiesByHospital.length; i++)
+      if (obligatoryMobilitiesByHospital[i].obligatoryMobilities.length == 0)
+        obligatoryMobilitiesByHospital.splice(i, 1);
+    obligatoryMobilitiesByHospital.sort((a, b) => a.name.localeCompare(b.name));
+    return obligatoryMobilitiesByHospital;
+  }
+
+  async findAllByStudent(
+    specialty: string,
+    initialDate: Date,
+    finalDate: Date,
+  ): Promise<ObligatoryMobilityByStudentDto[]> {
+    let obligatoryMobilitiesByStudent =
+      (await this.obligatoryMobilitiesModel.aggregate([
+        {
+          $match: {
+            $or: [
+              {
+                initialDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
+              },
+              {
+                finalDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $lookup: {
+            from: 'rotationservices',
+            localField: 'rotationService',
+            foreignField: '_id',
+            as: 'rotationService',
+          },
+        },
+        {
+          $lookup: {
+            from: 'students',
+            localField: 'student',
+            foreignField: '_id',
+            as: 'student',
+          },
+        },
+        {
+          $lookup: {
+            from: 'hospitals',
+            localField: 'hospital',
+            foreignField: '_id',
+            as: 'hospital',
+          },
+        },
+        {
+          $project: {
+            _id: '$_id',
+            initialDate: '$initialDate',
+            finalDate: '$finalDate',
+            presentationOfficeDocument: '$presentationOfficeDocument',
+            evaluationDocument: '$evaluationDocument',
+            student: { $arrayElemAt: ['$student', 0] },
+            hospital: { $arrayElemAt: ['$hospital', 0] },
+            rotationService: { $arrayElemAt: ['$rotationService', 0] },
+          },
+        },
+        {
+          $group: {
+            _id: '$student._id',
+            name: { $first: '$student.name' },
+            firstLastName: { $first: '$student.firstLastName' },
+            secondLastName: { $first: '$student.secondLastName' },
+            obligatoryMobilities: {
+              $push: {
+                _id: '$_id',
+                initialDate: '$initialDate',
+                finalDate: '$finalDate',
+                presentationOfficeDocument: '$presentationOfficeDocument',
+                evaluationDocument: '$evaluationDocument',
+                hospital: '$hospital',
+                rotationService: '$rotationService',
+              },
+            },
+          },
+        },
+      ])) as ObligatoryMobilityByStudentDto[];
+
+    for (let i = 0; i < obligatoryMobilitiesByStudent.length; i++) {
+      obligatoryMobilitiesByStudent[i].obligatoryMobilities =
+        obligatoryMobilitiesByStudent[i].obligatoryMobilities.filter(
+          (obligatoryMobility) =>
+            (obligatoryMobility.rotationService.specialty as unknown) ==
+            specialty,
+        );
+      obligatoryMobilitiesByStudent[i].obligatoryMobilities.sort(
+        (a, b) => a.finalDate.getTime() - b.finalDate.getTime(),
+      );
+      obligatoryMobilitiesByStudent[i].obligatoryMobilities.sort(
+        (a, b) => a.initialDate.getTime() - b.initialDate.getTime(),
+      );
+    }
+    for (let i = 0; i < obligatoryMobilitiesByStudent.length; i++)
+      if (obligatoryMobilitiesByStudent[i].obligatoryMobilities.length == 0)
+        obligatoryMobilitiesByStudent.splice(i, 1);
+    obligatoryMobilitiesByStudent.sort((a, b) =>
+      a.secondLastName.localeCompare(b.secondLastName),
     );
-    obligatoryMobilitiesByHospitalDto.map((hospital) => {
-      hospital.specialties.sort((a, b) => a.value.localeCompare(b.value));
-      hospital.specialties.map((specialty) => {
-        specialty.obligatoryMobilities.sort((a, b) =>
-          a.student.firstLastName.localeCompare(b.student.firstLastName),
-        );
-      });
-    });
-    return obligatoryMobilitiesByHospitalDto;
+    obligatoryMobilitiesByStudent.sort((a, b) =>
+      a.firstLastName.localeCompare(b.firstLastName),
+    );
+    return obligatoryMobilitiesByStudent;
   }
 
   async findOne(_id: string): Promise<ObligatoryMobility> {
@@ -149,8 +285,8 @@ export class ObligatoryMobilitiesService {
     const max = await this.obligatoryMobilitiesModel.findOne().sort('-date');
     if (min && max) {
       return {
-        initialYear: min.date.getFullYear(),
-        finalYear: max.date.getFullYear(),
+        initialYear: min.initialDate.getFullYear(),
+        finalYear: max.finalDate.getFullYear(),
       };
     }
     throw new ForbiddenException('obligatory mobility interval not found');

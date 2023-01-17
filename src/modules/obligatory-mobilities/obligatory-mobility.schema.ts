@@ -12,9 +12,13 @@ export class ObligatoryMobility {
   @ApiProperty({ description: 'Obligatory Mobility primary key' })
   _id?: string;
 
-  @ApiProperty({ type: Date, description: 'Obligatory Mobility date' })
+  @ApiProperty({ type: Date, description: 'Obligatory Mobility initial date' })
   @Prop({ type: Date })
-  date: Date;
+  initialDate: Date;
+
+  @ApiProperty({ type: Date, description: 'Obligatory Mobility final date' })
+  @Prop({ type: Date })
+  finalDate: Date;
 
   @ApiProperty({
     type: String,

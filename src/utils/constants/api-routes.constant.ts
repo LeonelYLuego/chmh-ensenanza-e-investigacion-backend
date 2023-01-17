@@ -72,6 +72,8 @@ export const API_ENDPOINTS = {
   OBLIGATORY_MOBILITIES: {
     BASE_PATH: API_RESOURCES.OBLIGATORY_MOBILITIES,
     BY_ID: DEFAULT_API_PATHS.BY_ID,
+    BY_HOSPITAL: '/hospital',
+    BY_STUDENT: '/student',
     INTERVAL: '/interval',
     DOCUMENT: `/document/:${DEFAULT_API_PATHS.BY_ID}`,
     CANCEL: `/cancel/:${DEFAULT_API_PATHS.BY_ID}`,

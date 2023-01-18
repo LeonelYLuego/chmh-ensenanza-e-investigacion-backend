@@ -108,6 +108,28 @@ export class ObligatoryMobilitiesController {
     };
   }
 
+  @Put(API_ENDPOINTS.OBLIGATORY_MOBILITIES.CANCEL)
+  @ApiBearerAuth()
+  async cancel(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+  ): Promise<HttpResponse<ObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.cancel(_id),
+    };
+  }
+
+  @Put(API_ENDPOINTS.OBLIGATORY_MOBILITIES.UNCANCEL)
+  @ApiBearerAuth()
+  async uncancel(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+  ): Promise<HttpResponse<ObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.uncancel(_id),
+    };
+  }
+
   @Put(`:${API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID}`)
   @ApiBearerAuth()
   @ApiBody({ type: UpdateObligatoryMobilityDto })

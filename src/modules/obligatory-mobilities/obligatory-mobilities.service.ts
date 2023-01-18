@@ -291,4 +291,32 @@ export class ObligatoryMobilitiesService {
     }
     throw new ForbiddenException('obligatory mobility interval not found');
   }
+
+  async cancel(_id: string): Promise<ObligatoryMobility> {
+    await this.findOne(_id);
+    if (
+      (
+        await this.obligatoryMobilitiesModel.updateOne(
+          { _id },
+          { canceled: true },
+        )
+      ).modifiedCount == 0
+    )
+      throw new ForbiddenException('obligatory mobility not modified');
+    return await this.findOne(_id);
+  }
+
+  async uncancel(_id: string): Promise<ObligatoryMobility> {
+    await this.findOne(_id);
+    if (
+      (
+        await this.obligatoryMobilitiesModel.updateOne(
+          { _id },
+          { canceled: false },
+        )
+      ).modifiedCount == 0
+    )
+      throw new ForbiddenException('obligatory mobility not modified');
+    return await this.findOne(_id);
+  }
 }

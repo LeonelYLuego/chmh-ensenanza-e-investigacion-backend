@@ -7,12 +7,18 @@ import {
   Get,
   Put,
   Delete,
+  StreamableFile,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiForbiddenResponse,
   ApiOkResponse,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -20,6 +26,8 @@ import { API_ENDPOINTS, STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
 import { ValidateIdPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
 import { ObligatoryMobilityByHospitalDto } from './dto/obligatory-mobility-by-hospital.dto';
 import { ObligatoryMobilityByStudentDto } from './dto/obligatory-mobility-by-student.dto';
@@ -27,6 +35,11 @@ import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interva
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
 import { ObligatoryMobility } from './obligatory-mobility.schema';
+import { ValidateObligatoryMobilityDocumentTypePipe } from './pipes/validate-obligatory-mobility-document.pipe';
+import {
+  ObligatoryMobilityDocumentTypes,
+  ObligatoryMobilityDocumentTypesArray,
+} from './types/obligatory-mobility-document.type';
 
 @ApiTags('Obligatory Mobilities')
 @Controller(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BASE_PATH)
@@ -157,5 +170,91 @@ export class ObligatoryMobilitiesController {
       STORAGE_PATHS.OBLIGATORY_MOBILITIES,
     );
     return {};
+  }
+
+  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT)
+  @ApiBearerAuth()
+  @ApiParam({ name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
+  @ApiQuery({ name: 'type', enum: ObligatoryMobilityDocumentTypesArray })
+  async getDocument(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @Query('type', ValidateObligatoryMobilityDocumentTypePipe)
+    type: ObligatoryMobilityDocumentTypes,
+  ): Promise<StreamableFile> {
+    return await this.obligatoryMobilitiesService.getDocument(
+      _id,
+      STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+      type,
+    );
+  }
+
+  @Put(API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT)
+  @ApiBearerAuth()
+  @ApiParam({ name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
+  @ApiQuery({ name: 'type', enum: ObligatoryMobilityDocumentTypesArray })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Document',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async updateDocument(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Query('type', ValidateObligatoryMobilityDocumentTypePipe)
+    type: ObligatoryMobilityDocumentTypes,
+  ): Promise<HttpResponse<ObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.updateDocument(
+        _id,
+        STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+        file,
+        type,
+      ),
+    };
+  }
+
+  @Delete(API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID,
+  })
+  @ApiQuery({ name: 'type', enum: ObligatoryMobilityDocumentTypesArray })
+  async deleteDocument(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @Query('type', ValidateObligatoryMobilityDocumentTypePipe)
+    type: ObligatoryMobilityDocumentTypes,
+  ): Promise<HttpResponse<ObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.deleteDocument(
+        _id,
+        STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+        type,
+      ),
+    };
   }
 }

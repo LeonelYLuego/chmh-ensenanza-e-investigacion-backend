@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 import { ForbiddenException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilesService } from '@utils/services';
@@ -12,6 +12,8 @@ import {
   ObligatoryMobility,
   ObligatoryMobilityDocument,
 } from './obligatory-mobility.schema';
+import { ObligatoryMobilityDocumentTypes } from './types/obligatory-mobility-document.type';
+import * as fs from 'fs';
 
 @Injectable()
 export class ObligatoryMobilitiesService {
@@ -86,6 +88,7 @@ export class ObligatoryMobilitiesService {
             finalDate: '$finalDate',
             presentationOfficeDocument: '$presentationOfficeDocument',
             evaluationDocument: '$evaluationDocument',
+            canceled: '$canceled',
             student: { $arrayElemAt: ['$student', 0] },
             hospital: { $arrayElemAt: ['$hospital', 0] },
             rotationService: { $arrayElemAt: ['$rotationService', 0] },
@@ -102,6 +105,7 @@ export class ObligatoryMobilitiesService {
                 finalDate: '$finalDate',
                 presentationOfficeDocument: '$presentationOfficeDocument',
                 evaluationDocument: '$evaluationDocument',
+                canceled: '$canceled',
                 student: '$student',
                 rotationService: '$rotationService',
               },
@@ -187,6 +191,7 @@ export class ObligatoryMobilitiesService {
             finalDate: '$finalDate',
             presentationOfficeDocument: '$presentationOfficeDocument',
             evaluationDocument: '$evaluationDocument',
+            canceled: '$canceled',
             student: { $arrayElemAt: ['$student', 0] },
             hospital: { $arrayElemAt: ['$hospital', 0] },
             rotationService: { $arrayElemAt: ['$rotationService', 0] },
@@ -205,6 +210,7 @@ export class ObligatoryMobilitiesService {
                 finalDate: '$finalDate',
                 presentationOfficeDocument: '$presentationOfficeDocument',
                 evaluationDocument: '$evaluationDocument',
+                canceled: '$canceled',
                 hospital: '$hospital',
                 rotationService: '$rotationService',
               },
@@ -315,6 +321,73 @@ export class ObligatoryMobilitiesService {
           { canceled: false },
         )
       ).modifiedCount == 0
+    )
+      throw new ForbiddenException('obligatory mobility not modified');
+    return await this.findOne(_id);
+  }
+
+  async getDocument(
+    _id: string,
+    path: string,
+    document: ObligatoryMobilityDocumentTypes,
+  ): Promise<StreamableFile> {
+    const obligatoryMobility = await this.findOne(_id);
+    if (obligatoryMobility[document]) {
+      const filePath = `${path}/${obligatoryMobility[document]}`;
+      if (fs.existsSync(filePath)) {
+        const file = fs.createReadStream(filePath);
+        return new StreamableFile(file, {
+          type: 'application/pdf',
+        });
+      }
+    } else throw new ForbiddenException('document not found');
+  }
+
+  async updateDocument(
+    _id: string,
+    path: string,
+    file: Express.Multer.File,
+    document: ObligatoryMobilityDocumentTypes,
+  ): Promise<ObligatoryMobility> {
+    try {
+      this.filesService.validatePDF(file);
+      const obligatoryMobility = await this.findOne(_id);
+      if (obligatoryMobility[document])
+        this.filesService.deleteFile(`${path}/${obligatoryMobility[document]}`);
+      let updateObject: object = {};
+      updateObject[document] = file.filename;
+      if (
+        (
+          await this.obligatoryMobilitiesModel.updateOne(
+            { _id: obligatoryMobility._id },
+            updateObject,
+          )
+        ).modifiedCount < 1
+      )
+        throw new ForbiddenException('obligatory mobility not modified');
+      return await this.findOne(_id);
+    } catch (err) {
+      this.filesService.deleteFile(`${path}/${file.filename}`);
+    }
+  }
+
+  async deleteDocument(
+    _id: string,
+    path: string,
+    document: ObligatoryMobilityDocumentTypes,
+  ): Promise<ObligatoryMobility> {
+    const obligatoryMobility = await this.findOne(_id);
+    if (obligatoryMobility[document])
+      this.filesService.deleteFile(`${path}/${obligatoryMobility[document]}`);
+    let updateObject: object = {};
+    updateObject[document] = null;
+    if (
+      (
+        await this.obligatoryMobilitiesModel.updateOne(
+          { _id: obligatoryMobility._id },
+          updateObject,
+        )
+      ).modifiedCount < 1
     )
       throw new ForbiddenException('obligatory mobility not modified');
     return await this.findOne(_id);

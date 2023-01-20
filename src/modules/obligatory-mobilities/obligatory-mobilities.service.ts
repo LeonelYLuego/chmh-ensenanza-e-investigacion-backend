@@ -14,12 +14,22 @@ import {
 } from './obligatory-mobility.schema';
 import { ObligatoryMobilityDocumentTypes } from './types/obligatory-mobility-document.type';
 import * as fs from 'fs';
+import {
+  AttachmentsObligatoryMobility,
+  AttachmentsObligatoryMobilityDocument,
+} from './attachments-obligatory-mobility.schema';
+import { CreateAttachmentsObligatoryMobilityDto } from './dto/create-attachments-obligatory-mobility.dto';
+import { Hospital } from '@hospitals/hospital.schema';
+import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obligatory-mobility-response.dto';
+import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments-obligatory-mobility.dto';
 
 @Injectable()
 export class ObligatoryMobilitiesService {
   constructor(
     @InjectModel(ObligatoryMobility.name)
     private obligatoryMobilitiesModel: Model<ObligatoryMobilityDocument>,
+    @InjectModel(AttachmentsObligatoryMobility.name)
+    private attachmentsObligatoryMobilitiesModel: Model<AttachmentsObligatoryMobilityDocument>,
     private filesService: FilesService,
   ) {}
 
@@ -391,5 +401,123 @@ export class ObligatoryMobilitiesService {
     )
       throw new ForbiddenException('obligatory mobility not modified');
     return await this.findOne(_id);
+  }
+
+  //Attachments
+
+  async createAttachments(
+    createAttachmentsObligatoryMobilityDto: CreateAttachmentsObligatoryMobilityDto,
+  ): Promise<AttachmentsObligatoryMobility> {
+    const createdAttachmentsObligatoryMobility =
+      new this.attachmentsObligatoryMobilitiesModel(
+        createAttachmentsObligatoryMobilityDto,
+      );
+    return await createdAttachmentsObligatoryMobility.save();
+  }
+
+  async findAllAttachments(
+    initialDate: Date,
+    finalDate: Date,
+    specialty: string,
+  ): Promise<AttachmentsObligatoryMobility[]> {
+    const attachmentsObligatoryMobilities =
+      await this.attachmentsObligatoryMobilitiesModel
+        .find({
+          initialDate: {
+            $gte: initialDate,
+            $lte: finalDate,
+          },
+          finalDate: {
+            $gte: initialDate,
+            $lte: finalDate,
+          },
+          specialty,
+        })
+        .populate('hospital')
+        .sort('initialDate');
+    attachmentsObligatoryMobilities.sort((a, b) =>
+      (a.hospital as Hospital).name.localeCompare(
+        (b.hospital as Hospital).name,
+      ),
+    );
+    return attachmentsObligatoryMobilities;
+  }
+
+  async findRawAttachments(
+    _id: string,
+  ): Promise<AttachmentsObligatoryMobility> {
+    const attachmentsObligatoryMobility =
+      await this.attachmentsObligatoryMobilitiesModel.findOne({ _id });
+    if (!attachmentsObligatoryMobility)
+      throw new ForbiddenException('attachments obligatory mobility not found');
+    return attachmentsObligatoryMobility;
+  }
+
+  async findAttachments(
+    _id: string,
+  ): Promise<AttachmentsObligatoryMobilityResponseDto> {
+    const attachmentsObligatoryMobility =
+      await this.attachmentsObligatoryMobilitiesModel.findOne({ _id });
+    if (attachmentsObligatoryMobility) {
+      const obligatoryMobilities = (
+        await this.obligatoryMobilitiesModel
+          .find({
+            initialDate: {
+              $gte: attachmentsObligatoryMobility.initialDate,
+              $lte: attachmentsObligatoryMobility.finalDate,
+            },
+            finalDate: {
+              $gte: attachmentsObligatoryMobility.initialDate,
+              $lte: attachmentsObligatoryMobility.finalDate,
+            },
+            hospital: attachmentsObligatoryMobility.hospital,
+          })
+          .populate('student')
+      ).filter(
+        (obligatoryMobility) =>
+          JSON.stringify(obligatoryMobility.student.specialty) ==
+          JSON.stringify(attachmentsObligatoryMobility.specialty),
+      );
+      return {
+        initialDate: attachmentsObligatoryMobility.initialDate,
+        finalDate: attachmentsObligatoryMobility.finalDate,
+        hospital: attachmentsObligatoryMobility.hospital,
+        specialty: attachmentsObligatoryMobility.specialty,
+        solicitudeDocument: attachmentsObligatoryMobility.solicitudeDocument,
+        acceptanceDocument: attachmentsObligatoryMobility.acceptanceDocument,
+        obligatoryMobilities,
+      };
+    } else
+      throw new ForbiddenException('attachments obligatory mobility not found');
+  }
+
+  async updateAttachments(
+    _id: string,
+    updateAttachmentsObligatoryMobilityDto: UpdateAttachmentsObligatoryMobilityDto,
+  ): Promise<AttachmentsObligatoryMobility> {
+    await this.findAttachments(_id);
+    if (
+      (
+        await this.attachmentsObligatoryMobilitiesModel.updateOne(
+          { _id },
+          updateAttachmentsObligatoryMobilityDto,
+        )
+      ).modifiedCount == 0
+    )
+      throw new ForbiddenException(
+        'attachments obligatory mobility not modified',
+      );
+    return await this.findRawAttachments(_id);
+  }
+
+  async deleteAttachments(_id: string): Promise<void> {
+    await this.findAttachments(_id);
+    if (
+      (await this.attachmentsObligatoryMobilitiesModel.deleteOne({ _id }))
+        .deletedCount == 0
+    )
+      throw new ForbiddenException(
+        'attachments obligatory mobility not deleted',
+      );
   }
 }

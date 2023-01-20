@@ -2,6 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SpecialtiesModule } from '@specialties/specialties.module';
 import { FilesService } from '@utils/services';
+import {
+  AttachmentsObligatoryMobility,
+  AttachmentsObligatoryMobilitySchema,
+} from './attachments-obligatory-mobility.schema';
 import { ObligatoryMobilitiesController } from './obligatory-mobilities.controller';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
 import {
@@ -16,6 +20,13 @@ import {
         name: ObligatoryMobility.name,
         useFactory: () => {
           const schema = ObligatoryMobilitySchema;
+          return schema;
+        },
+      },
+      {
+        name: AttachmentsObligatoryMobility.name,
+        useFactory: () => {
+          const schema = AttachmentsObligatoryMobilitySchema;
           return schema;
         },
       },

@@ -28,10 +28,14 @@ import { ValidateIdPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { AttachmentsObligatoryMobility } from './attachments-obligatory-mobility.schema';
+import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obligatory-mobility-response.dto';
+import { CreateAttachmentsObligatoryMobilityDto } from './dto/create-attachments-obligatory-mobility.dto';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
 import { ObligatoryMobilityByHospitalDto } from './dto/obligatory-mobility-by-hospital.dto';
 import { ObligatoryMobilityByStudentDto } from './dto/obligatory-mobility-by-student.dto';
 import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interval.dto';
+import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments-obligatory-mobility.dto';
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
 import { ObligatoryMobility } from './obligatory-mobility.schema';
@@ -47,6 +51,87 @@ export class ObligatoryMobilitiesController {
   constructor(
     private readonly obligatoryMobilitiesService: ObligatoryMobilitiesService,
   ) {}
+
+  /* Attachments */
+
+  @Post(API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS)
+  @ApiBearerAuth()
+  @ApiBody({ type: CreateAttachmentsObligatoryMobilityDto })
+  async createAttachments(
+    @Body()
+    createAttachmentsObligatoryMobilityDto: CreateAttachmentsObligatoryMobilityDto,
+  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.createAttachments(
+        createAttachmentsObligatoryMobilityDto,
+      ),
+    };
+  }
+
+  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'specialty', type: String })
+  @ApiQuery({ name: 'initialDate', type: Date })
+  @ApiQuery({ name: 'finalDate', type: Date })
+  async findAllAttachments(
+    @Query('specialty', ValidateIdPipe) specialty: string,
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+  ): Promise<HttpResponse<AttachmentsObligatoryMobility[]>> {
+    return {
+      data: await this.obligatoryMobilitiesService.findAllAttachments(
+        initialDate,
+        finalDate,
+        specialty,
+      ),
+    };
+  }
+
+  @Get(
+    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}/:${API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID}`,
+  )
+  @ApiBearerAuth()
+  async findAttachments(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+  ): Promise<HttpResponse<AttachmentsObligatoryMobilityResponseDto>> {
+    return {
+      data: await this.obligatoryMobilitiesService.findAttachments(_id),
+    };
+  }
+
+  @Put(
+    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}/:${API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID}`,
+  )
+  @ApiBearerAuth()
+  @ApiBody({ type: UpdateAttachmentsObligatoryMobilityDto })
+  async updateAttachments(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @Body()
+    updateAttachmentsObligatoryMobilityDto: UpdateAttachmentsObligatoryMobilityDto,
+  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.updateAttachments(
+        _id,
+        updateAttachmentsObligatoryMobilityDto,
+      ),
+    };
+  }
+
+  @Delete(
+    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}/:${API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID}`,
+  )
+  @ApiBearerAuth()
+  async deleteAttachments(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+  ): Promise<HttpResponse<undefined>> {
+    await this.obligatoryMobilitiesService.deleteAttachments(_id);
+    return {};
+  }
+
+  /* Obligatory Mobilities */
 
   @Post()
   @ApiBearerAuth()

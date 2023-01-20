@@ -78,6 +78,8 @@ export const API_ENDPOINTS = {
     DOCUMENT: `/document/:${DEFAULT_API_PATHS.BY_ID}`,
     CANCEL: `/cancel/:${DEFAULT_API_PATHS.BY_ID}`,
     UNCANCEL: `/uncancel/:${DEFAULT_API_PATHS.BY_ID}`,
+
+    ATTACHMENTS: '/attachments',
   },
   INCOMING_STUDENTS: {
     BASE_PATH: API_RESOURCES.INCOMING_STUDENTS,

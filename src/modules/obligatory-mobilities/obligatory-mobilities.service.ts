@@ -19,9 +19,10 @@ import {
   AttachmentsObligatoryMobilityDocument,
 } from './attachments-obligatory-mobility.schema';
 import { CreateAttachmentsObligatoryMobilityDto } from './dto/create-attachments-obligatory-mobility.dto';
-import { Hospital } from '@hospitals/hospital.schema';
 import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obligatory-mobility-response.dto';
 import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments-obligatory-mobility.dto';
+import { AttachmentsObligatoryMobilityByHospitalDto } from './dto/attachments-obligatory-mobility-by-hospital.dto';
+import { Hospital } from '@hospitals/hospital.schema';
 
 @Injectable()
 export class ObligatoryMobilitiesService {
@@ -40,6 +41,40 @@ export class ObligatoryMobilitiesService {
       createObligatoryMobilityDto,
     );
     return await obligatoryMobility.save();
+  }
+
+  async findAll(
+    specialty: string,
+    hospital: string,
+    initialDate: Date,
+    finalDate: Date,
+  ): Promise<ObligatoryMobility[]> {
+    var ObjectId = require('mongoose').Types.ObjectId;
+    const obligatoryMobilities = await this.obligatoryMobilitiesModel
+      .find({
+        $or: [
+          {
+            initialDate: {
+              $gte: initialDate,
+              $lte: finalDate,
+            },
+          },
+          {
+            finalDate: {
+              $gte: initialDate,
+              $lte: finalDate,
+            },
+          },
+        ],
+        hospital: new ObjectId(hospital),
+      })
+      .populate('student rotationService')
+      .sort('initialDate');
+    return obligatoryMobilities.filter(
+      (obligatoryMobility) =>
+        JSON.stringify(obligatoryMobility.student.specialty) ==
+        JSON.stringify(specialty),
+    );
   }
 
   async findAllByHospital(
@@ -419,28 +454,75 @@ export class ObligatoryMobilitiesService {
     initialDate: Date,
     finalDate: Date,
     specialty: string,
-  ): Promise<AttachmentsObligatoryMobility[]> {
-    const attachmentsObligatoryMobilities =
-      await this.attachmentsObligatoryMobilitiesModel
-        .find({
-          initialDate: {
-            $gte: initialDate,
-            $lte: finalDate,
+  ): Promise<AttachmentsObligatoryMobilityByHospitalDto[]> {
+    var ObjectId = require('mongoose').Types.ObjectId;
+    const attachmentsObligatoryMobilitiesByHospital =
+      (await this.attachmentsObligatoryMobilitiesModel.aggregate([
+        {
+          $match: {
+            $or: [
+              {
+                initialDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
+              },
+              {
+                finalDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
+              },
+            ],
+            specialty: new ObjectId(specialty),
           },
-          finalDate: {
-            $gte: initialDate,
-            $lte: finalDate,
+        },
+        {
+          $lookup: {
+            from: 'hospitals',
+            localField: 'hospital',
+            foreignField: '_id',
+            as: 'hospital',
           },
-          specialty,
-        })
-        .populate('hospital')
-        .sort('initialDate');
-    attachmentsObligatoryMobilities.sort((a, b) =>
-      (a.hospital as Hospital).name.localeCompare(
-        (b.hospital as Hospital).name,
-      ),
+        },
+        {
+          $project: {
+            _id: '$_id',
+            initialDate: '$initialDate',
+            finalDate: '$finalDate',
+            hospital: { $arrayElemAt: ['$hospital', 0] },
+            specialty: '$specialty',
+            solicitudeDocument: '$solicitudeDocument',
+            acceptanceDocument: '$acceptanceDocument',
+          },
+        },
+        {
+          $group: {
+            _id: '$hospital._id',
+            name: { $first: '$hospital.name' },
+            attachmentsObligatoryMobilities: {
+              $push: {
+                _id: '$_id',
+                initialDate: '$initialDate',
+                finalDate: '$finalDate',
+                specialty: '$specialty',
+                solicitudeDocument: '$solicitudeDocument',
+                acceptanceDocument: '$acceptanceDocument',
+              },
+            },
+          },
+        },
+      ])) as AttachmentsObligatoryMobilityByHospitalDto[];
+    attachmentsObligatoryMobilitiesByHospital.map(
+      (attachmentsObligatoryMobilityByHospital) =>
+        attachmentsObligatoryMobilityByHospital.attachmentsObligatoryMobilities.sort(
+          (a, b) => a.initialDate.getTime() - b.initialDate.getTime(),
+        ),
     );
-    return attachmentsObligatoryMobilities;
+    attachmentsObligatoryMobilitiesByHospital.sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+    return attachmentsObligatoryMobilitiesByHospital;
   }
 
   async findRawAttachments(

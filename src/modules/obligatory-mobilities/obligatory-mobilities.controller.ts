@@ -29,6 +29,7 @@ import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { AttachmentsObligatoryMobility } from './attachments-obligatory-mobility.schema';
+import { AttachmentsObligatoryMobilityByHospitalDto } from './dto/attachments-obligatory-mobility-by-hospital.dto';
 import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obligatory-mobility-response.dto';
 import { CreateAttachmentsObligatoryMobilityDto } from './dto/create-attachments-obligatory-mobility.dto';
 import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
@@ -77,7 +78,7 @@ export class ObligatoryMobilitiesController {
     @Query('specialty', ValidateIdPipe) specialty: string,
     @Query('initialDate', ValidateDatePipe) initialDate: Date,
     @Query('finalDate', ValidateDatePipe) finalDate: Date,
-  ): Promise<HttpResponse<AttachmentsObligatoryMobility[]>> {
+  ): Promise<HttpResponse<AttachmentsObligatoryMobilityByHospitalDto[]>> {
     return {
       data: await this.obligatoryMobilitiesService.findAllAttachments(
         initialDate,
@@ -142,6 +143,28 @@ export class ObligatoryMobilitiesController {
     return {
       data: await this.obligatoryMobilitiesService.create(
         createObligatoryMobilityDto,
+      ),
+    };
+  }
+
+  @Get()
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'specialty', type: String })
+  @ApiQuery({ name: 'hospital', type: String })
+  @ApiQuery({ name: 'initialDate', type: Date })
+  @ApiQuery({ name: 'finalDate', type: Date })
+  async findAll(
+    @Query('specialty', ValidateIdPipe) specialty: string,
+    @Query('hospital', ValidateIdPipe) hospital: string,
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+  ): Promise<HttpResponse<ObligatoryMobility[]>> {
+    return {
+      data: await this.obligatoryMobilitiesService.findAll(
+        specialty,
+        hospital,
+        initialDate,
+        finalDate,
       ),
     };
   }

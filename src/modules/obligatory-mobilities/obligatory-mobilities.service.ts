@@ -22,7 +22,7 @@ import { CreateAttachmentsObligatoryMobilityDto } from './dto/create-attachments
 import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obligatory-mobility-response.dto';
 import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments-obligatory-mobility.dto';
 import { AttachmentsObligatoryMobilityByHospitalDto } from './dto/attachments-obligatory-mobility-by-hospital.dto';
-import { Hospital } from '@hospitals/hospital.schema';
+import { AttachmentsObligatoryMobilityDocumentTypes } from './types/attachments-obligatory-mobility-document.type';
 
 @Injectable()
 export class ObligatoryMobilitiesService {
@@ -554,13 +554,14 @@ export class ObligatoryMobilitiesService {
             },
             hospital: attachmentsObligatoryMobility.hospital,
           })
-          .populate('student')
+          .populate('student rotationService')
       ).filter(
         (obligatoryMobility) =>
           JSON.stringify(obligatoryMobility.student.specialty) ==
           JSON.stringify(attachmentsObligatoryMobility.specialty),
       );
       return {
+        _id: attachmentsObligatoryMobility._id,
         initialDate: attachmentsObligatoryMobility.initialDate,
         finalDate: attachmentsObligatoryMobility.finalDate,
         hospital: attachmentsObligatoryMobility.hospital,
@@ -601,5 +602,80 @@ export class ObligatoryMobilitiesService {
       throw new ForbiddenException(
         'attachments obligatory mobility not deleted',
       );
+  }
+
+  async getAttachmentsDocument(
+    _id: string,
+    path: string,
+    document: AttachmentsObligatoryMobilityDocumentTypes,
+  ): Promise<StreamableFile> {
+    const attachmentsObligatoryMobility = await this.findRawAttachments(_id);
+    if (attachmentsObligatoryMobility[document]) {
+      const filePath = `${path}/${attachmentsObligatoryMobility[document]}`;
+      if (fs.existsSync(filePath)) {
+        const file = fs.createReadStream(filePath);
+        return new StreamableFile(file, {
+          type: 'application/pdf',
+        });
+      }
+    } else throw new ForbiddenException('document not found');
+  }
+
+  async updateAttachmentsDocument(
+    _id: string,
+    path: string,
+    file: Express.Multer.File,
+    document: AttachmentsObligatoryMobilityDocumentTypes,
+  ): Promise<AttachmentsObligatoryMobility> {
+    try {
+      this.filesService.validatePDF(file);
+      const attachmentsObligatoryMobility = await this.findRawAttachments(_id);
+      if (attachmentsObligatoryMobility[document])
+        this.filesService.deleteFile(
+          `${path}/${attachmentsObligatoryMobility[document]}`,
+        );
+      let updateObject: object = {};
+      updateObject[document] = file.filename;
+      if (
+        (
+          await this.attachmentsObligatoryMobilitiesModel.updateOne(
+            { _id: attachmentsObligatoryMobility._id },
+            updateObject,
+          )
+        ).modifiedCount < 1
+      )
+        throw new ForbiddenException(
+          'attachments obligatory mobility not modified',
+        );
+      return await this.findRawAttachments(_id);
+    } catch (err) {
+      this.filesService.deleteFile(`${path}/${file.filename}`);
+    }
+  }
+
+  async deleteAttachmentsDocument(
+    _id: string,
+    path: string,
+    document: AttachmentsObligatoryMobilityDocumentTypes,
+  ): Promise<AttachmentsObligatoryMobility> {
+    const attachmentsObligatoryMobility = await this.findRawAttachments(_id);
+    if (attachmentsObligatoryMobility[document])
+      this.filesService.deleteFile(
+        `${path}/${attachmentsObligatoryMobility[document]}`,
+      );
+    let updateObject: object = {};
+    updateObject[document] = null;
+    if (
+      (
+        await this.obligatoryMobilitiesModel.updateOne(
+          { _id: attachmentsObligatoryMobility._id },
+          updateObject,
+        )
+      ).modifiedCount < 1
+    )
+      throw new ForbiddenException(
+        'attachments obligatory mobility not modified',
+      );
+    return await this.findRawAttachments(_id);
   }
 }

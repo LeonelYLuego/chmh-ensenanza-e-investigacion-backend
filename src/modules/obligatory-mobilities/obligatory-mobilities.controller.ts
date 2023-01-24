@@ -40,7 +40,12 @@ import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments
 import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
 import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
 import { ObligatoryMobility } from './obligatory-mobility.schema';
+import { ValidateAttachmentsObligatoryMobilityDocumentTypePipe } from './pipes/validate-attachments-obligatory-mobility-document.pipe';
 import { ValidateObligatoryMobilityDocumentTypePipe } from './pipes/validate-obligatory-mobility-document.pipe';
+import {
+  AttachmentsObligatoryMobilityDocumentTypes,
+  AttachmentsObligatoryMobilityDocumentTypesArray,
+} from './types/attachments-obligatory-mobility-document.type';
 import {
   ObligatoryMobilityDocumentTypes,
   ObligatoryMobilityDocumentTypesArray,
@@ -130,6 +135,107 @@ export class ObligatoryMobilitiesController {
   ): Promise<HttpResponse<undefined>> {
     await this.obligatoryMobilitiesService.deleteAttachments(_id);
     return {};
+  }
+
+  @Get(
+    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}${API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT}`,
+  )
+  @ApiBearerAuth()
+  @ApiParam({ name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
+  @ApiQuery({
+    name: 'type',
+    enum: AttachmentsObligatoryMobilityDocumentTypesArray,
+  })
+  async getAttachmentsDocument(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @Query('type', ValidateAttachmentsObligatoryMobilityDocumentTypePipe)
+    type: AttachmentsObligatoryMobilityDocumentTypes,
+  ): Promise<StreamableFile> {
+    return await this.obligatoryMobilitiesService.getAttachmentsDocument(
+      _id,
+      STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+      type,
+    );
+  }
+
+  @Put(
+    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}${API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT}`,
+  )
+  @ApiBearerAuth()
+  @ApiParam({ name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
+  @ApiQuery({
+    name: 'type',
+    enum: AttachmentsObligatoryMobilityDocumentTypesArray,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Document',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async updateAttachmentsDocument(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Query('type', ValidateAttachmentsObligatoryMobilityDocumentTypePipe)
+    type: AttachmentsObligatoryMobilityDocumentTypes,
+  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.updateAttachmentsDocument(
+        _id,
+        STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+        file,
+        type,
+      ),
+    };
+  }
+
+  @Delete(
+    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}${API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT}`,
+  )
+  @ApiBearerAuth()
+  @ApiParam({
+    name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID,
+  })
+  @ApiQuery({
+    name: 'type',
+    enum: AttachmentsObligatoryMobilityDocumentTypesArray,
+  })
+  async deleteAttachmentsDocument(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @Query('type', ValidateAttachmentsObligatoryMobilityDocumentTypePipe)
+    type: AttachmentsObligatoryMobilityDocumentTypes,
+  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
+    return {
+      data: await this.obligatoryMobilitiesService.deleteAttachmentsDocument(
+        _id,
+        STORAGE_PATHS.OBLIGATORY_MOBILITIES,
+        type,
+      ),
+    };
   }
 
   /* Obligatory Mobilities */

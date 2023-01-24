@@ -5,6 +5,12 @@ import { ObligatoryMobility } from '../obligatory-mobility.schema';
 
 export class AttachmentsObligatoryMobilityResponseDto {
   @ApiProperty({
+    type: String,
+    description: 'Attachments Obligatory Mobility primary key',
+  })
+  _id: string;
+
+  @ApiProperty({
     type: Date,
     description: 'Attachments Obligatory Mobility initial date',
   })

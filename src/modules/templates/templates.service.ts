@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { STORAGE_PATHS } from '@utils/constants';
 import { FilesService } from '@utils/services';
 import * as fs from 'fs';
+import { AttachmentsObligatoryMobility } from 'modules/obligatory-mobilities/attachments-obligatory-mobility.schema';
 import { ObligatoryMobilityDocumentTypes } from 'modules/obligatory-mobilities/types/obligatory-mobility-document.type';
 import { OptionalMobilityDocumentTypes } from 'modules/optional-mobilities/types/optional-mobility-document.type';
 import { SocialServiceDocumentTypes } from 'modules/social-services';
@@ -44,7 +45,6 @@ export class TemplatesService {
       | SocialServiceDocumentTypes
       | OptionalMobilityDocumentTypes
       | ObligatoryMobilityDocumentTypes,
-    table = false,
   ): Promise<any> {
     //Finds the template object
     const templates = await this.templatesModel.findOne();
@@ -64,6 +64,23 @@ export class TemplatesService {
           });
           return doc;
         }
+      }
+    }
+    throw new ForbiddenException('not template found');
+  }
+
+  async getDocument(
+    document: 'obligatoryMobility',
+    type: 'solicitudeDocument',
+  ): Promise<Buffer> {
+    const templates = await this.templatesModel.findOne();
+    if (templates) {
+      const documentPath = templates[document][type];
+      if (documentPath) {
+        const documentBytes = fs.readFileSync(
+          join(STORAGE_PATHS.TEMPLATES, documentPath),
+        );
+        if (documentBytes) return documentBytes;
       }
     }
     throw new ForbiddenException('not template found');

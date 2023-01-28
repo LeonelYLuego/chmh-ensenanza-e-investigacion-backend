@@ -22,12 +22,12 @@ import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obli
 import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments-obligatory-mobility.dto';
 import { AttachmentsObligatoryMobilityByHospitalDto } from './dto/attachments-obligatory-mobility-by-hospital.dto';
 import { AttachmentsObligatoryMobilityDocumentTypes } from './types/attachments-obligatory-mobility-document.type';
-import Docxtemplater from 'docxtemplater';
 import * as fs from 'fs';
 import { TemplatesService } from '@templates/templates.service';
-import { dateToString } from '@utils/functions/date.function';
+import { dateToString, getInterval } from '@utils/functions/date.function';
 import { HospitalsService } from '@hospitals/hospitals.service';
 import { SpecialtiesService } from '@specialties/specialties.service';
+import { TemplateHandler } from 'easy-template-x';
 
 @Injectable()
 export class ObligatoryMobilitiesService {
@@ -692,14 +692,6 @@ export class ObligatoryMobilitiesService {
   ): Promise<StreamableFile> {
     const attachmentsObligatoryMobility = await this.findAttachments(_id);
 
-    console.log(attachmentsObligatoryMobility);
-
-    const template = (await this.templatesService.getTemplate(
-      'obligatoryMobility',
-      'solicitudeDocument',
-      true,
-    )) as Docxtemplater;
-
     const hospital = await this.hospitalsService.findOne(
       attachmentsObligatoryMobility.hospital as string,
     );
@@ -707,7 +699,25 @@ export class ObligatoryMobilitiesService {
       attachmentsObligatoryMobility.specialty as string,
     );
 
-    template.render({
+    const students: {
+      nombre: string;
+      servicioARotar: string;
+      periodo: string;
+    }[] = [];
+    attachmentsObligatoryMobility.obligatoryMobilities.map(
+      (obligatoryMobility) => {
+        students.push({
+          nombre: `${obligatoryMobility.student.name} ${obligatoryMobility.student.firstLastName} ${obligatoryMobility.student.secondLastName}`,
+          servicioARotar: obligatoryMobility.rotationService.value,
+          periodo: getInterval(
+            obligatoryMobility.initialDate,
+            obligatoryMobility.finalDate,
+          ),
+        });
+      },
+    );
+
+    const data = {
       hospital: hospital.name.toUpperCase(),
       'principal.nombre': hospital.firstReceiver
         ? hospital.firstReceiver.name.toUpperCase()
@@ -730,43 +740,23 @@ export class ObligatoryMobilitiesService {
       numero: numberOfDocument,
       fecha: dateToString(date),
       especialidad: specialty.value,
+      especialidadMayusculas: specialty.value.toUpperCase(),
       departamento: specialty.headOfDepartmentPosition,
       jefeDeDepartamento: specialty.headOfDepartment.toUpperCase(),
       profesor: specialty.tenuredPostgraduateProfessor.toUpperCase(),
       jefeDeServicio: specialty.headOfService.toUpperCase(),
-      tabla: {
-        data: [
-          ['1', 'John', 'Foobar', '3374 Olen Thomas Drive Frisco Texas 75034'],
-          [
-            '2',
-            'Mary',
-            'Foobaz',
-            '352 Illinois Avenue Yamhill Oregon(OR) 97148',
-          ],
-        ],
-        size: [2, 4], // means 2 lines, 4 columns
-        widths: [175, 175, 175, 175], // The widths of each column
-        height: 200, // The height of each column
-        header: ['Index', 'Name', 'Title', 'Description'],
-        style: {
-          header: {
-            shade: 'DDDD33',
-            textAlign: 'left',
-          },
-          normal: {
-            shade: 'E0E0E0',
-            textAlign: 'right',
-          },
-        },
-      },
-    });
+      estudiante: students,
+    };
 
-    const buffer = (await template.getZip().generate({
-      type: 'nodebuffer',
-      compression: 'DEFLATE',
-    })) as Buffer;
+    const template = await this.templatesService.getDocument(
+      'obligatoryMobility',
+      'solicitudeDocument',
+    );
 
-    return new StreamableFile(buffer, {
+    const handler = new TemplateHandler();
+    const doc = await handler.process(template, data);
+
+    return new StreamableFile(doc, {
       disposition: 'attachment:filename=Solicitud.docx',
     });
   }

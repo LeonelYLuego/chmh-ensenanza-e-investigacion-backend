@@ -13,7 +13,6 @@ import {
   ObligatoryMobilityDocument,
 } from './obligatory-mobility.schema';
 import { ObligatoryMobilityDocumentTypes } from './types/obligatory-mobility-document.type';
-import * as fs from 'fs';
 import {
   AttachmentsObligatoryMobility,
   AttachmentsObligatoryMobilityDocument,
@@ -23,6 +22,12 @@ import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obli
 import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments-obligatory-mobility.dto';
 import { AttachmentsObligatoryMobilityByHospitalDto } from './dto/attachments-obligatory-mobility-by-hospital.dto';
 import { AttachmentsObligatoryMobilityDocumentTypes } from './types/attachments-obligatory-mobility-document.type';
+import Docxtemplater from 'docxtemplater';
+import * as fs from 'fs';
+import { TemplatesService } from '@templates/templates.service';
+import { dateToString } from '@utils/functions/date.function';
+import { HospitalsService } from '@hospitals/hospitals.service';
+import { SpecialtiesService } from '@specialties/specialties.service';
 
 @Injectable()
 export class ObligatoryMobilitiesService {
@@ -31,7 +36,10 @@ export class ObligatoryMobilitiesService {
     private obligatoryMobilitiesModel: Model<ObligatoryMobilityDocument>,
     @InjectModel(AttachmentsObligatoryMobility.name)
     private attachmentsObligatoryMobilitiesModel: Model<AttachmentsObligatoryMobilityDocument>,
+    private hospitalsService: HospitalsService,
+    private specialtiesService: SpecialtiesService,
     private filesService: FilesService,
+    private templatesService: TemplatesService,
   ) {}
 
   async create(
@@ -667,15 +675,99 @@ export class ObligatoryMobilitiesService {
     updateObject[document] = null;
     if (
       (
-        await this.obligatoryMobilitiesModel.updateOne(
+        await this.attachmentsObligatoryMobilitiesModel.updateOne(
           { _id: attachmentsObligatoryMobility._id },
           updateObject,
         )
       ).modifiedCount < 1
     )
-      throw new ForbiddenException(
-        'attachments obligatory mobility not modified',
-      );
+      throw new ForbiddenException('obligatory mobility not modified');
     return await this.findRawAttachments(_id);
+  }
+
+  async generateAttachmentsDocument(
+    _id: string,
+    numberOfDocument: number,
+    date: Date,
+  ): Promise<StreamableFile> {
+    const attachmentsObligatoryMobility = await this.findAttachments(_id);
+
+    console.log(attachmentsObligatoryMobility);
+
+    const template = (await this.templatesService.getTemplate(
+      'obligatoryMobility',
+      'solicitudeDocument',
+      true,
+    )) as Docxtemplater;
+
+    const hospital = await this.hospitalsService.findOne(
+      attachmentsObligatoryMobility.hospital as string,
+    );
+    const specialty = await this.specialtiesService.findOne(
+      attachmentsObligatoryMobility.specialty as string,
+    );
+
+    template.render({
+      hospital: hospital.name.toUpperCase(),
+      'principal.nombre': hospital.firstReceiver
+        ? hospital.firstReceiver.name.toUpperCase()
+        : '',
+      'principal.cargo': hospital.firstReceiver
+        ? hospital.firstReceiver.position.toUpperCase()
+        : '',
+      'secundario.nombre': hospital.secondReceiver
+        ? `${hospital.secondReceiver.name.toUpperCase()}`
+        : '',
+      'secundario.cargo': hospital.secondReceiver
+        ? hospital.secondReceiver.position.toUpperCase()
+        : '',
+      'terciario.nombre': hospital.thirdReceiver
+        ? `${hospital.thirdReceiver.name.toUpperCase()}`
+        : '',
+      'terciario.cargo': hospital.thirdReceiver
+        ? hospital.thirdReceiver.position.toUpperCase()
+        : '',
+      numero: numberOfDocument,
+      fecha: dateToString(date),
+      especialidad: specialty.value,
+      departamento: specialty.headOfDepartmentPosition,
+      jefeDeDepartamento: specialty.headOfDepartment.toUpperCase(),
+      profesor: specialty.tenuredPostgraduateProfessor.toUpperCase(),
+      jefeDeServicio: specialty.headOfService.toUpperCase(),
+      tabla: {
+        data: [
+          ['1', 'John', 'Foobar', '3374 Olen Thomas Drive Frisco Texas 75034'],
+          [
+            '2',
+            'Mary',
+            'Foobaz',
+            '352 Illinois Avenue Yamhill Oregon(OR) 97148',
+          ],
+        ],
+        size: [2, 4], // means 2 lines, 4 columns
+        widths: [175, 175, 175, 175], // The widths of each column
+        height: 200, // The height of each column
+        header: ['Index', 'Name', 'Title', 'Description'],
+        style: {
+          header: {
+            shade: 'DDDD33',
+            textAlign: 'left',
+          },
+          normal: {
+            shade: 'E0E0E0',
+            textAlign: 'right',
+          },
+        },
+      },
+    });
+
+    const buffer = (await template.getZip().generate({
+      type: 'nodebuffer',
+      compression: 'DEFLATE',
+    })) as Buffer;
+
+    return new StreamableFile(buffer, {
+      disposition: 'attachment:filename=Solicitud.docx',
+    });
   }
 }

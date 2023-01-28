@@ -42,7 +42,7 @@ export class TemplatesController {
   @ApiParam({
     name: 'document',
     type: String,
-    enum: ['socialService', 'optionalMobility'],
+    enum: ['socialService', 'optionalMobility', 'obligatoryMobility'],
   })
   @ApiQuery({
     name: 'type',

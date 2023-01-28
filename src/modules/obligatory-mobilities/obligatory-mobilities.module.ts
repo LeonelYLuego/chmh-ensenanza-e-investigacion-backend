@@ -1,6 +1,8 @@
+import { HospitalsModule } from '@hospitals/hospitals.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SpecialtiesModule } from '@specialties/specialties.module';
+import { TemplatesModule } from '@templates/templates.module';
 import { FilesService } from '@utils/services';
 import {
   AttachmentsObligatoryMobility,
@@ -32,6 +34,8 @@ import {
       },
     ]),
     SpecialtiesModule,
+    HospitalsModule,
+    TemplatesModule,
   ],
   controllers: [ObligatoryMobilitiesController],
   providers: [ObligatoryMobilitiesService, FilesService],

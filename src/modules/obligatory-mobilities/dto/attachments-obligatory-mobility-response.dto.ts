@@ -25,12 +25,12 @@ export class AttachmentsObligatoryMobilityResponseDto {
   @ApiProperty({
     type: String,
   })
-  hospital: Hospital;
+  hospital: Hospital | string;
 
   @ApiProperty({
     type: String,
   })
-  specialty: Specialty;
+  specialty: Specialty | string;
 
   @ApiProperty({
     type: String,

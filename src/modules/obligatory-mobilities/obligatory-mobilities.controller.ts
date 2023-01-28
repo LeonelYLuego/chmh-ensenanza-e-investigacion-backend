@@ -26,6 +26,7 @@ import { API_ENDPOINTS, STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
 import { ValidateIdPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
+import { ValidateNumberPipe } from '@utils/pipes/validate-number.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { AttachmentsObligatoryMobility } from './attachments-obligatory-mobility.schema';
@@ -236,6 +237,24 @@ export class ObligatoryMobilitiesController {
         type,
       ),
     };
+  }
+
+  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS_GENERATE)
+  @ApiBearerAuth()
+  @ApiQuery({ type: Number, name: 'numberOfDocument' })
+  @ApiQuery({ type: Date, name: 'date' })
+  @ApiParam({ type: String, name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
+  async generateAttachmentsDocuments(
+    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
+    _id: string,
+    @Query('numberOfDocument', ValidateNumberPipe) numberOfDocuments: number,
+    @Query('date', ValidateDatePipe) date: Date,
+  ): Promise<StreamableFile> {
+    return await this.obligatoryMobilitiesService.generateAttachmentsDocument(
+      _id,
+      numberOfDocuments,
+      date,
+    );
   }
 
   /* Obligatory Mobilities */

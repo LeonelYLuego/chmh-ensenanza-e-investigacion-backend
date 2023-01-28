@@ -32,6 +32,16 @@ export class OptionalMobilitiesTemplates {
   presentationOfficeDocument?: string;
 }
 
+@Schema()
+export class ObligatoryMobilitiesTemplates {
+  @ApiProperty({
+    type: String,
+    description: 'Obligatory Mobility Solicitude Template',
+  })
+  @Prop({ type: String, required: false, length: 64 })
+  solicitudeDocument?: string;
+}
+
 /** Template schema */
 @Schema()
 export class Templates {
@@ -51,6 +61,13 @@ export class Templates {
   })
   @Prop({ type: OptionalMobilitiesTemplates, required: true })
   optionalMobility: OptionalMobilitiesTemplates;
+
+  @ApiProperty({
+    type: ObligatoryMobilitiesTemplates,
+    description: 'Obligatory Mobilities Templates',
+  })
+  @Prop({ type: ObligatoryMobilitiesTemplates, required: true })
+  obligatoryMobility: ObligatoryMobilitiesTemplates;
 
   @ApiProperty({ type: Number })
   __v?: number;

@@ -3,15 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { STORAGE_PATHS } from '@utils/constants';
 import { FilesService } from '@utils/services';
 import * as fs from 'fs';
-import { AttachmentsObligatoryMobility } from 'modules/obligatory-mobilities/attachments-obligatory-mobility.schema';
-import { ObligatoryMobilityDocumentTypes } from 'modules/obligatory-mobilities/types/obligatory-mobility-document.type';
-import { OptionalMobilityDocumentTypes } from 'modules/optional-mobilities/types/optional-mobility-document.type';
-import { SocialServiceDocumentTypes } from 'modules/social-services';
 import { Model } from 'mongoose';
 import { join } from 'path';
-import * as PizZip from 'pizzip';
 import { Templates, TemplatesDocument } from './template.schema';
-const Docxtemplater = require('docxtemplater');
 
 /** Template service */
 @Injectable()
@@ -32,46 +26,9 @@ export class TemplatesService {
     return await createdTemplates.save();
   }
 
-  /**
-   * Gets a template document
-   * @param {'socialService'} document
-   * @param {SocialServiceDocumentTypes} type document type
-   * @returns
-   * @throws {ForbiddenException} template must exist
-   */
-  async getTemplate(
-    document: 'socialService' | 'optionalMobility' | 'obligatoryMobility',
-    type:
-      | SocialServiceDocumentTypes
-      | OptionalMobilityDocumentTypes
-      | ObligatoryMobilityDocumentTypes,
-  ): Promise<any> {
-    //Finds the template object
-    const templates = await this.templatesModel.findOne();
-    if (templates) {
-      //Gets the path of the template in the server
-      const documentPath = templates[document][type];
-      if (documentPath) {
-        //Checks if the template exists
-        const documentBytes = fs.readFileSync(
-          join(STORAGE_PATHS.TEMPLATES, documentPath),
-        );
-        if (documentBytes) {
-          const zip = new PizZip(documentBytes);
-          const doc = new Docxtemplater(zip, {
-            paragraphLoop: true,
-            linebreaks: true,
-          });
-          return doc;
-        }
-      }
-    }
-    throw new ForbiddenException('not template found');
-  }
-
   async getDocument(
-    document: 'obligatoryMobility',
-    type: 'solicitudeDocument',
+    document: 'socialService' | 'optionalMobility' | 'obligatoryMobility',
+    type: 'solicitudeDocument' | 'presentationOfficeDocument',
   ): Promise<Buffer> {
     const templates = await this.templatesModel.findOne();
     if (templates) {

@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as JSZip from 'jszip';
-import Docxtemplater from 'docxtemplater';
 import {
   ForbiddenException,
   Inject,
@@ -27,6 +26,7 @@ import { Hospital } from '@hospitals/hospital.schema';
 import { Student } from '@students/student.schema';
 import { dateToString, getPeriod } from '@utils/functions/date.function';
 import { gradeToString } from '@utils/functions/grade.function';
+import { TemplateHandler } from 'easy-template-x';
 
 /** Social Service service */
 @Injectable()
@@ -316,13 +316,13 @@ export class SocialServicesService {
               if (specialty)
                 if ((socialService as any).specialty._id != specialty) return;
               //Gets the template
-              const template = (await this.templatesService.getTemplate(
-                'socialService',
-                'presentationOfficeDocument',
-              )) as Docxtemplater;
+              // const template = (await this.templatesService.getTemplate(
+              //   'socialService',
+              //   'presentationOfficeDocument',
+              // )) as Docxtemplater;
 
               //Replaces tags in the template document with the information
-              template.render({
+              const data = {
                 hospital: hospital.name.toUpperCase(),
                 numero: counter.toString(),
                 fecha: dateToString(date),
@@ -370,13 +370,19 @@ export class SocialServicesService {
                 jefeDeServicio: (
                   socialService as any
                 ).specialty.headOfService.toUpperCase(),
-              });
+              };
 
               //Converts the document to binary
-              const buffer = (await template.getZip().generate({
-                type: 'nodebuffer',
-                compression: 'DEFLATE',
-              })) as Buffer;
+              // const buffer = (await template.getZip().generate({
+              //   type: 'nodebuffer',
+              //   compression: 'DEFLATE',
+              // })) as Buffer;
+              const template = await this.templatesService.getDocument(
+                'socialService',
+                'presentationOfficeDocument',
+              );
+              const handler = new TemplateHandler();
+              const doc = await handler.process(template, data);
 
               //Adds the generated document to the zip and saves it with the name of the student
               zip.file(
@@ -385,7 +391,7 @@ export class SocialServicesService {
                 } ${(socialService.student as Student).firstLastName} ${
                   (socialService.student as Student).secondLastName ?? ''
                 }.docx`,
-                buffer,
+                doc,
               );
 
               //Increments the document number

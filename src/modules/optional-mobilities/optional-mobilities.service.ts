@@ -7,7 +7,7 @@ import { TemplatesService } from '@templates/templates.service';
 import { dateToString, getInterval } from '@utils/functions/date.function';
 import { gradeToString } from '@utils/functions/grade.function';
 import { FilesService } from '@utils/services';
-import Docxtemplater from 'docxtemplater';
+import { TemplateHandler } from 'easy-template-x';
 import * as fs from 'fs';
 import * as JSZip from 'jszip';
 import { Model } from 'mongoose';
@@ -471,11 +471,7 @@ export class OptionalMobilitiesService {
           optionalMobilities.map(async (optionalMobility) => {
             if (specialty)
               if (optionalMobility.student.specialty._id != specialty) return;
-            const template = (await this.templatesService.getTemplate(
-              'optionalMobility',
-              document,
-            )) as Docxtemplater;
-            template.render({
+            const data = {
               hospital: hospital.name.toUpperCase(),
               'principal.nombre': hospital.firstReceiver
                 ? hospital.firstReceiver.name.toUpperCase()
@@ -524,18 +520,20 @@ export class OptionalMobilitiesService {
                 optionalMobility.student.specialty.tenuredPostgraduateProfessor.toUpperCase(),
               jefeDeServicio:
                 optionalMobility.student.specialty.headOfService.toUpperCase(),
-            });
-            const buffer = (await template.getZip().generate({
-              type: 'nodebuffer',
-              compression: 'DEFLATE',
-            })) as Buffer;
+            };
+            const template = await this.templatesService.getDocument(
+              'optionalMobility',
+              document,
+            );
+            const handler = new TemplateHandler();
+            const doc = await handler.process(template, data);
             zip.file(
               `${counter} ${optionalMobility.student.specialty.value} ${
                 optionalMobility.student.name
               } ${optionalMobility.student.firstLastName} ${
                 optionalMobility.student.secondLastName ?? ''
               }.docx`,
-              buffer,
+              doc,
             );
             counter++;
           }),

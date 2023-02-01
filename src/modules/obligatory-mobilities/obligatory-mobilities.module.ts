@@ -7,13 +7,15 @@ import { FilesService } from '@utils/services';
 import {
   AttachmentsObligatoryMobility,
   AttachmentsObligatoryMobilitySchema,
-} from './attachments-obligatory-mobility.schema';
-import { ObligatoryMobilitiesController } from './obligatory-mobilities.controller';
-import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
+} from './schemas/attachments-obligatory-mobility.schema';
+import { AttachmentsObligatoryMobilitiesService } from './services/attachments-obligatory-movility.service';
+import { ObligatoryMobilitiesController } from './controllers/obligatory-mobilities.controller';
 import {
   ObligatoryMobility,
   ObligatoryMobilitySchema,
-} from './obligatory-mobility.schema';
+} from './schemas/obligatory-mobility.schema';
+import { ObligatoryMobilitiesService } from './services/obligatory-mobilities.service';
+import { AttachmentsObligatoryMobilitiesController } from './controllers/attachments-obligatory-mobilities.controller';
 
 @Module({
   imports: [
@@ -37,7 +39,14 @@ import {
     HospitalsModule,
     TemplatesModule,
   ],
-  controllers: [ObligatoryMobilitiesController],
-  providers: [ObligatoryMobilitiesService, FilesService],
+  controllers: [
+    AttachmentsObligatoryMobilitiesController,
+    ObligatoryMobilitiesController,
+  ],
+  providers: [
+    ObligatoryMobilitiesService,
+    AttachmentsObligatoryMobilitiesService,
+    FilesService,
+  ],
 })
 export class ObligatoryMobilitiesModule {}

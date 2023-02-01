@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ObligatoryMobility } from '../obligatory-mobility.schema';
+import { ObligatoryMobilityResponseDto } from './obligatory-mobility-response.dto';
 
 export class ObligatoryMobilityByHospitalDto {
   @ApiProperty()
@@ -9,5 +9,5 @@ export class ObligatoryMobilityByHospitalDto {
   name: string;
 
   @ApiProperty()
-  obligatoryMobilities: ObligatoryMobility[];
+  obligatoryMobilities: ObligatoryMobilityResponseDto[];
 }

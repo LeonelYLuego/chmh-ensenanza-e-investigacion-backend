@@ -26,31 +26,20 @@ import { API_ENDPOINTS, STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
 import { ValidateIdPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
-import { ValidateNumberPipe } from '@utils/pipes/validate-number.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { AttachmentsObligatoryMobility } from './attachments-obligatory-mobility.schema';
-import { AttachmentsObligatoryMobilityByHospitalDto } from './dto/attachments-obligatory-mobility-by-hospital.dto';
-import { AttachmentsObligatoryMobilityResponseDto } from './dto/attachments-obligatory-mobility-response.dto';
-import { CreateAttachmentsObligatoryMobilityDto } from './dto/create-attachments-obligatory-mobility.dto';
-import { CreateObligatoryMobilityDto } from './dto/create-obligatory-mobility.dto';
-import { ObligatoryMobilityByHospitalDto } from './dto/obligatory-mobility-by-hospital.dto';
-import { ObligatoryMobilityByStudentDto } from './dto/obligatory-mobility-by-student.dto';
-import { ObligatoryMobilityIntervalDto } from './dto/obligatory-mobility-interval.dto';
-import { UpdateAttachmentsObligatoryMobilityDto } from './dto/update-attachments-obligatory-mobility.dto';
-import { UpdateObligatoryMobilityDto } from './dto/update-obligatory-mobility.dto';
-import { ObligatoryMobilitiesService } from './obligatory-mobilities.service';
-import { ObligatoryMobility } from './obligatory-mobility.schema';
-import { ValidateAttachmentsObligatoryMobilityDocumentTypePipe } from './pipes/validate-attachments-obligatory-mobility-document.pipe';
-import { ValidateObligatoryMobilityDocumentTypePipe } from './pipes/validate-obligatory-mobility-document.pipe';
-import {
-  AttachmentsObligatoryMobilityDocumentTypes,
-  AttachmentsObligatoryMobilityDocumentTypesArray,
-} from './types/attachments-obligatory-mobility-document.type';
+import { CreateObligatoryMobilityDto } from '../dto/create-obligatory-mobility.dto';
+import { ObligatoryMobilityByHospitalDto } from '../dto/obligatory-mobility-by-hospital.dto';
+import { ObligatoryMobilityByStudentDto } from '../dto/obligatory-mobility-by-student.dto';
+import { ObligatoryMobilityIntervalDto } from '../dto/obligatory-mobility-interval.dto';
+import { UpdateObligatoryMobilityDto } from '../dto/update-obligatory-mobility.dto';
+import { ObligatoryMobility } from '../schemas/obligatory-mobility.schema';
+import { ValidateObligatoryMobilityDocumentTypePipe } from '../pipes/validate-obligatory-mobility-document.pipe';
 import {
   ObligatoryMobilityDocumentTypes,
   ObligatoryMobilityDocumentTypesArray,
-} from './types/obligatory-mobility-document.type';
+} from '../types/obligatory-mobility-document.type';
+import { ObligatoryMobilitiesService } from '../services/obligatory-mobilities.service';
 
 @ApiTags('Obligatory Mobilities')
 @Controller(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BASE_PATH)
@@ -58,206 +47,6 @@ export class ObligatoryMobilitiesController {
   constructor(
     private readonly obligatoryMobilitiesService: ObligatoryMobilitiesService,
   ) {}
-
-  /* Attachments */
-
-  @Post(API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS)
-  @ApiBearerAuth()
-  @ApiBody({ type: CreateAttachmentsObligatoryMobilityDto })
-  async createAttachments(
-    @Body()
-    createAttachmentsObligatoryMobilityDto: CreateAttachmentsObligatoryMobilityDto,
-  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
-    return {
-      data: await this.obligatoryMobilitiesService.createAttachments(
-        createAttachmentsObligatoryMobilityDto,
-      ),
-    };
-  }
-
-  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS)
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'specialty', type: String })
-  @ApiQuery({ name: 'initialDate', type: Date })
-  @ApiQuery({ name: 'finalDate', type: Date })
-  async findAllAttachments(
-    @Query('specialty', ValidateIdPipe) specialty: string,
-    @Query('initialDate', ValidateDatePipe) initialDate: Date,
-    @Query('finalDate', ValidateDatePipe) finalDate: Date,
-  ): Promise<HttpResponse<AttachmentsObligatoryMobilityByHospitalDto[]>> {
-    return {
-      data: await this.obligatoryMobilitiesService.findAllAttachments(
-        initialDate,
-        finalDate,
-        specialty,
-      ),
-    };
-  }
-
-  @Get(
-    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}/:${API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID}`,
-  )
-  @ApiBearerAuth()
-  async findAttachments(
-    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
-    _id: string,
-  ): Promise<HttpResponse<AttachmentsObligatoryMobilityResponseDto>> {
-    return {
-      data: await this.obligatoryMobilitiesService.findAttachments(_id),
-    };
-  }
-
-  @Put(
-    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}/:${API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID}`,
-  )
-  @ApiBearerAuth()
-  @ApiBody({ type: UpdateAttachmentsObligatoryMobilityDto })
-  async updateAttachments(
-    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
-    _id: string,
-    @Body()
-    updateAttachmentsObligatoryMobilityDto: UpdateAttachmentsObligatoryMobilityDto,
-  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
-    return {
-      data: await this.obligatoryMobilitiesService.updateAttachments(
-        _id,
-        updateAttachmentsObligatoryMobilityDto,
-      ),
-    };
-  }
-
-  @Delete(
-    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}/:${API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID}`,
-  )
-  @ApiBearerAuth()
-  async deleteAttachments(
-    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
-    _id: string,
-  ): Promise<HttpResponse<undefined>> {
-    await this.obligatoryMobilitiesService.deleteAttachments(_id);
-    return {};
-  }
-
-  @Get(
-    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}${API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT}`,
-  )
-  @ApiBearerAuth()
-  @ApiParam({ name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
-  @ApiQuery({
-    name: 'type',
-    enum: AttachmentsObligatoryMobilityDocumentTypesArray,
-  })
-  async getAttachmentsDocument(
-    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
-    _id: string,
-    @Query('type', ValidateAttachmentsObligatoryMobilityDocumentTypePipe)
-    type: AttachmentsObligatoryMobilityDocumentTypes,
-  ): Promise<StreamableFile> {
-    return await this.obligatoryMobilitiesService.getAttachmentsDocument(
-      _id,
-      STORAGE_PATHS.OBLIGATORY_MOBILITIES,
-      type,
-    );
-  }
-
-  @Put(
-    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}${API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT}`,
-  )
-  @ApiBearerAuth()
-  @ApiParam({ name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
-  @ApiQuery({
-    name: 'type',
-    enum: AttachmentsObligatoryMobilityDocumentTypesArray,
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Document',
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: STORAGE_PATHS.OBLIGATORY_MOBILITIES,
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          cb(null, `${randomName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
-  async updateAttachmentsDocument(
-    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
-    _id: string,
-    @UploadedFile() file: Express.Multer.File,
-    @Query('type', ValidateAttachmentsObligatoryMobilityDocumentTypePipe)
-    type: AttachmentsObligatoryMobilityDocumentTypes,
-  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
-    return {
-      data: await this.obligatoryMobilitiesService.updateAttachmentsDocument(
-        _id,
-        STORAGE_PATHS.OBLIGATORY_MOBILITIES,
-        file,
-        type,
-      ),
-    };
-  }
-
-  @Delete(
-    `${API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS}${API_ENDPOINTS.OBLIGATORY_MOBILITIES.DOCUMENT}`,
-  )
-  @ApiBearerAuth()
-  @ApiParam({
-    name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID,
-  })
-  @ApiQuery({
-    name: 'type',
-    enum: AttachmentsObligatoryMobilityDocumentTypesArray,
-  })
-  async deleteAttachmentsDocument(
-    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
-    _id: string,
-    @Query('type', ValidateAttachmentsObligatoryMobilityDocumentTypePipe)
-    type: AttachmentsObligatoryMobilityDocumentTypes,
-  ): Promise<HttpResponse<AttachmentsObligatoryMobility>> {
-    return {
-      data: await this.obligatoryMobilitiesService.deleteAttachmentsDocument(
-        _id,
-        STORAGE_PATHS.OBLIGATORY_MOBILITIES,
-        type,
-      ),
-    };
-  }
-
-  @Get(API_ENDPOINTS.OBLIGATORY_MOBILITIES.ATTACHMENTS_GENERATE)
-  @ApiBearerAuth()
-  @ApiQuery({ type: Number, name: 'numberOfDocument' })
-  @ApiQuery({ type: Date, name: 'date' })
-  @ApiParam({ type: String, name: API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID })
-  async generateAttachmentsDocuments(
-    @Param(API_ENDPOINTS.OBLIGATORY_MOBILITIES.BY_ID, ValidateIdPipe)
-    _id: string,
-    @Query('numberOfDocument', ValidateNumberPipe) numberOfDocuments: number,
-    @Query('date', ValidateDatePipe) date: Date,
-  ): Promise<StreamableFile> {
-    return await this.obligatoryMobilitiesService.generateAttachmentsDocument(
-      _id,
-      numberOfDocuments,
-      date,
-    );
-  }
-
-  /* Obligatory Mobilities */
 
   @Post()
   @ApiBearerAuth()

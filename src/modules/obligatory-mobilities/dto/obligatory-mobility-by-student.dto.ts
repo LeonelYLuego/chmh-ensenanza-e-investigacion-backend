@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ObligatoryMobility } from '../obligatory-mobility.schema';
+import { ObligatoryMobilityResponseDto } from './obligatory-mobility-response.dto';
 
 export class ObligatoryMobilityByStudentDto {
   @ApiProperty()
@@ -15,5 +15,5 @@ export class ObligatoryMobilityByStudentDto {
   secondLastName: string;
 
   @ApiProperty()
-  obligatoryMobilities: ObligatoryMobility[];
+  obligatoryMobilities: ObligatoryMobilityResponseDto[];
 }

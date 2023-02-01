@@ -1,7 +1,7 @@
 import { Hospital } from '@hospitals/hospital.schema';
 import { ApiProperty } from '@nestjs/swagger';
 import { Specialty } from '@specialties/specialty.schema';
-import { ObligatoryMobility } from '../obligatory-mobility.schema';
+import { ObligatoryMobility } from '../schemas/obligatory-mobility.schema';
 
 export class AttachmentsObligatoryMobilityResponseDto {
   @ApiProperty({

@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module, forwardRef, Inject } from '@nestjs/common';
 import { HospitalsService } from './hospitals.service';
 import { HospitalsController } from './hospitals.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -7,6 +7,11 @@ import {
   SocialServicesModule,
   SocialServicesService,
 } from 'modules/social-services';
+import { Model } from 'mongoose';
+import {
+  OptionalMobilitiesModule,
+  OptionalMobilitiesService,
+} from 'modules/optional-mobilities';
 
 /** Hospital module */
 @Module({
@@ -14,15 +19,19 @@ import {
     forwardRef(() =>
       MongooseModule.forFeatureAsync([
         {
-          imports: [SocialServicesModule],
-          inject: [SocialServicesService],
+          imports: [SocialServicesModule, OptionalMobilitiesModule],
+          inject: [SocialServicesService, OptionalMobilitiesService],
           name: Hospital.name,
-          useFactory: (socialServicesService: SocialServicesService) => {
+          useFactory: (
+            socialServicesService: SocialServicesService,
+            optionalMobilitiesService: OptionalMobilitiesService,
+          ) => {
             const schema = HospitalSchema;
             schema.post(
               'findOneAndDelete',
               async function (document: Hospital) {
                 await socialServicesService.deleteByHospital(document._id);
+                await optionalMobilitiesService.deleteByHospital(document._id);
               },
             );
             return schema;

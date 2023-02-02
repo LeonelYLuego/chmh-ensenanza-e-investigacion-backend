@@ -14,15 +14,21 @@ import { SocialServicesQueries } from './services/queries.service';
 @Module({
   imports: [
     forwardRef(() =>
-      MongooseModule.forFeature([
-        { name: SocialService.name, schema: SocialServiceSchema },
+      MongooseModule.forFeatureAsync([
+        {
+          name: SocialService.name,
+          useFactory: () => {
+            const schema = SocialServiceSchema;
+            return schema;
+          },
+        },
       ]),
     ),
     MulterModule,
     forwardRef(() => HospitalsModule),
     forwardRef(() => StudentsModule),
-    SpecialtiesModule,
-    TemplatesModule,
+    forwardRef(() => SpecialtiesModule),
+    forwardRef(() => TemplatesModule),
   ],
   controllers: [SocialServicesController],
   providers: [SocialServicesService, FilesService, SocialServicesQueries],

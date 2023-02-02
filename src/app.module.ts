@@ -9,18 +9,15 @@ import { AuthModule } from '@auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { API_ENDPOINTS } from '@utils/constants/api-routes.constant';
-import { SocialServicesModule } from 'modules/social-services';
-import { HospitalsModule } from '@hospitals/hospitals.module';
+import { UsersModule } from '@users/users.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { SpecialtiesModule } from '@specialties/specialties.module';
 import { StudentsModule } from '@students/students.module';
-import { UsersModule } from '@users/users.module';
-import { TemplatesModule } from '@templates/templates.module';
-import { ObligatoryMobilitiesModule } from 'modules/obligatory-mobilities/obligatory-mobilities.module';
-import { OptionalMobilitiesModule } from 'modules/optional-mobilities';
 import { RotationServicesModule } from 'modules/rotation-services';
-import { IncomingStudentsModule } from 'modules/incoming-students/incoming-students.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { HospitalsModule } from '@hospitals/hospitals.module';
+import { TemplatesModule } from '@templates/templates.module';
+import { SocialServicesModule } from 'modules/social-services';
+import { OptionalMobilitiesModule } from 'modules/optional-mobilities';
 
 /** main application module */
 @Module({
@@ -28,18 +25,19 @@ import { join } from 'path';
     MongooseModule.forRoot(
       'mongodb://127.0.0.1/CHMH-Ensenanza-e-Investigacion',
     ),
-    AuthModule,
     ConfigModule,
+    AuthModule,
     UsersModule,
     SocialServicesModule,
-    ObligatoryMobilitiesModule,
+    // ObligatoryMobilitiesModule,
     OptionalMobilitiesModule,
+    // IncomingStudentsModule,
     HospitalsModule,
     SpecialtiesModule,
+    RotationServicesModule,
     StudentsModule,
     TemplatesModule,
-    RotationServicesModule,
-    IncomingStudentsModule,
+
     ServeStaticModule.forRoot({
       rootPath:
         'C:/Users/leone/programs/chmh-ensenanza-e-investigacion-frontend/dist',

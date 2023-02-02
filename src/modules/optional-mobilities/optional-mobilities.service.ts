@@ -1,6 +1,8 @@
 import { Hospital } from '@hospitals/hospital.schema';
 import { HospitalsService } from '@hospitals/hospitals.service';
 import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
+import { Inject } from '@nestjs/common/decorators';
+import { forwardRef } from '@nestjs/common/utils';
 import { InjectModel } from '@nestjs/mongoose';
 import { SpecialtiesService } from '@specialties/specialties.service';
 import { TemplatesService } from '@templates/templates.service';
@@ -27,7 +29,9 @@ export class OptionalMobilitiesService {
   constructor(
     @InjectModel(OptionalMobility.name)
     private optionalMobilitiesModel: Model<OptionalMobilityDocument>,
+    @Inject(forwardRef(() => HospitalsService))
     private hospitalsService: HospitalsService,
+    @Inject(forwardRef(() => SpecialtiesService))
     private specialtiesService: SpecialtiesService,
     private templatesService: TemplatesService,
     private filesService: FilesService,
@@ -265,6 +269,24 @@ export class OptionalMobilitiesService {
       );
     if (await this.optionalMobilitiesModel.findOne({ _id }))
       throw new ForbiddenException('optional mobility not deleted');
+  }
+
+  async deleteByRotationService(rotationService: string): Promise<void> {
+    await this.optionalMobilitiesModel.deleteMany({
+      rotationService,
+    });
+  }
+
+  async deleteByStudent(student: string): Promise<void> {
+    await this.optionalMobilitiesModel.deleteMany({
+      student,
+    });
+  }
+
+  async deleteByHospital(hospital: string): Promise<void> {
+    await this.optionalMobilitiesModel.deleteMany({
+      hospital,
+    });
   }
 
   /**

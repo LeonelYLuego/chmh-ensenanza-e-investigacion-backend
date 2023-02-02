@@ -1,4 +1,6 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Inject } from '@nestjs/common/decorators';
+import { forwardRef } from '@nestjs/common/utils';
 import { InjectModel } from '@nestjs/mongoose';
 import { SpecialtiesService } from '@specialties/specialties.service';
 import { Specialty } from '@specialties/specialty.schema';
@@ -14,6 +16,7 @@ export class RotationServicesService {
   constructor(
     @InjectModel(RotationService.name)
     private rotationServicesModel: Model<RotationServiceDocument>,
+    @Inject(forwardRef(() => SpecialtiesService))
     private specialtiesService: SpecialtiesService,
   ) {}
 
@@ -94,11 +97,9 @@ export class RotationServicesService {
    * @throws {ForbiddenException} Rotation Service must be deleted
    */
   async delete(_id: string): Promise<void> {
-    const rotationService = await this.findOne(_id);
-    if (
-      (await this.rotationServicesModel.deleteOne({ _id: rotationService._id }))
-        .deletedCount == 0
-    )
+    await this.findOne(_id);
+    await this.rotationServicesModel.findOneAndDelete({ _id });
+    if (await this.rotationServicesModel.findOne({ _id }))
       throw new ForbiddenException('rotation service not deleted');
   }
 
@@ -107,9 +108,16 @@ export class RotationServicesService {
    * @param specialty Specialty primary key
    */
   async deleteBySpecialty(specialty: string): Promise<void> {
-    await this.rotationServicesModel.deleteMany({
+    const rotationServices = await this.rotationServicesModel.find({
       specialty,
     });
+    await Promise.all(
+      rotationServices.map(async (rotationService) => {
+        await this.rotationServicesModel.findOneAndDelete({
+          _id: rotationService._id,
+        });
+      }),
+    );
   }
 
   async findIncoming(specialty: string): Promise<RotationService[]> {

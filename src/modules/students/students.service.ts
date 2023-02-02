@@ -101,6 +101,11 @@ export class StudentsService {
   }
 
   async deleteBySpecialty(specialty: string): Promise<void> {
-    await this.studentsModel.deleteMany({ specialty });
+    const students = await this.studentsModel.find({ specialty });
+    await Promise.all(
+      students.map(async (student) => {
+        await this.studentsModel.findOneAndDelete({ _id: student._id });
+      }),
+    );
   }
 }

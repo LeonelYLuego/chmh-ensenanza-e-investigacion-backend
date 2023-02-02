@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { OptionalMobilitiesService } from './optional-mobilities.service';
 import { OptionalMobilitiesController } from './optional-mobilities.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -10,6 +10,7 @@ import { FilesService } from '@utils/services';
 import { HospitalsModule } from '@hospitals/hospitals.module';
 import { TemplatesModule } from '@templates/templates.module';
 import { SpecialtiesModule } from '@specialties/specialties.module';
+import { RotationServicesModule } from 'modules/rotation-services';
 
 /** Optional Mobilities module */
 @Module({
@@ -23,11 +24,13 @@ import { SpecialtiesModule } from '@specialties/specialties.module';
         },
       },
     ]),
-    HospitalsModule,
-    TemplatesModule,
-    SpecialtiesModule,
+    forwardRef(() => RotationServicesModule),
+    forwardRef(() => HospitalsModule),
+    forwardRef(() => TemplatesModule),
+    forwardRef(() => SpecialtiesModule),
   ],
   controllers: [OptionalMobilitiesController],
   providers: [OptionalMobilitiesService, FilesService],
+  exports: [OptionalMobilitiesService],
 })
 export class OptionalMobilitiesModule {}

@@ -1,6 +1,6 @@
 import { HospitalsService } from '@hospitals/hospitals.service';
 import { ForbiddenException, StreamableFile } from '@nestjs/common';
-import { Injectable } from '@nestjs/common/decorators';
+import { Inject, Injectable } from '@nestjs/common/decorators';
 import { InjectModel } from '@nestjs/mongoose';
 import { SpecialtiesService } from '@specialties/specialties.service';
 import { TemplatesService } from '@templates/templates.service';
@@ -24,6 +24,7 @@ import { dateToString, getInterval } from '@utils/functions/date.function';
 import { TemplateHandler } from 'easy-template-x';
 import { Specialty } from '@specialties/specialty.schema';
 import { Hospital } from '@hospitals/hospital.schema';
+import { forwardRef } from '@nestjs/common/utils';
 
 @Injectable()
 export class AttachmentsObligatoryMobilitiesService {
@@ -32,7 +33,9 @@ export class AttachmentsObligatoryMobilitiesService {
     private attachmentsObligatoryMobilitiesModel: Model<AttachmentsObligatoryMobilityDocument>,
     @InjectModel(ObligatoryMobility.name)
     private obligatoryMobilitiesModel: Model<ObligatoryMobilityDocument>,
+    @Inject(forwardRef(() => HospitalsService))
     private hospitalsService: HospitalsService,
+    @Inject(forwardRef(() => SpecialtiesService))
     private specialtiesService: SpecialtiesService,
     private templatesService: TemplatesService,
     private filesService: FilesService,

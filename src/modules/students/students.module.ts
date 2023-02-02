@@ -11,6 +11,8 @@ import {
   OptionalMobilitiesModule,
   OptionalMobilitiesService,
 } from 'modules/optional-mobilities';
+import { ObligatoryMobilitiesModule } from 'modules/obligatory-mobilities/obligatory-mobilities.module';
+import { ObligatoryMobilitiesService } from 'modules/obligatory-mobilities/services/obligatory-mobilities.service';
 
 /** Student Module */
 @Module({
@@ -18,17 +20,27 @@ import {
     forwardRef(() =>
       MongooseModule.forFeatureAsync([
         {
-          imports: [SocialServicesModule, OptionalMobilitiesModule],
-          inject: [SocialServicesService, OptionalMobilitiesService],
+          imports: [
+            SocialServicesModule,
+            OptionalMobilitiesModule,
+            ObligatoryMobilitiesModule,
+          ],
+          inject: [
+            SocialServicesService,
+            OptionalMobilitiesService,
+            ObligatoryMobilitiesService,
+          ],
           name: Student.name,
           useFactory: (
             socialServicesService: SocialServicesService,
             optionalMobilitiesService: OptionalMobilitiesService,
+            obligatoryMobilitiesService: ObligatoryMobilitiesService,
           ) => {
             const schema = StudentSchema;
             schema.post('findOneAndDelete', async function (document: Student) {
               await socialServicesService.deleteByStudent(document._id);
               await optionalMobilitiesService.deleteByStudent(document._id);
+              await obligatoryMobilitiesService.deleteByStudent(document._id);
             });
             return schema;
           },

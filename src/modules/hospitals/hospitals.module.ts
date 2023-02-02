@@ -12,6 +12,8 @@ import {
   OptionalMobilitiesModule,
   OptionalMobilitiesService,
 } from 'modules/optional-mobilities';
+import { ObligatoryMobilitiesModule } from 'modules/obligatory-mobilities/obligatory-mobilities.module';
+import { ObligatoryMobilitiesService } from 'modules/obligatory-mobilities/services/obligatory-mobilities.service';
 
 /** Hospital module */
 @Module({
@@ -19,12 +21,21 @@ import {
     forwardRef(() =>
       MongooseModule.forFeatureAsync([
         {
-          imports: [SocialServicesModule, OptionalMobilitiesModule],
-          inject: [SocialServicesService, OptionalMobilitiesService],
+          imports: [
+            SocialServicesModule,
+            OptionalMobilitiesModule,
+            ObligatoryMobilitiesModule,
+          ],
+          inject: [
+            SocialServicesService,
+            OptionalMobilitiesService,
+            ObligatoryMobilitiesService,
+          ],
           name: Hospital.name,
           useFactory: (
             socialServicesService: SocialServicesService,
             optionalMobilitiesService: OptionalMobilitiesService,
+            obligatoryMobilitiesService: ObligatoryMobilitiesService,
           ) => {
             const schema = HospitalSchema;
             schema.post(
@@ -32,6 +43,9 @@ import {
               async function (document: Hospital) {
                 await socialServicesService.deleteByHospital(document._id);
                 await optionalMobilitiesService.deleteByHospital(document._id);
+                await obligatoryMobilitiesService.deleteByHospital(
+                  document._id,
+                );
               },
             );
             return schema;

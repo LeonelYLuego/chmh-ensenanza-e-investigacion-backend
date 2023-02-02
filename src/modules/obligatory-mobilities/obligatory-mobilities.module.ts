@@ -1,5 +1,5 @@
 import { HospitalsModule } from '@hospitals/hospitals.module';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SpecialtiesModule } from '@specialties/specialties.module';
 import { TemplatesModule } from '@templates/templates.module';
@@ -35,9 +35,9 @@ import { AttachmentsObligatoryMobilitiesController } from './controllers/attachm
         },
       },
     ]),
-    SpecialtiesModule,
-    HospitalsModule,
-    TemplatesModule,
+    forwardRef(() => SpecialtiesModule),
+    forwardRef(() => HospitalsModule),
+    forwardRef(() => TemplatesModule),
   ],
   controllers: [
     AttachmentsObligatoryMobilitiesController,
@@ -48,5 +48,6 @@ import { AttachmentsObligatoryMobilitiesController } from './controllers/attachm
     AttachmentsObligatoryMobilitiesService,
     FilesService,
   ],
+  exports: [ObligatoryMobilitiesService],
 })
 export class ObligatoryMobilitiesModule {}

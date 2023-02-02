@@ -316,6 +316,38 @@ export class ObligatoryMobilitiesService {
     obligatoryMobilitiesByStudent.sort((a, b) =>
       a.firstLastName.localeCompare(b.firstLastName),
     );
+    await Promise.all(
+      obligatoryMobilitiesByStudent.map(async (obligatoryMobilityByStudent) => {
+        await Promise.all(
+          obligatoryMobilityByStudent.obligatoryMobilities.map(
+            async (obligatoryMobility) => {
+              obligatoryMobility.solicitudeDocument = [];
+              obligatoryMobility.acceptanceDocument = [];
+              const attachmentsObligatoryMobilities =
+                await this.attachmentsObligatoryMobilitiesService.findAttachments(
+                  obligatoryMobility.initialDate,
+                  obligatoryMobility.finalDate,
+                  obligatoryMobility.rotationService
+                    .specialty as unknown as string,
+                  obligatoryMobility.hospital._id,
+                );
+              attachmentsObligatoryMobilities.map(
+                (attachmentsObligatoryMobility) => {
+                  if (attachmentsObligatoryMobility.solicitudeDocument)
+                    obligatoryMobility.solicitudeDocument.push(
+                      attachmentsObligatoryMobility._id,
+                    );
+                  if (attachmentsObligatoryMobility.acceptanceDocument)
+                    obligatoryMobility.acceptanceDocument.push(
+                      attachmentsObligatoryMobility._id,
+                    );
+                },
+              );
+            },
+          ),
+        );
+      }),
+    );
     return obligatoryMobilitiesByStudent;
   }
 
@@ -334,7 +366,6 @@ export class ObligatoryMobilitiesService {
         obligatoryMobility.student.specialty as unknown as string,
         obligatoryMobility.hospital as unknown as string,
       );
-    console.log(attachmentsObligatoryMobilities);
     const solicitudeDocument: string[] = attachmentsObligatoryMobilities
       .filter(
         (attachmentsObligatoryMobility) =>
@@ -388,6 +419,24 @@ export class ObligatoryMobilitiesService {
     await this.obligatoryMobilitiesModel.findOneAndDelete({ _id });
     if (await this.obligatoryMobilitiesModel.findOne({ _id }))
       throw new ForbiddenException('obligatory mobility not deleted');
+  }
+
+  async deleteByRotationService(rotationService: string): Promise<void> {
+    await this.obligatoryMobilitiesModel.deleteMany({
+      rotationService,
+    });
+  }
+
+  async deleteByStudent(student: string): Promise<void> {
+    await this.obligatoryMobilitiesModel.deleteMany({
+      student,
+    });
+  }
+
+  async deleteByHospital(hospital: string): Promise<void> {
+    await this.obligatoryMobilitiesModel.deleteMany({
+      hospital,
+    });
   }
 
   async interval(): Promise<ObligatoryMobilityIntervalDto> {

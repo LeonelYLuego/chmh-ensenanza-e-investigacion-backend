@@ -59,7 +59,6 @@ export class SpecialtiesService {
    * @returns {Promise<Specialty>} the modified Specialty
    * @throws {ForbiddenException} Specialty must be modified
    * @throws {ForbiddenException} Specialty must exists
-   * @throws {ForbiddenException} Specialty value must not already exists in the database
    */
   async update(_id: string, specialtyDto: SpecialtyDto): Promise<Specialty> {
     const specialty = await this.findOne(_id);
@@ -101,10 +100,19 @@ export class SpecialtiesService {
     return -(lastYearGeneration - specialty.duration - year - 1);
   }
 
+  /**
+   * Finds all Incoming Specialties in the database
+   * @returns the found Incoming Specialties
+   */
   async findIncoming(): Promise<Specialty[]> {
     return await this.specialtiesModel.find({ incoming: true }).exec();
   }
 
+  /**
+   * Finds one Incoming Specialty in the database based on the provided _id
+   * @param _id
+   * @returns the found Incoming Specialty
+   */
   async findOneIncoming(_id: string): Promise<Specialty> {
     const result = await this.specialtiesModel
       .findOne({ _id, incoming: true })
@@ -113,6 +121,11 @@ export class SpecialtiesService {
     else throw new ForbiddenException('specialty not found');
   }
 
+  /**
+   * Creates a Incoming Specialty and saves it in the database
+   * @param specialtyDto
+   * @returns the created Incoming Specialty
+   */
   async createIncoming(specialtyDto: SpecialtyDto): Promise<Specialty> {
     const specialty = {
       incoming: true,
@@ -122,6 +135,12 @@ export class SpecialtiesService {
     return await createdSpecialty.save();
   }
 
+  /**
+   * Updates a Incoming Specialty in the database bases on the provided _id
+   * @param _id
+   * @param specialtyDto
+   * @returns the updated Incoming Specialty
+   */
   async updateIncoming(
     _id: string,
     specialtyDto: SpecialtyDto,
@@ -131,11 +150,16 @@ export class SpecialtiesService {
       const res = await this.specialtiesModel
         .updateOne({ _id }, specialtyDto)
         .exec();
+      // Checks if the Incoming Specialty was updated
       if (res.modifiedCount == 1) return await this.findOneIncoming(_id);
       else throw new ForbiddenException('specialty not modified');
     } else throw new ForbiddenException('specialty not found');
   }
 
+  /**
+   * Deletes a Incoming Specialty in the database based on the provided _id
+   * @param _id
+   */
   async deleteIncoming(_id: string): Promise<void> {
     const specialty = await this.findOneIncoming(_id);
     if (specialty) {

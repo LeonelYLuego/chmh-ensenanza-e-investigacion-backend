@@ -12,15 +12,15 @@ export class Student {
   @ApiProperty({ type: String, description: 'Student primary key' })
   _id: string;
 
-  @ApiProperty({ type: String, description: 'Student code' })
+  @ApiProperty({ type: String })
   @Prop({ type: String, required: false, length: 64 })
   code?: string;
 
-  @ApiProperty({ type: String, description: 'Student name' })
+  @ApiProperty({ type: String })
   @Prop({ type: String, required: true, length: 32 })
   name: string;
 
-  @ApiProperty({ type: String, description: 'Student first last name' })
+  @ApiProperty({ type: String })
   @Prop({ type: String, required: true, length: 32 })
   firstLastName: string;
 
@@ -32,7 +32,7 @@ export class Student {
   @Prop({ type: String, length: 32 })
   secondLastName: string;
 
-  @ApiProperty({ type: String, description: 'Student specialty _id' })
+  @ApiProperty({ type: String })
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Specialty',
@@ -42,7 +42,6 @@ export class Student {
 
   @ApiProperty({
     type: Number,
-    description: 'Student last year generation',
     minimum: 1990,
     maximum: 2100,
   })
@@ -54,11 +53,11 @@ export class Student {
   })
   lastYearGeneration: number;
 
-  @ApiProperty({ type: [String], description: 'Student phones', default: [] })
+  @ApiProperty({ type: [String], default: [] })
   @Prop({ type: [{ type: String, length: 16 }] })
   phones: string[];
 
-  @ApiProperty({ type: [String], description: 'Student emails', default: [] })
+  @ApiProperty({ type: [String], default: [] })
   @Prop({ type: [{ type: String, length: 64 }] })
   emails: string[];
 

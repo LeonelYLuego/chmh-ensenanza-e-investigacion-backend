@@ -1,8 +1,8 @@
 import { Hospital } from '@hospitals/hospital.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { RotationService } from '@rotation-services/rotation-service.schema';
 import { Student } from '@students/student.schema';
-import { RotationService } from 'modules/rotation-services';
 import mongoose from 'mongoose';
 
 /** Optional Mobility document */
@@ -14,11 +14,11 @@ export class OptionalMobility {
   @ApiProperty({ description: 'Optional Mobility primary key' })
   _id?: string;
 
-  @ApiProperty({ type: Date, description: 'Optional Mobility initial date' })
+  @ApiProperty({ type: Date })
   @Prop({ type: Date })
   initialDate: Date;
 
-  @ApiProperty({ type: Date, description: 'Optional Mobility final date' })
+  @ApiProperty({ type: Date })
   @Prop({ type: Date })
   finalDate: Date;
 

@@ -26,12 +26,20 @@ export class TemplatesService {
     return await createdTemplates.save();
   }
 
+  /**
+   * Gets a document template from the database
+   * @param document
+   * @param type
+   * @returns the found document
+   * @throws {ForbiddenException} template must exist
+   */
   async getDocument(
     document: 'socialService' | 'optionalMobility' | 'obligatoryMobility',
     type: 'solicitudeDocument' | 'presentationOfficeDocument',
   ): Promise<Buffer> {
     const templates = await this.templatesModel.findOne();
     if (templates) {
+      //Gets the path of the template
       const documentPath = templates[document][type];
       if (documentPath) {
         const documentBytes = fs.readFileSync(
@@ -48,6 +56,7 @@ export class TemplatesService {
    * @param {'socialService'} document
    * @param {SocialServiceDocumentTypes} type document type
    * @param {Express.Multer.File} file
+   * @throws
    */
   async updateTemplates(
     document: string,

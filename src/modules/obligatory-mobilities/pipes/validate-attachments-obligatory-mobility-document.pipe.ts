@@ -3,6 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { TypeAttachmentsObligatoryMobilityDto } from '../dto/type-attachments-obligatory-mobility.dto';
 
+/** Validate Attachments Obligatory Mobility document type pipe */
 export class ValidateAttachmentsObligatoryMobilityDocumentTypePipe
   implements PipeTransform
 {

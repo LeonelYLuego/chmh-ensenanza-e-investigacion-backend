@@ -37,7 +37,7 @@ import {
   AttachmentsObligatoryMobilityDocumentTypes,
   AttachmentsObligatoryMobilityDocumentTypesArray,
 } from '../types/attachments-obligatory-mobility-document.type';
-import { AttachmentsObligatoryMobilitiesService } from '../services/attachments-obligatory-movility.service';
+import { AttachmentsObligatoryMobilitiesService } from '../services/attachments-obligatory-mobility.service';
 
 @ApiTags('Attachments Obligatory Mobilities')
 @Controller(

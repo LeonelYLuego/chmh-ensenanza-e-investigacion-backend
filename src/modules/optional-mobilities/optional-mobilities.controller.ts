@@ -1,19 +1,17 @@
 import {
-  Controller,
-  Get,
   Post,
-  Body,
-  Put,
-  Param,
+  Get,
+  StreamableFile,
   Delete,
-  Query,
   UseInterceptors,
   UploadedFile,
-  StreamableFile,
+  Put,
+  Param,
+  Query,
+  Body,
+  Controller,
 } from '@nestjs/common';
-import { OptionalMobilitiesService } from './optional-mobilities.service';
-import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';
-import { UpdateOptionalMobilityDto } from './dto/update-optional-mobility.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -29,20 +27,24 @@ import {
 } from '@nestjs/swagger';
 import { API_ENDPOINTS, STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
-import { OptionalMobility } from './optional-mobility.schema';
-import { ValidateIdPipe } from '@utils/pipes';
-import { OptionalMobilityIntervalInterface } from './interfaces/optional-mobility-interval.interface';
-import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
-import { OptionalMobilityBySpecialtyDto } from '.';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ValidateDatePipe,
+  ValidateIdPipe,
+  ValidateNumberPipe,
+} from '@utils/pipes';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { CreateOptionalMobilityDto } from './dto/create-optional-mobility.dto';
+import { OptionalMobilityBySpecialtyDto } from './dto/optional-mobility-by-specialty';
+import { UpdateOptionalMobilityDto } from './dto/update-optional-mobility.dto';
+import { OptionalMobilityIntervalInterface } from './interfaces/optional-mobility-interval.interface';
+import { OptionalMobilitiesService } from './optional-mobilities.service';
+import { OptionalMobility } from './optional-mobility.schema';
+import { ValidateOptionalMobilityDocumentTypePipe } from './pipes/validate-optional-mobility-document.pipe';
 import {
   OptionalMobilityDocumentTypes,
   OptionalMobilityDocumentTypesArray,
 } from './types/optional-mobility-document.type';
-import { ValidateOptionalMobilityDocumentTypePipe } from './pipes/validate-optional-mobility-document.pipe';
-import { ValidateNumberPipe } from '@utils/pipes/validate-number.pipe';
 
 @ApiTags('Optional Mobilities')
 @Controller(API_ENDPOINTS.OPTIONAL_MOBILITIES.BASE_PATH)
@@ -129,6 +131,12 @@ export class OptionalMobilitiesController {
 
   @Get(API_ENDPOINTS.OPTIONAL_MOBILITIES.GENERATE_PRESENTATION_OFFICE_DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      '[Users] Generate Optional Mobilities presentation office documents',
+    description:
+      'Generates `optional mobilities` presentation office documents and return it in a zip file',
+  })
   @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
   @ApiQuery({ type: Date, name: 'dateOfDocuments' })
   @ApiQuery({ type: Date, name: 'initialDate' })
@@ -136,7 +144,15 @@ export class OptionalMobilitiesController {
   @ApiQuery({ type: String, name: 'hospital', required: false })
   @ApiQuery({ type: String, name: 'specialty', required: false })
   @ApiOkResponse({
+    description:
+      'the generated zip file with the presentation office documents',
     type: StreamableFile,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description: '`not template found`',
   })
   async generatePresentationOfficeDocument(
     @Query('initialNumberOfDocuments', ValidateNumberPipe)
@@ -160,6 +176,11 @@ export class OptionalMobilitiesController {
 
   @Get(API_ENDPOINTS.OPTIONAL_MOBILITIES.GENERATE_SOLICITUDE_DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Generate Optional Mobilities solicitude documents',
+    description:
+      'Generates `optional mobilities` solicitude documents and return it in a zip file',
+  })
   @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
   @ApiQuery({ type: Date, name: 'dateOfDocuments' })
   @ApiQuery({ type: Date, name: 'initialDate' })
@@ -167,7 +188,14 @@ export class OptionalMobilitiesController {
   @ApiQuery({ type: String, name: 'hospital', required: false })
   @ApiQuery({ type: String, name: 'specialty', required: false })
   @ApiOkResponse({
+    description: 'the generated zip file with the solicitude documents',
     type: StreamableFile,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description: '`not template found`',
   })
   async generateSolicitudeDocument(
     @Query('initialNumberOfDocuments', ValidateNumberPipe)
@@ -214,6 +242,26 @@ export class OptionalMobilitiesController {
 
   @Put(API_ENDPOINTS.OPTIONAL_MOBILITIES.CANCEL)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Cancel a Optional Mobility',
+    description:
+      'Cancels a `optional mobility` in the database based on the provided `_id` and returns the modified `optional mobility`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
+    description: '`optional mobility` primary key',
+  })
+  @ApiOkResponse({
+    type: OptionalMobility,
+    description: 'the modified `optional mobility`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description:
+      '`optional mobility not found` `optional mobility not modified`',
+  })
   async cancel(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<OptionalMobility>> {
@@ -224,6 +272,26 @@ export class OptionalMobilitiesController {
 
   @Put(API_ENDPOINTS.OPTIONAL_MOBILITIES.UNCANCEL)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Unancel a Optional Mobility',
+    description:
+      'Uncancels a `optional mobility` in the database based on the provided `_id` and returns the modified `optional mobility`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
+    description: '`optional mobility` primary key',
+  })
+  @ApiOkResponse({
+    type: OptionalMobility,
+    description: 'the modified `optional mobility`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
+  @ApiForbiddenResponse({
+    description:
+      '`optional mobility not found` `optional mobility not modified`',
+  })
   async uncancel(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<OptionalMobility>> {

@@ -22,8 +22,6 @@ import {
 import { API_ENDPOINTS } from '@utils/constants';
 import { STORAGE_PATHS } from '@utils/constants/storage.constant';
 import { HttpResponse } from '@utils/dtos';
-import { ValidateOptionalMobilityDocumentTypePipe } from 'modules/optional-mobilities/pipes/validate-optional-mobility-document.pipe';
-import { ValidateSocialServiceDocumentTypePipe } from 'modules/social-services/pipes/validate-social-service-document-type.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { TemplatesService } from './templates.service';
@@ -35,7 +33,7 @@ export class TemplatesController {
 
   @Put(`:${API_ENDPOINTS.TEMPLATES.BY_DOCUMENT}`)
   @ApiOperation({
-    summary: 'Update Document Template',
+    summary: '[Users] Update Document Template',
     description: 'Updates a Document `Template` in the database',
   })
   @ApiBearerAuth()

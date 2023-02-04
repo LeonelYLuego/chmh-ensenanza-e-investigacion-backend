@@ -3,22 +3,20 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Specialty } from '@specialties/specialty.schema';
 import { ObligatoryMobility } from '../schemas/obligatory-mobility.schema';
 
+/** Attachments Obligatory Mobility response data transfer object */
 export class AttachmentsObligatoryMobilityResponseDto {
   @ApiProperty({
     type: String,
-    description: 'Attachments Obligatory Mobility primary key',
   })
   _id: string;
 
   @ApiProperty({
     type: Date,
-    description: 'Attachments Obligatory Mobility initial date',
   })
   initialDate: Date;
 
   @ApiProperty({
     type: Date,
-    description: 'Attachments Obligatory Mobility final date',
   })
   finalDate: Date;
 

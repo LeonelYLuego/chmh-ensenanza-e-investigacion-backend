@@ -15,6 +15,7 @@ export class SocialServiceTemplates {
   presentationOfficeDocument?: string;
 }
 
+/** Optional Mobilities Templates schema */
 @Schema()
 export class OptionalMobilitiesTemplates {
   @ApiProperty({
@@ -32,6 +33,7 @@ export class OptionalMobilitiesTemplates {
   presentationOfficeDocument?: string;
 }
 
+/** Obligatory Mobilities Templates schema */
 @Schema()
 export class ObligatoryMobilitiesTemplates {
   @ApiProperty({

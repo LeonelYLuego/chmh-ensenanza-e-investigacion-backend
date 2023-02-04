@@ -34,9 +34,16 @@ export class RotationServicesController {
 
   @Post(API_ENDPOINTS.ROTATION_SERVICES.INCOMING)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '[Users] Add a Rotation Service in the database' })
-  @ApiBody({ type: RotationServiceDto, description: '`rotation service` data' })
-  @ApiCreatedResponse({ description: 'The created `rotation service`' })
+  @ApiOperation({
+    summary: '[Users] Add a Incoming Rotation Service in the database',
+  })
+  @ApiBody({
+    type: RotationServiceDto,
+    description: '`incoming rotation service` data',
+  })
+  @ApiCreatedResponse({
+    description: 'The created `incoming rotation service`',
+  })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
@@ -54,14 +61,14 @@ export class RotationServicesController {
   @Get(API_ENDPOINTS.ROTATION_SERVICES.INCOMING)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: '[Users] Find all Rotation Services in the database',
+    summary: '[Users] Find all Incoming Rotation Services in the database',
     description:
-      'Finds in the database all `rotation services` and returns an array of `rotation services`',
+      'Finds in the database all `incoming rotation services` and returns an array of `rotation services`',
   })
   @ApiQuery({ name: 'specialty', description: 'Specialty primary key' })
   @ApiOkResponse({
     type: [RotationService],
-    description: 'Array of found `rotation services`',
+    description: 'Array of found `incoming rotation services`',
   })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
@@ -78,14 +85,16 @@ export class RotationServicesController {
     `${API_ENDPOINTS.ROTATION_SERVICES.INCOMING}/:${API_ENDPOINTS.ROTATION_SERVICES.BY_ID}`,
   )
   @ApiBearerAuth()
-  @ApiOperation({ summary: '[Users] Find a Rotation Service in the database' })
+  @ApiOperation({
+    summary: '[Users] Find a Incoming Rotation Service in the database',
+  })
   @ApiParam({
     name: API_ENDPOINTS.ROTATION_SERVICES.BY_ID,
-    description: '`rotation service` primary key',
+    description: '`incoming rotation service` primary key',
   })
   @ApiOkResponse({
     type: RotationService,
-    description: 'The found `rotation service`',
+    description: 'The found `incoming rotation service`',
   })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
@@ -104,21 +113,21 @@ export class RotationServicesController {
   )
   @ApiBearerAuth()
   @ApiOperation({
-    summary: '[Users] Update a Rotation Service in the database',
+    summary: '[Users] Update a Incoming Rotation Service in the database',
     description:
-      'Updates in the database a `rotation service` based on the provided `_id` and return the modified `rotation service`',
+      'Updates in the database a `incoming rotation service` based on the provided `_id` and return the modified `rotation service`',
   })
   @ApiParam({
     name: API_ENDPOINTS.ROTATION_SERVICES.BY_ID,
-    description: '`rotation service` primary key',
+    description: '`incoming rotation service` primary key',
   })
   @ApiBody({
     type: RotationServiceDto,
-    description: '`rotation service` data',
+    description: '`incoming rotation service` data',
   })
   @ApiOkResponse({
     type: RotationService,
-    description: 'The modified `rotation service`',
+    description: 'The modified `incoming rotation service`',
   })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
@@ -144,13 +153,13 @@ export class RotationServicesController {
   )
   @ApiBearerAuth()
   @ApiOperation({
-    summary: '[Users] Delete a Rotation Service in the database',
+    summary: '[Users] Delete a Incoming Rotation Service in the database',
     description:
-      'Deletes a `rotation service` in the database based on the provided `_id`',
+      'Deletes a `incoming rotation service` in the database based on the provided `_id`',
   })
   @ApiParam({
     name: API_ENDPOINTS.ROTATION_SERVICES.BY_ID,
-    description: '`rotation service` primary key',
+    description: '`incoming rotation service` primary key',
   })
   @ApiOkResponse()
   @ApiUnauthorizedResponse({

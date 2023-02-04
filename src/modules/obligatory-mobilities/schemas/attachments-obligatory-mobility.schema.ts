@@ -4,9 +4,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Specialty } from '@specialties/specialty.schema';
 import mongoose from 'mongoose';
 
+/** Attachments Obligatory Mobility document */
 export type AttachmentsObligatoryMobilityDocument =
   AttachmentsObligatoryMobility & Document;
 
+/** Attachments Obligatory Mobility schema */
 @Schema()
 export class AttachmentsObligatoryMobility {
   @ApiProperty({ description: 'Attachments Obligatory Mobility primary key' })
@@ -64,6 +66,7 @@ export class AttachmentsObligatoryMobility {
   __v?: number;
 }
 
+/** Attachments Obligatory Mobility schema */
 export const AttachmentsObligatoryMobilitySchema = SchemaFactory.createForClass(
   AttachmentsObligatoryMobility,
 );

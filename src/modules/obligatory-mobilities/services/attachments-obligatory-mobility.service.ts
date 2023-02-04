@@ -22,8 +22,6 @@ import {
 import { AttachmentsObligatoryMobilityDocumentTypes } from '../types/attachments-obligatory-mobility-document.type';
 import { dateToString, getInterval } from '@utils/functions/date.function';
 import { TemplateHandler } from 'easy-template-x';
-import { Specialty } from '@specialties/specialty.schema';
-import { Hospital } from '@hospitals/hospital.schema';
 import { forwardRef } from '@nestjs/common/utils';
 
 @Injectable()
@@ -199,6 +197,7 @@ export class AttachmentsObligatoryMobilitiesService {
   }
 
   async delete(_id: string): Promise<void> {
+    //Add the delete of the files ///////////////////////////////
     await this.findOne(_id);
     if (
       (await this.attachmentsObligatoryMobilitiesModel.deleteOne({ _id }))

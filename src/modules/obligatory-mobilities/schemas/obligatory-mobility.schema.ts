@@ -5,8 +5,10 @@ import { Student } from '@students/student.schema';
 import { RotationService } from 'modules/rotation-services';
 import mongoose from 'mongoose';
 
+/** Obligatory Mobility document */
 export type ObligatoryMobilityDocument = ObligatoryMobility & Document;
 
+/** Obligatory Mobility schema */
 @Schema()
 export class ObligatoryMobility {
   @ApiProperty({ description: 'Obligatory Mobility primary key' })
@@ -79,5 +81,6 @@ export class ObligatoryMobility {
   __v?: number;
 }
 
+/** Obligatory Mobility schema */
 export const ObligatoryMobilitySchema =
   SchemaFactory.createForClass(ObligatoryMobility);

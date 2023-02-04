@@ -38,6 +38,7 @@ import { ObligatoryMobilitiesService } from 'modules/obligatory-mobilities/servi
           ) => {
             const schema = StudentSchema;
             schema.post('findOneAndDelete', async function (document: Student) {
+              // Deletes the associated objects like a cascada way
               await socialServicesService.deleteByStudent(document._id);
               await optionalMobilitiesService.deleteByStudent(document._id);
               await obligatoryMobilitiesService.deleteByStudent(document._id);

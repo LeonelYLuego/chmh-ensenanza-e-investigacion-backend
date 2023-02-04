@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Student } from '@students/student.schema';
 import { RotationService } from 'modules/rotation-services';
 
+/** Obligatory Mobility response data transfer object */
 export class ObligatoryMobilityResponseDto {
   @ApiProperty({ description: 'Obligatory Mobility primary key' })
   _id?: string;

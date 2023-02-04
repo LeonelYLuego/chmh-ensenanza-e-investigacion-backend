@@ -42,6 +42,7 @@ export class RotationServicesService {
         _id,
       })
       .populate('specialty');
+    // Checks if the rotation has a valid specialty
     if (rotationService && !rotationService.specialty.incoming) {
       rotationService.specialty = rotationService.specialty
         ._id as unknown as Specialty;
@@ -120,11 +121,21 @@ export class RotationServicesService {
     );
   }
 
+  /**
+   * Finds in the database all Incoming Rotation Services
+   * @param specialty
+   * @returns the found incoming rotation students
+   */
   async findIncoming(specialty: string): Promise<RotationService[]> {
     await this.specialtiesService.findIncoming();
     return await this.rotationServicesModel.find({ specialty });
   }
 
+  /**
+   * Finds in the database a Incoming Rotation Service by the provided id
+   * @param _id
+   * @returns the found incoming rotation student
+   */
   async findOneIncoming(_id: string): Promise<RotationService> {
     const rotationService = await this.rotationServicesModel
       .findOne({
@@ -139,6 +150,11 @@ export class RotationServicesService {
     throw new ForbiddenException('rotation service not found');
   }
 
+  /**
+   * Creates a Incoming Rotation Service in the database
+   * @param rotationServiceDto
+   * @returns the created Incoming Rotation Service
+   */
   async createIncoming(
     rotationServiceDto: RotationServiceDto,
   ): Promise<RotationService> {
@@ -147,6 +163,12 @@ export class RotationServicesService {
     return await rotationService.save();
   }
 
+  /**
+   * Updates a Incoming Rotation Service in the database based on the provided _id
+   * @param _id
+   * @param rotationServiceDto
+   * @returns the updated Incoming Rotation Service
+   */
   async updateIncoming(
     _id: string,
     rotationServiceDto: RotationServiceDto,
@@ -165,6 +187,10 @@ export class RotationServicesService {
     else return await this.findOneIncoming(_id);
   }
 
+  /**
+   * Deletes a Incoming Rotation Service in the database bases on the provided _id
+   * @param _id
+   */
   async deleteIncoming(_id: string): Promise<void> {
     const rotationService = await this.findOneIncoming(_id);
     if (

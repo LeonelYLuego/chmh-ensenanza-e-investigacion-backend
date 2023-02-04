@@ -161,15 +161,22 @@ export class SocialServicesService {
       throw new ForbiddenException('social service not deleted');
   }
 
+  /**
+   * Deletes Social Services in the database by hospital
+   * @param hospital
+   */
   async deleteByHospital(hospital: string): Promise<void> {
     await this.socialServicesModel.deleteMany({ hospital });
   }
 
+  /**
+   * Deletes Social Services in the database by student
+   * @param student
+   */
   async deleteByStudent(student: string): Promise<void> {
     await this.socialServicesModel.deleteMany({ student });
   }
 
-  //Documents
   /**
    * Returns a Social Service document
    * @param {string} _id Social Service primary key
@@ -267,6 +274,18 @@ export class SocialServicesService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Generates Presentation Office documents for Social Services
+   * @param initialNumberOfDocuments
+   * @param dateOfDocuments
+   * @param initialPeriod
+   * @param initialYear
+   * @param finalPeriod
+   * @param finalYear
+   * @param hospital
+   * @param specialty
+   * @returns the generated document
+   */
   async generateDocuments(
     initialNumberOfDocuments: number,
     dateOfDocuments: Date,
@@ -277,6 +296,7 @@ export class SocialServicesService {
     hospital: string | undefined,
     specialty: string | undefined,
   ): Promise<StreamableFile> {
+    // Validates if the period is valid
     if (
       initialYear > finalYear ||
       (initialYear == finalYear && initialPeriod > finalPeriod)
@@ -315,11 +335,6 @@ export class SocialServicesService {
               //If a Specialty parameter was provided checks if the social service is of that Specialty
               if (specialty)
                 if ((socialService as any).specialty._id != specialty) return;
-              //Gets the template
-              // const template = (await this.templatesService.getTemplate(
-              //   'socialService',
-              //   'presentationOfficeDocument',
-              // )) as Docxtemplater;
 
               //Replaces tags in the template document with the information
               const data = {
@@ -372,11 +387,7 @@ export class SocialServicesService {
                 ).specialty.headOfService.toUpperCase(),
               };
 
-              //Converts the document to binary
-              // const buffer = (await template.getZip().generate({
-              //   type: 'nodebuffer',
-              //   compression: 'DEFLATE',
-              // })) as Buffer;
+              // Gets the template
               const template = await this.templatesService.getDocument(
                 'socialService',
                 'presentationOfficeDocument',

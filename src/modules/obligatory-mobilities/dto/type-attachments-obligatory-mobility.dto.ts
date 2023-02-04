@@ -4,6 +4,7 @@ import {
   AttachmentsObligatoryMobilityDocumentTypesArray,
 } from '../types/attachments-obligatory-mobility-document.type';
 
+/** Type Attachments Obligatory Mobility data transfer object */
 export class TypeAttachmentsObligatoryMobilityDto {
   @IsString()
   @IsDefined()

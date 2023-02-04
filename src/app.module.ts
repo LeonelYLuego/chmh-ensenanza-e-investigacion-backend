@@ -1,23 +1,23 @@
-import {
-  Module,
-  NestModule,
-  MiddlewareConsumer,
-  RequestMethod,
-} from '@nestjs/common';
-import { AuthMiddleware } from '@auth/auth.middleware';
-import { AuthModule } from '@auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { API_ENDPOINTS } from '@utils/constants/api-routes.constant';
-import { UsersModule } from '@users/users.module';
+import { AuthMiddleware } from "@auth/auth.middleware";
+import { AuthModule } from "@auth/auth.module";
+import { HospitalsModule } from "@hospitals/hospitals.module";
+import { RequestMethod } from "@nestjs/common";
+import { MiddlewareConsumer } from "@nestjs/common";
+import { NestModule } from "@nestjs/common";
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { MongooseModule } from "@nestjs/mongoose";
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { SpecialtiesModule } from '@specialties/specialties.module';
-import { StudentsModule } from '@students/students.module';
-import { RotationServicesModule } from 'modules/rotation-services';
-import { HospitalsModule } from '@hospitals/hospitals.module';
-import { TemplatesModule } from '@templates/templates.module';
-import { SocialServicesModule } from 'modules/social-services';
-import { OptionalMobilitiesModule } from 'modules/optional-mobilities';
+import { ObligatoryMobilitiesModule } from "@obligatory-mobilities/obligatory-mobilities.module";
+import { OptionalMobilitiesModule } from "@optional-mobilities/optional-mobilities.module";
+import { RotationServicesModule } from "@rotation-services/rotation-services.module";
+import { SocialServicesModule } from "@social-services/social-services.module";
+import { SpecialtiesModule } from "@specialties/specialties.module";
+import { StudentsModule } from "@students/students.module";
+import { TemplatesModule } from "@templates/templates.module";
+import { UsersModule } from "@users/users.module";
+import { API_ENDPOINTS } from "@utils/constants";
+
 
 /** main application module */
 @Module({
@@ -29,7 +29,7 @@ import { OptionalMobilitiesModule } from 'modules/optional-mobilities';
     AuthModule,
     UsersModule,
     SocialServicesModule,
-    // ObligatoryMobilitiesModule,
+    ObligatoryMobilitiesModule,
     OptionalMobilitiesModule,
     // IncomingStudentsModule,
     HospitalsModule,
@@ -49,6 +49,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
+      //Exclude loading and front pages
       .exclude({
         path:
           'api' +

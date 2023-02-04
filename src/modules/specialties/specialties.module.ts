@@ -27,6 +27,7 @@ import { Specialty, SpecialtySchema } from './specialty.schema';
             schema.post(
               'findOneAndDelete',
               async function (document: Specialty) {
+                // Deletes the associated objects like a cascada way
                 await studentsService.deleteBySpecialty(document._id);
                 await rotationServicesService.deleteBySpecialty(document._id);
               },

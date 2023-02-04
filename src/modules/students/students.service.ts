@@ -100,6 +100,10 @@ export class StudentsService {
     } else throw new ForbiddenException('student not found');
   }
 
+  /**
+   * Deletes Students bases on the provide specialty
+   * @param specialty
+   */
   async deleteBySpecialty(specialty: string): Promise<void> {
     const students = await this.studentsModel.find({ specialty });
     await Promise.all(

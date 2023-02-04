@@ -14,6 +14,7 @@ export class SocialServicesQueries {
   find(periods: FromPeriodToPeriodInterface): PipelineStage[] {
     return [
       {
+        // Find Social Services between initial period and final period
         $match: {
           $or: [
             {
@@ -79,6 +80,7 @@ export class SocialServicesQueries {
           ],
         },
       },
+      // Populate students
       {
         $lookup: {
           from: 'students',
@@ -87,6 +89,7 @@ export class SocialServicesQueries {
           as: 'student',
         },
       },
+      // Populate specialties
       {
         $lookup: {
           from: 'specialties',
@@ -95,6 +98,7 @@ export class SocialServicesQueries {
           as: 'specialty',
         },
       },
+      // Eliminate arrays from the object
       {
         $project: {
           _id: '$_id',
@@ -109,6 +113,7 @@ export class SocialServicesQueries {
           __v: '$__v',
         },
       },
+      //Group by specialties
       {
         $group: {
           _id: '$specialty._id',
@@ -154,6 +159,7 @@ export class SocialServicesQueries {
   ): PipelineStage[] {
     return [
       {
+        // Find Social Services between initial period and final period
         $match: {
           $or: [
             {
@@ -218,9 +224,9 @@ export class SocialServicesQueries {
             },
           ],
           hospital: hospital._id,
-          //Aquí va el de especialidades
         },
       },
+      // Populate students
       {
         $lookup: {
           from: 'students',
@@ -229,6 +235,7 @@ export class SocialServicesQueries {
           as: 'student',
         },
       },
+      // Populate specialties
       {
         $lookup: {
           from: 'specialties',
@@ -237,6 +244,7 @@ export class SocialServicesQueries {
           as: 'specialty',
         },
       },
+      // Group by specialties
       {
         $project: {
           _id: '$_id',

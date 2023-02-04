@@ -1,22 +1,24 @@
 import { HospitalsModule } from '@hospitals/hospitals.module';
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SpecialtiesModule } from '@specialties/specialties.module';
 import { TemplatesModule } from '@templates/templates.module';
 import { FilesService } from '@utils/services';
+import { AttachmentsObligatoryMobilitiesController } from './controllers/attachments-obligatory-mobilities.controller';
+import { ObligatoryMobilitiesController } from './controllers/obligatory-mobilities.controller';
 import {
   AttachmentsObligatoryMobility,
   AttachmentsObligatoryMobilitySchema,
 } from './schemas/attachments-obligatory-mobility.schema';
-import { AttachmentsObligatoryMobilitiesService } from './services/attachments-obligatory-movility.service';
-import { ObligatoryMobilitiesController } from './controllers/obligatory-mobilities.controller';
 import {
   ObligatoryMobility,
   ObligatoryMobilitySchema,
 } from './schemas/obligatory-mobility.schema';
+import { AttachmentsObligatoryMobilitiesService } from './services/attachments-obligatory-mobility.service';
 import { ObligatoryMobilitiesService } from './services/obligatory-mobilities.service';
-import { AttachmentsObligatoryMobilitiesController } from './controllers/attachments-obligatory-mobilities.controller';
 
+/** Obligatory Mobilities module */
 @Module({
   imports: [
     MongooseModule.forFeatureAsync([

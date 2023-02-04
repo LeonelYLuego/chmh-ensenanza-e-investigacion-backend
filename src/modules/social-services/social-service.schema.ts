@@ -86,5 +86,5 @@ export class SocialService {
   __v: number;
 }
 
-/** Social Serivce schema */
+/** Social Service schema */
 export const SocialServiceSchema = SchemaFactory.createForClass(SocialService);

@@ -1,16 +1,17 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { OptionalMobilitiesService } from './optional-mobilities.service';
-import { OptionalMobilitiesController } from './optional-mobilities.controller';
+import { HospitalsModule } from '@hospitals/hospitals.module';
+import { forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { RotationServicesModule } from '@rotation-services/rotation-services.module';
+import { SpecialtiesModule } from '@specialties/specialties.module';
+import { TemplatesModule } from '@templates/templates.module';
+import { FilesService } from '@utils/services';
+import { OptionalMobilitiesController } from './optional-mobilities.controller';
+import { OptionalMobilitiesService } from './optional-mobilities.service';
 import {
   OptionalMobility,
   OptionalMobilitySchema,
 } from './optional-mobility.schema';
-import { FilesService } from '@utils/services';
-import { HospitalsModule } from '@hospitals/hospitals.module';
-import { TemplatesModule } from '@templates/templates.module';
-import { SpecialtiesModule } from '@specialties/specialties.module';
-import { RotationServicesModule } from 'modules/rotation-services';
 
 /** Optional Mobilities module */
 @Module({

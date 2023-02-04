@@ -5,6 +5,7 @@ export type OptionalMobilityDocumentTypes =
   | 'acceptanceDocument'
   | 'evaluationDocument';
 
+/** @constant Optional Mobility document types array */
 export const OptionalMobilityDocumentTypesArray = [
   'solicitudeDocument',
   'presentationOfficeDocument',

@@ -7,7 +7,6 @@ import {
   SocialServicesModule,
   SocialServicesService,
 } from 'modules/social-services';
-import { Model } from 'mongoose';
 import {
   OptionalMobilitiesModule,
   OptionalMobilitiesService,
@@ -41,6 +40,7 @@ import { ObligatoryMobilitiesService } from 'modules/obligatory-mobilities/servi
             schema.post(
               'findOneAndDelete',
               async function (document: Hospital) {
+                // Deletes the associated objects like a cascada way
                 await socialServicesService.deleteByHospital(document._id);
                 await optionalMobilitiesService.deleteByHospital(document._id);
                 await obligatoryMobilitiesService.deleteByHospital(

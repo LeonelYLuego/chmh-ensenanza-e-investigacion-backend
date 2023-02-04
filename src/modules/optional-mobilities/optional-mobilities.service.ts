@@ -1,13 +1,14 @@
 import { Hospital } from '@hospitals/hospital.schema';
 import { HospitalsService } from '@hospitals/hospitals.service';
-import { ForbiddenException, Injectable, StreamableFile } from '@nestjs/common';
-import { Inject } from '@nestjs/common/decorators';
-import { forwardRef } from '@nestjs/common/utils';
+import { forwardRef } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
+import { StreamableFile } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SpecialtiesService } from '@specialties/specialties.service';
 import { TemplatesService } from '@templates/templates.service';
-import { dateToString, getInterval } from '@utils/functions/date.function';
-import { gradeToString } from '@utils/functions/grade.function';
+import { dateToString, getInterval, gradeToString } from '@utils/functions';
 import { FilesService } from '@utils/services';
 import { TemplateHandler } from 'easy-template-x';
 import * as fs from 'fs';
@@ -188,6 +189,12 @@ export class OptionalMobilitiesService {
     return optionalMobility;
   }
 
+  /**
+   * Cancels a Optional Mobility in the database based on the provided _id
+   * @param _id
+   * @returns the canceled Optional Mobility
+   * @throws {ForbiddenException} Optional Mobility must be modified
+   */
   async cancel(_id: string): Promise<OptionalMobility> {
     await this.findOne(_id);
     if (
@@ -202,6 +209,12 @@ export class OptionalMobilitiesService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Uncancels a Optional Mobility in the databases based on the provided _id
+   * @param _id
+   * @returns the uncanceled Optional Mobility
+   * @throws {ForbiddenException} Optional Mobility must be modified
+   */
   async uncancel(_id: string): Promise<OptionalMobility> {
     await this.findOne(_id);
     if (
@@ -251,6 +264,7 @@ export class OptionalMobilitiesService {
   async remove(_id: string, path: string): Promise<void> {
     const optionalMobility =
       await this.optionalMobilitiesModel.findOneAndDelete({ _id });
+    // Deletes the documents that are associated with the Optional Mobility
     if (optionalMobility.acceptanceDocument)
       this.filesService.deleteFile(
         `${path}/${optionalMobility.acceptanceDocument}`,
@@ -271,18 +285,30 @@ export class OptionalMobilitiesService {
       throw new ForbiddenException('optional mobility not deleted');
   }
 
+  /**
+   * Deletes Optional Mobilities in the database based on the provided Rotation Service
+   * @param rotationService
+   */
   async deleteByRotationService(rotationService: string): Promise<void> {
     await this.optionalMobilitiesModel.deleteMany({
       rotationService,
     });
   }
 
+  /**
+   * Deletes Optional Mobilities in the database based on the provided Student
+   * @param student
+   */
   async deleteByStudent(student: string): Promise<void> {
     await this.optionalMobilitiesModel.deleteMany({
       student,
     });
   }
 
+  /**
+   * Deletes Optional Mobilities in the database based on the provided Hospital
+   * @param hospital
+   */
   async deleteByHospital(hospital: string): Promise<void> {
     await this.optionalMobilitiesModel.deleteMany({
       hospital,
@@ -323,7 +349,9 @@ export class OptionalMobilitiesService {
     document: OptionalMobilityDocumentTypes,
   ): Promise<StreamableFile> {
     const optionalMobility = await this.findOne(_id);
+    // Checks if the document exist in the Optional Mobility
     if (optionalMobility[document]) {
+      // Gets the path of the document
       const filePath = `${path}/${optionalMobility[document]}`;
       if (fs.existsSync(filePath)) {
         const file = fs.createReadStream(filePath);
@@ -353,9 +381,11 @@ export class OptionalMobilitiesService {
     try {
       this.filesService.validatePDF(file);
       const optionalMobility = await this.findOne(_id);
+      // If a file exits, it deletes it
       if (optionalMobility[document])
         this.filesService.deleteFile(`${path}/${optionalMobility[document]}`);
       let updateObject: object = {};
+      // Adds the document name to the Optional Mobility
       updateObject[document] = file.filename;
       if (
         (
@@ -403,6 +433,18 @@ export class OptionalMobilitiesService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Generate presentation office or solicitude documents of the specified Optional Mobilities
+   * @param document
+   * @param initialNumberOfDocuments
+   * @param dateOfDocuments
+   * @param initialDate
+   * @param finalDate
+   * @param hospital
+   * @param specialty
+   * @returns a zip file with the documents
+   * @throws template must exist
+   */
   async generateDocuments(
     document: 'presentationOfficeDocument' | 'solicitudeDocument',
     initialNumberOfDocuments: number,
@@ -412,19 +454,24 @@ export class OptionalMobilitiesService {
     hospital?: string,
     specialty?: string,
   ): Promise<StreamableFile> {
+    // Checks if the initial date and final date are valid
     if (initialDate.getTime() > finalDate.getTime())
       throw new ForbiddenException('invalid interval');
     let counter = initialNumberOfDocuments;
     const date = new Date(dateOfDocuments);
     const zip = new JSZip();
     let hospitals: Hospital[] = [];
+    // Gets the hospitals to find the Optional Mobilities
     if (hospital) hospitals.push(await this.hospitalsService.findOne(hospital));
     else hospitals = await this.hospitalsService.findAll();
     await Promise.all(
+      // For each hospital
       hospitals.map(async (hospital) => {
         const optionalMobilities =
           (await this.optionalMobilitiesModel.aggregate([
             {
+              // Finds the Optional Mobilities between the initial and final date
+              // and with the hospital that are not canceled
               $match: {
                 $or: [
                   {
@@ -444,6 +491,7 @@ export class OptionalMobilitiesService {
                 canceled: false,
               },
             },
+            // Populates the students
             {
               $lookup: {
                 from: 'students',
@@ -452,6 +500,7 @@ export class OptionalMobilitiesService {
                 as: 'student',
               },
             },
+            // Populates the specialties
             {
               $lookup: {
                 from: 'specialties',
@@ -460,6 +509,7 @@ export class OptionalMobilitiesService {
                 as: 'specialty',
               },
             },
+            // Populates the Rotation Services
             {
               $lookup: {
                 from: 'rotationservices',
@@ -468,6 +518,7 @@ export class OptionalMobilitiesService {
                 as: 'rotationService',
               },
             },
+            // Deletes the array objects
             {
               $project: {
                 _id: '$_id',
@@ -478,6 +529,7 @@ export class OptionalMobilitiesService {
                 rotationService: { $arrayElemAt: ['$rotationService', 0] },
               },
             },
+            // Deletes the specialty attribute
             {
               $addFields: {
                 student: {
@@ -490,9 +542,11 @@ export class OptionalMobilitiesService {
             },
           ])) as OptionalMobility[];
         await Promise.all(
+          // For each Optional Mobility
           optionalMobilities.map(async (optionalMobility) => {
             if (specialty)
               if (optionalMobility.student.specialty._id != specialty) return;
+            // Data to replace in the document in the place of the tags
             const data = {
               hospital: hospital.name.toUpperCase(),
               'principal.nombre': hospital.firstReceiver
@@ -543,12 +597,15 @@ export class OptionalMobilitiesService {
               jefeDeServicio:
                 optionalMobility.student.specialty.headOfService.toUpperCase(),
             };
+            // Gets the template
             const template = await this.templatesService.getDocument(
               'optionalMobility',
               document,
             );
             const handler = new TemplateHandler();
+            // Replaces the tags with the data and gets the final document
             const doc = await handler.process(template, data);
+            //Adds the document to the zip file with the name of the student
             zip.file(
               `${counter} ${optionalMobility.student.specialty.value} ${
                 optionalMobility.student.name
@@ -557,12 +614,14 @@ export class OptionalMobilitiesService {
               }.docx`,
               doc,
             );
+            // Increments the number of the document
             counter++;
           }),
         );
       }),
     );
     const content = await zip.generateAsync({ type: 'nodebuffer' });
+    // Returns the zip file with the name of the documents to generate
     return new StreamableFile(content, {
       type: 'application/zip',
       disposition: `attachment;filename=${

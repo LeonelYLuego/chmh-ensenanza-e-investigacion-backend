@@ -33,18 +33,18 @@ export class SpecialtiesController {
   // Incoming ////////////////////////////////////////////////////////////////////
   @Post(API_ENDPOINTS.SPECIALTIES.INCOMING)
   @ApiOperation({
-    summary: '[Users] Add a Specialty in the database',
+    summary: '[Users] Add a Incoming Specialty in the database',
     description:
-      'Creates a `specialty` in the database and returns the `specialty`',
+      'Creates a `incoming specialty` in the database and returns the `specialty`',
   })
   @ApiBearerAuth()
-  @ApiBody({ type: SpecialtyDto, description: '`specialty` data' })
+  @ApiBody({ type: SpecialtyDto, description: '`incoming specialty` data' })
   @ApiCreatedResponse({
     type: Specialty,
-    description: 'The created `specialty`',
+    description: 'The created `incoming specialty`',
   })
   @ApiForbiddenResponse({
-    description: '`specialty already exists`',
+    description: '`incoming specialty already exists`',
   })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
@@ -59,14 +59,14 @@ export class SpecialtiesController {
 
   @Get(API_ENDPOINTS.SPECIALTIES.INCOMING)
   @ApiOperation({
-    summary: '[Users] Find all Specialties in the database',
+    summary: '[Users] Find all Incoming Specialties in the database',
     description:
-      'Finds in the database all `specialties` and returns an array of `specialties`',
+      'Finds in the database all `incoming specialties` and returns an array of `specialties`',
   })
   @ApiBearerAuth()
   @ApiOkResponse({
     type: [Specialty],
-    description: 'Array of found `specialties`',
+    description: 'Array of found `incoming specialties`',
   })
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
@@ -81,18 +81,18 @@ export class SpecialtiesController {
     `${API_ENDPOINTS.SPECIALTIES.INCOMING}/:${API_ENDPOINTS.SPECIALTIES.BY_ID}`,
   )
   @ApiOperation({
-    summary: '[Users] Find a Specialty in the database',
-    description: 'Finds in the database a `specialty` and returns it',
+    summary: '[Users] Find a Incoming Specialty in the database',
+    description: 'Finds in the database a `incoming specialty` and returns it',
   })
   @ApiBearerAuth()
   @ApiParam({
     type: String,
     name: API_ENDPOINTS.SPECIALTIES.BY_ID,
-    description: '`specialty` primary key',
+    description: '`incoming specialty` primary key',
   })
   @ApiOkResponse({
     type: Specialty,
-    description: 'The found `specialty`',
+    description: 'The found `incoming specialty`',
   })
   @ApiForbiddenResponse({
     description: '`specialty not found`',
@@ -112,17 +112,17 @@ export class SpecialtiesController {
     `${API_ENDPOINTS.SPECIALTIES.INCOMING}/:${API_ENDPOINTS.SPECIALTIES.BY_ID}`,
   )
   @ApiOperation({
-    summary: '[Users] Update a Specialty in the database',
+    summary: '[Users] Update a Incoming Specialty in the database',
     description:
-      'Updates in the database a `specialty` based on the provided `_id` and returns the modified `specialty`',
+      'Updates in the database a `incoming specialty` based on the provided `_id` and returns the modified `specialty`',
   })
   @ApiBearerAuth()
   @ApiParam({
     type: String,
     name: API_ENDPOINTS.SPECIALTIES.BY_ID,
-    description: '`specialty` primary key',
+    description: '`incoming specialty` primary key',
   })
-  @ApiBody({ type: SpecialtyDto, description: '`specialty` data' })
+  @ApiBody({ type: SpecialtyDto, description: '`incoming specialty` data' })
   @ApiForbiddenResponse({
     description: '`specialty not modified` `specialty not found`',
   })
@@ -142,15 +142,15 @@ export class SpecialtiesController {
     `${API_ENDPOINTS.SPECIALTIES.INCOMING}/:${API_ENDPOINTS.SPECIALTIES.BY_ID}`,
   )
   @ApiOperation({
-    summary: '[Users] Delete a Specialty in the database',
+    summary: '[Users] Delete a Incoming Specialty in the database',
     description:
-      'Deletes a `specialty` in the database based on the provided `_id`',
+      'Deletes a `incoming specialty` in the database based on the provided `_id`',
   })
   @ApiBearerAuth()
   @ApiParam({
     type: String,
     name: API_ENDPOINTS.SPECIALTIES.BY_ID,
-    description: '_id of the `specialty`',
+    description: '_id of the `incoming specialty`',
   })
   @ApiOkResponse()
   @ApiForbiddenResponse({

@@ -11,6 +11,7 @@ import { TemplatesModule } from 'modules/templates/templates.module';
 import { SpecialtiesModule } from 'modules/specialties/specialties.module';
 import { SocialServicesQueries } from './services/queries.service';
 
+/** Social Services module */
 @Module({
   imports: [
     forwardRef(() =>

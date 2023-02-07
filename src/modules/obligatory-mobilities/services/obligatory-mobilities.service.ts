@@ -497,13 +497,13 @@ export class ObligatoryMobilitiesService {
   }
 
   /**
-   * Removes a Obligatory Mobility in the database based on the provided _id
+   * Deletes a Obligatory Mobility in the database based on the provided _id
    * @param _id
    * @param path
    * @throws {ForbiddenException} Obligatory Mobility must exist
    * @throws {ForbiddenException} Obligatory Mobility must be deleted
    */
-  async remove(_id: string, path: string): Promise<void> {
+  async delete(_id: string, path: string): Promise<void> {
     const obligatoryMobility = await this.findOne(_id);
     if (obligatoryMobility.evaluationDocument)
       this.filesService.deleteFile(

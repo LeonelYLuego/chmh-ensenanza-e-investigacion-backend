@@ -122,10 +122,10 @@ export class IncomingStudentsController {
 
   @Delete(`:${API_ENDPOINTS.INCOMING_STUDENTS.BY_ID}`)
   @ApiBearerAuth()
-  async remove(
+  async delete(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
-    await this.incomingStudentsService.remove(
+    await this.incomingStudentsService.delete(
       _id,
       STORAGE_PATHS.INCOMING_STUDENTS,
     );

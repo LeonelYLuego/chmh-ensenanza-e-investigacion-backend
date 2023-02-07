@@ -255,13 +255,13 @@ export class OptionalMobilitiesService {
   }
 
   /**
-   * Removes an Optional Mobility by Id in the database
+   * Deletes an Optional Mobility by Id in the database
    * @param _id
    * @param path
    * @throws {ForbiddenException} Optional Mobility must be deleted
    * @throws {ForbiddenException} Optional Mobility must exist
    */
-  async remove(_id: string, path: string): Promise<void> {
+  async delete(_id: string, path: string): Promise<void> {
     const optionalMobility =
       await this.optionalMobilitiesModel.findOneAndDelete({ _id });
     // Deletes the documents that are associated with the Optional Mobility

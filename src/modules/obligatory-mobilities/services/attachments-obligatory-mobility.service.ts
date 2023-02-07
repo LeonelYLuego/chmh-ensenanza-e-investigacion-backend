@@ -24,6 +24,7 @@ import { dateToString, getInterval } from '@utils/functions/date.function';
 import { TemplateHandler } from 'easy-template-x';
 import { forwardRef } from '@nestjs/common/utils';
 
+/** Attachments Obligatory Mobilities service */
 @Injectable()
 export class AttachmentsObligatoryMobilitiesService {
   constructor(
@@ -39,6 +40,11 @@ export class AttachmentsObligatoryMobilitiesService {
     private filesService: FilesService,
   ) {}
 
+  /**
+   * Creates a Attachments Obligatory Mobility and saves in the database
+   * @param createAttachmentsObligatoryMobilityDto
+   * @returns the created Attachments Obligatory Mobility
+   */
   async create(
     createAttachmentsObligatoryMobilityDto: CreateAttachmentsObligatoryMobilityDto,
   ): Promise<AttachmentsObligatoryMobility> {
@@ -49,6 +55,14 @@ export class AttachmentsObligatoryMobilitiesService {
     return await createdAttachmentsObligatoryMobility.save();
   }
 
+  /**
+   * Finds all Attachments Obligatory Mobilities by Hospital in the database based
+   * between the provided initial and final date, and specialty
+   * @param initialDate
+   * @param finalDate
+   * @param specialty
+   * @returns the found Attachments Obligatory Mobilities group by Hospital
+   */
   async findAll(
     initialDate: Date,
     finalDate: Date,
@@ -58,6 +72,7 @@ export class AttachmentsObligatoryMobilitiesService {
     const attachmentsObligatoryMobilitiesByHospital =
       (await this.attachmentsObligatoryMobilitiesModel.aggregate([
         {
+          // Finds between initial and final date, and Specialty
           $match: {
             $or: [
               {
@@ -76,6 +91,7 @@ export class AttachmentsObligatoryMobilitiesService {
             specialty: new ObjectId(specialty),
           },
         },
+        // Populates hospitals
         {
           $lookup: {
             from: 'hospitals',
@@ -84,6 +100,7 @@ export class AttachmentsObligatoryMobilitiesService {
             as: 'hospital',
           },
         },
+        // Deletes array
         {
           $project: {
             _id: '$_id',
@@ -95,6 +112,7 @@ export class AttachmentsObligatoryMobilitiesService {
             acceptanceDocument: '$acceptanceDocument',
           },
         },
+        // Groups by hospital
         {
           $group: {
             _id: '$hospital._id',
@@ -112,18 +130,34 @@ export class AttachmentsObligatoryMobilitiesService {
           },
         },
       ])) as AttachmentsObligatoryMobilityByHospitalDto[];
+    // Sorts by final date
+    attachmentsObligatoryMobilitiesByHospital.map(
+      (attachmentsObligatoryMobilityByHospital) =>
+        attachmentsObligatoryMobilityByHospital.attachmentsObligatoryMobilities.sort(
+          (a, b) => a.finalDate.getTime() - b.finalDate.getTime(),
+        ),
+    );
+    // Sorts by initial date
     attachmentsObligatoryMobilitiesByHospital.map(
       (attachmentsObligatoryMobilityByHospital) =>
         attachmentsObligatoryMobilityByHospital.attachmentsObligatoryMobilities.sort(
           (a, b) => a.initialDate.getTime() - b.initialDate.getTime(),
         ),
     );
+    // Sorts by hospital
     attachmentsObligatoryMobilitiesByHospital.sort((a, b) =>
       a.name.localeCompare(b.name),
     );
     return attachmentsObligatoryMobilitiesByHospital;
   }
 
+  /**
+   * Finds a Attachments Obligatory Mobility in the database
+   * without add more data or group
+   * @param _id
+   * @returns the found Attachments Obligatory Mobility
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must exist
+   */
   async findRaw(_id: string): Promise<AttachmentsObligatoryMobility> {
     const attachmentsObligatoryMobility =
       await this.attachmentsObligatoryMobilitiesModel.findOne({ _id });
@@ -132,12 +166,20 @@ export class AttachmentsObligatoryMobilitiesService {
     return attachmentsObligatoryMobility;
   }
 
+  /**
+   * Finds a Attachments Obligatory Mobility in the database
+   * and adds Obligatory Mobilities
+   * @param _id
+   * @returns the found Attachments Obligatory Mobility
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must exist
+   */
   async findOne(
     _id: string,
   ): Promise<AttachmentsObligatoryMobilityResponseDto> {
     const attachmentsObligatoryMobility =
       await this.attachmentsObligatoryMobilitiesModel.findOne({ _id });
     if (attachmentsObligatoryMobility) {
+      // Finds Obligatory Mobilities that are associated with it
       const obligatoryMobilities = (
         await this.obligatoryMobilitiesModel
           .find({
@@ -177,6 +219,14 @@ export class AttachmentsObligatoryMobilitiesService {
       throw new ForbiddenException('attachments obligatory mobility not found');
   }
 
+  /**
+   * Updates a Attachments Obligatory Mobility in the database based on the provided _id
+   * @param _id
+   * @param updateAttachmentsObligatoryMobilityDto
+   * @returns the modified Attachments Obligatory Mobility
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must exit
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must be modified
+   */
   async update(
     _id: string,
     updateAttachmentsObligatoryMobilityDto: UpdateAttachmentsObligatoryMobilityDto,
@@ -196,9 +246,23 @@ export class AttachmentsObligatoryMobilitiesService {
     return await this.findRaw(_id);
   }
 
-  async delete(_id: string): Promise<void> {
-    //Add the delete of the files ///////////////////////////////
-    await this.findOne(_id);
+  /**
+   * Deletes a Attachments Obligatory Mobility in the database based on the provided _id
+   * @param _id
+   * @param path
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must exist
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must be deleted
+   */
+  async delete(_id: string, path: string): Promise<void> {
+    const attachmentsObligatoryMobility = await this.findOne(_id);
+    if (attachmentsObligatoryMobility.solicitudeDocument)
+      this.filesService.deleteFile(
+        `${path}/${attachmentsObligatoryMobility.solicitudeDocument}`,
+      );
+    if (attachmentsObligatoryMobility.acceptanceDocument)
+      this.filesService.deleteFile(
+        `${path}/${attachmentsObligatoryMobility.acceptanceDocument}`,
+      );
     if (
       (await this.attachmentsObligatoryMobilitiesModel.deleteOne({ _id }))
         .deletedCount == 0
@@ -208,6 +272,15 @@ export class AttachmentsObligatoryMobilitiesService {
       );
   }
 
+  /**
+   * Gets a document of the database of the specified Attachments Obligatory Mobility
+   * @param _id
+   * @param path
+   * @param document
+   * @returns the found document
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must exist
+   * @throws {ForbiddenException} Document must exist
+   */
   async getDocument(
     _id: string,
     path: string,
@@ -225,6 +298,17 @@ export class AttachmentsObligatoryMobilitiesService {
     } else throw new ForbiddenException('document not found');
   }
 
+  /**
+   * Updates a document in the database of the specified
+   * Attachments Obligatory Mobility
+   * @param _id
+   * @param path
+   * @param file
+   * @param document
+   * @returns the modified Attachments Obligatory Mobility
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must exist
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must be modified
+   */
   async updateDocument(
     _id: string,
     path: string,
@@ -257,6 +341,16 @@ export class AttachmentsObligatoryMobilitiesService {
     }
   }
 
+  /**
+   * Deletes a document in the database of the specified
+   * Attachments Obligatory Mobility
+   * @param _id
+   * @param path
+   * @param document
+   * @returns the modified Attachments Obligatory Mobility
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must exist
+   * @throws {ForbiddenException} Attachments Obligatory Mobility must be modified
+   */
   async deleteDocument(
     _id: string,
     path: string,
@@ -281,6 +375,15 @@ export class AttachmentsObligatoryMobilitiesService {
     return await this.findRaw(_id);
   }
 
+  /**
+   * Generates a solicitude docx document of the specified
+   * Attachments Obligatory Mobilities
+   * @param _id
+   * @param numberOfDocument
+   * @param date
+   * @returns {ForbiddenException} the generated docx document
+   * @throws {ForbiddenException} Template must exist
+   */
   async generateDocument(
     _id: string,
     numberOfDocument: number,
@@ -295,6 +398,7 @@ export class AttachmentsObligatoryMobilitiesService {
       attachmentsObligatoryMobility.specialty as string,
     );
 
+    // Creates an array of objects to fill the students information
     const students: {
       nombre: string;
       servicioARotar: string;
@@ -313,6 +417,7 @@ export class AttachmentsObligatoryMobilitiesService {
       },
     );
 
+    // The data to fill
     const data = {
       hospital: hospital.name.toUpperCase(),
       'principal.nombre': hospital.firstReceiver
@@ -344,12 +449,14 @@ export class AttachmentsObligatoryMobilitiesService {
       estudiante: students,
     };
 
+    // Gets the template
     const template = await this.templatesService.getDocument(
       'obligatoryMobility',
       'solicitudeDocument',
     );
 
     const handler = new TemplateHandler();
+    // Replaces the data at the tags
     const doc = await handler.process(template, data);
 
     return new StreamableFile(doc, {
@@ -357,6 +464,15 @@ export class AttachmentsObligatoryMobilitiesService {
     });
   }
 
+  /**
+   * Finds Attachments Obligatory Mobilities bases on the provided initial and
+   * final date, specialty and hospital
+   * @param initialDate
+   * @param finalDate
+   * @param specialty
+   * @param hospital
+   * @returns the found Attachments Obligatory Mobilities
+   */
   async findAttachments(
     initialDate: Date,
     finalDate: Date,

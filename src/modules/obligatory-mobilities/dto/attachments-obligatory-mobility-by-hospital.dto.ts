@@ -9,6 +9,6 @@ export class AttachmentsObligatoryMobilityByHospitalDto {
   @ApiProperty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: [AttachmentsObligatoryMobility] })
   attachmentsObligatoryMobilities: AttachmentsObligatoryMobility[];
 }

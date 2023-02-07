@@ -150,7 +150,7 @@ export class StudentsController {
   @ApiUnauthorizedResponse({
     description: 'Not authorized to perform the query',
   })
-  async remove(
+  async delete(
     @Param(API_ENDPOINTS.STUDENTS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
     await this.studentsService.delete(_id);

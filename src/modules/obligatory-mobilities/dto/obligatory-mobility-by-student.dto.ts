@@ -15,6 +15,6 @@ export class ObligatoryMobilityByStudentDto {
   @ApiProperty()
   secondLastName: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: [ObligatoryMobilityByStudentDto] })
   obligatoryMobilities: ObligatoryMobilityResponseDto[];
 }

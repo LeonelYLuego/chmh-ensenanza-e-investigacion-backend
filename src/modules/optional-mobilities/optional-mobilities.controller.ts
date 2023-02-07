@@ -83,7 +83,7 @@ export class OptionalMobilitiesController {
   @ApiOperation({
     summary: '[Users] Get Optional Mobility interval',
     description:
-      'Gets from Optional Mobilities the initial and final registered date years',
+      'Gets from `optional mobilities` the initial and final registered date years',
   })
   @ApiOkResponse({
     type: OptionalMobilityIntervalInterface,
@@ -243,9 +243,9 @@ export class OptionalMobilitiesController {
   @Put(API_ENDPOINTS.OPTIONAL_MOBILITIES.CANCEL)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: '[Users] Cancel a Optional Mobility',
+    summary: '[Users] Cancel an Optional Mobility',
     description:
-      'Cancels a `optional mobility` in the database based on the provided `_id` and returns the modified `optional mobility`',
+      'Cancels an `optional mobility` in the database based on the provided `_id` and returns the modified `optional mobility`',
   })
   @ApiParam({
     name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
@@ -273,9 +273,9 @@ export class OptionalMobilitiesController {
   @Put(API_ENDPOINTS.OPTIONAL_MOBILITIES.UNCANCEL)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: '[Users] Unancel a Optional Mobility',
+    summary: '[Users] Unancel an Optional Mobility',
     description:
-      'Uncancels a `optional mobility` in the database based on the provided `_id` and returns the modified `optional mobility`',
+      'Uncancels an `optional mobility` in the database based on the provided `_id` and returns the modified `optional mobility`',
   })
   @ApiParam({
     name: API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID,
@@ -344,10 +344,10 @@ export class OptionalMobilitiesController {
     description:
       '`optional mobility not found` `optional mobility not deleted`',
   })
-  async remove(
+  async delete(
     @Param(API_ENDPOINTS.OPTIONAL_MOBILITIES.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
-    await this.optionalMobilitiesService.remove(
+    await this.optionalMobilitiesService.delete(
       _id,
       STORAGE_PATHS.OPTIONAL_MOBILITIES,
     );

@@ -92,7 +92,7 @@ export class IncomingStudentsService {
     return await this.findOne(_id);
   }
 
-  async remove(_id: string, path: string): Promise<void> {
+  async delete(_id: string, path: string): Promise<void> {
     const incomingStudent = await this.findOne(_id);
     if (incomingStudent.acceptanceDocument)
       this.filesService.deleteFile(

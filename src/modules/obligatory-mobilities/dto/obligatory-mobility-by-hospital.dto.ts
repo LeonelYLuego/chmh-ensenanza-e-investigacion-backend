@@ -9,6 +9,6 @@ export class ObligatoryMobilityByHospitalDto {
   @ApiProperty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: [ObligatoryMobilityResponseDto] })
   obligatoryMobilities: ObligatoryMobilityResponseDto[];
 }

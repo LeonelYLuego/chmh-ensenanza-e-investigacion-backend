@@ -6,7 +6,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
+import * as fs from 'fs';
 
 /** @class Catches every exception, filters it and send a specific response to the client */
 @Catch()
@@ -29,6 +31,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exceptionMsg.message !== undefined) exceptionMsg = exceptionMsg.message;
 
     console.log(exception);
+
+    if (httpStatus != 403) {
+      if (!fs.existsSync(STORAGE_PATHS.LOGS))
+        fs.openSync(STORAGE_PATHS.LOGS, 'w');
+      fs.appendFileSync(STORAGE_PATHS.LOGS, '\r\n' + JSON.stringify(exception));
+    }
 
     const responseBody: HttpResponse<void> = {
       error: {

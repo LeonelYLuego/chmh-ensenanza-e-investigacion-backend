@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Specialty } from '@specialties/specialty.schema';
 import {
   IsArray,
   IsDateString,
@@ -100,6 +101,12 @@ export class CreateIncomingStudentDto {
   @IsDefined()
   @IsDateString()
   finalDate: Date;
+
+  @ApiProperty({ description: 'Incoming Student specialty' })
+  @IsDefined()
+  @IsString()
+  @IsMongoId()
+  incomingSpecialty: string;
 
   @ApiProperty({ description: 'Incoming Student rotation service' })
   @IsDefined()

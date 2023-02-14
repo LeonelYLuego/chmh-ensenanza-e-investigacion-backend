@@ -1,6 +1,7 @@
 import { Hospital } from '@hospitals/hospital.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Specialty } from '@specialties/specialty.schema';
 import { RotationService } from 'modules/rotation-services';
 import mongoose from 'mongoose';
 
@@ -89,6 +90,15 @@ export class IncomingStudent {
   })
   @Prop({ type: String, required: false })
   evaluationDocument?: string;
+
+  @ApiProperty({
+    type: String,
+  })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Specialty',
+  })
+  incomingSpecialty: Specialty;
 
   @ApiProperty({
     type: String,

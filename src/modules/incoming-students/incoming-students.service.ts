@@ -29,7 +29,10 @@ export class IncomingStudentsService {
   async create(
     createIncomingStudentDto: CreateIncomingStudentDto,
   ): Promise<IncomingStudent> {
-    await this.rotationServicesService.findOneIncoming(
+    await this.specialtiesService.findOneIncoming(
+      createIncomingStudentDto.incomingSpecialty,
+    );
+    await this.rotationServicesService.findOne(
       createIncomingStudentDto.rotationService,
     );
     await this.hospitalsService.findOne(createIncomingStudentDto.hospital);
@@ -43,27 +46,37 @@ export class IncomingStudentsService {
     initialDate: Date,
     finalDate: Date,
   ): Promise<IncomingStudent[]> {
-    return await this.incomingStudentsModel
-      .find({
-        initialDate: {
-          $gte: initialDate,
+    const incomingStudents = await this.incomingStudentsModel.aggregate([
+      {
+        $match: {
+          $or: [
+            {
+              initialDate: {
+                $gte: initialDate,
+                $lte: finalDate,
+              },
+            },
+            {
+              finalDate: {
+                $gte: initialDate,
+                $lte: finalDate,
+              },
+            },
+          ],
         },
-        finalDate: {
-          $lte: finalDate,
-        },
-      })
-      .populate('hospital')
-      .sort('initialDate');
+      },
+    ]);
+    return incomingStudents;
   }
 
   async findOne(_id: string): Promise<IncomingStudent> {
     const incomingStudent = await this.incomingStudentsModel
       .findOne({ _id })
-      .populate('rotationService hospital');
+      .populate('incomingSpecialty rotationService hospital');
     if (!incomingStudent)
       throw new ForbiddenException('incoming student not found');
     incomingStudent.rotationService.specialty =
-      await this.specialtiesService.findOneIncoming(
+      await this.specialtiesService.findOne(
         incomingStudent.rotationService.specialty as unknown as string,
       );
     return incomingStudent;
@@ -74,12 +87,13 @@ export class IncomingStudentsService {
     updateIncomingStudentDto: UpdateIncomingStudentDto,
   ): Promise<IncomingStudent> {
     await this.findOne(_id);
-    if (updateIncomingStudentDto.rotationService)
-      await this.rotationServicesService.findOneIncoming(
-        updateIncomingStudentDto.rotationService,
-      );
-    if (updateIncomingStudentDto.hospital)
-      await this.hospitalsService.findOne(updateIncomingStudentDto.hospital);
+    await this.specialtiesService.findOneIncoming(
+      updateIncomingStudentDto.incomingSpecialty,
+    );
+    await this.rotationServicesService.findOne(
+      updateIncomingStudentDto.rotationService,
+    );
+    await this.hospitalsService.findOne(updateIncomingStudentDto.hospital);
     if (
       (
         await this.incomingStudentsModel.updateOne(

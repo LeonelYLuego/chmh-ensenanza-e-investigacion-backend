@@ -21,11 +21,13 @@ export class Specialty {
     type: Number,
     minimum: 1,
     maximum: 6,
+    required: false,
   })
   @Prop({
     type: Number,
     min: 1,
     max: 6,
+    required: false,
   })
   duration: number;
 
@@ -33,10 +35,12 @@ export class Specialty {
     type: String,
     minLength: 3,
     maxLength: 128,
+    required: false,
   })
   @Prop({
     type: String,
     length: 128,
+    required: false,
   })
   headOfDepartment: string;
 
@@ -44,10 +48,12 @@ export class Specialty {
     type: String,
     minLength: 3,
     maxLength: 128,
+    required: false,
   })
   @Prop({
     type: String,
     length: 128,
+    required: false,
   })
   headOfDepartmentPosition: string;
 
@@ -55,10 +61,12 @@ export class Specialty {
     type: String,
     minLength: 3,
     maxLength: 128,
+    required: false,
   })
   @Prop({
     type: String,
     length: 128,
+    required: false,
   })
   tenuredPostgraduateProfessor: string;
 
@@ -66,10 +74,12 @@ export class Specialty {
     type: String,
     minLength: 3,
     maxLength: 128,
+    required: false,
   })
   @Prop({
     type: String,
     length: 128,
+    required: false,
   })
   headOfService: string;
 

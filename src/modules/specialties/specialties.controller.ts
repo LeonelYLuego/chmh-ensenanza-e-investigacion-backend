@@ -21,6 +21,7 @@ import {
 import { API_ENDPOINTS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
 import { ValidateIdPipe } from '@utils/pipes';
+import { IncomingSpecialtyDto } from './dtos/incoming-specialty.dto';
 import { SpecialtyDto } from './dtos/specialty.dto';
 import { SpecialtiesService } from './specialties.service';
 import { Specialty } from './specialty.schema';
@@ -38,7 +39,10 @@ export class SpecialtiesController {
       'Creates a `incoming specialty` in the database and returns the `specialty`',
   })
   @ApiBearerAuth()
-  @ApiBody({ type: SpecialtyDto, description: '`incoming specialty` data' })
+  @ApiBody({
+    type: IncomingSpecialtyDto,
+    description: '`incoming specialty` data',
+  })
   @ApiCreatedResponse({
     type: Specialty,
     description: 'The created `incoming specialty`',
@@ -50,10 +54,10 @@ export class SpecialtiesController {
     description: 'Not authorized to perform the query',
   })
   async createIncoming(
-    @Body() specialtyDto: SpecialtyDto,
+    @Body() incomingSpecialtyDto: IncomingSpecialtyDto,
   ): Promise<HttpResponse<Specialty>> {
     return {
-      data: await this.specialtiesService.createIncoming(specialtyDto),
+      data: await this.specialtiesService.createIncoming(incomingSpecialtyDto),
     };
   }
 
@@ -122,7 +126,10 @@ export class SpecialtiesController {
     name: API_ENDPOINTS.SPECIALTIES.BY_ID,
     description: '`incoming specialty` primary key',
   })
-  @ApiBody({ type: SpecialtyDto, description: '`incoming specialty` data' })
+  @ApiBody({
+    type: IncomingSpecialtyDto,
+    description: '`incoming specialty` data',
+  })
   @ApiForbiddenResponse({
     description: '`specialty not modified` `specialty not found`',
   })
@@ -131,10 +138,13 @@ export class SpecialtiesController {
   })
   async updateIncoming(
     @Param(API_ENDPOINTS.SPECIALTIES.BY_ID, ValidateIdPipe) _id: string,
-    @Body() specialtyDto: SpecialtyDto,
+    @Body() incomingSpecialtyDto: IncomingSpecialtyDto,
   ): Promise<HttpResponse<Specialty>> {
     return {
-      data: await this.specialtiesService.updateIncoming(_id, specialtyDto),
+      data: await this.specialtiesService.updateIncoming(
+        _id,
+        incomingSpecialtyDto,
+      ),
     };
   }
 

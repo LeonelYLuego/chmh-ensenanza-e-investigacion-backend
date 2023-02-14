@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { IncomingSpecialtyDto } from './dtos/incoming-specialty.dto';
 import { SpecialtyDto } from './dtos/specialty.dto';
 import { Specialty, SpecialtyDocument } from './specialty.schema';
 
@@ -126,10 +127,12 @@ export class SpecialtiesService {
    * @param specialtyDto
    * @returns the created Incoming Specialty
    */
-  async createIncoming(specialtyDto: SpecialtyDto): Promise<Specialty> {
+  async createIncoming(
+    incomingSpecialtyDto: IncomingSpecialtyDto,
+  ): Promise<Specialty> {
     const specialty = {
       incoming: true,
-      ...specialtyDto,
+      ...incomingSpecialtyDto,
     };
     const createdSpecialty = new this.specialtiesModel(specialty);
     return await createdSpecialty.save();
@@ -143,12 +146,12 @@ export class SpecialtiesService {
    */
   async updateIncoming(
     _id: string,
-    specialtyDto: SpecialtyDto,
+    incomingSpecialtyDto: IncomingSpecialtyDto,
   ): Promise<Specialty> {
     const specialty = await this.findOneIncoming(_id);
     if (specialty) {
       const res = await this.specialtiesModel
-        .updateOne({ _id }, specialtyDto)
+        .updateOne({ _id }, incomingSpecialtyDto)
         .exec();
       // Checks if the Incoming Specialty was updated
       if (res.modifiedCount == 1) return await this.findOneIncoming(_id);

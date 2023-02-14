@@ -32,7 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     console.log(exception);
 
-    if (httpStatus != 403) {
+    if (httpStatus != 403 && httpStatus != 401) {
       if (!fs.existsSync(STORAGE_PATHS.LOGS))
         fs.openSync(STORAGE_PATHS.LOGS, 'w');
       fs.appendFileSync(STORAGE_PATHS.LOGS, '\r\n' + JSON.stringify(exception));

@@ -62,116 +62,129 @@ export class OptionalMobilitiesService {
     initialDate: Date,
     finalDate: Date,
   ): Promise<OptionalMobilityBySpecialtyDto[]> {
-    return await this.optionalMobilitiesModel.aggregate([
-      {
-        //Find all Optional Mobility between the provided dates
-        $match: {
-          $or: [
-            {
-              initialDate: {
-                $gte: initialDate,
-                $lte: finalDate,
+    const optionalMobilitiesBySpecialties =
+      (await this.optionalMobilitiesModel.aggregate([
+        {
+          //Find all Optional Mobility between the provided dates
+          $match: {
+            $or: [
+              {
+                initialDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
               },
+              {
+                finalDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
+              },
+            ],
+          },
+        },
+        {
+          //Does an inner join with students
+          $lookup: {
+            from: 'students',
+            localField: 'student',
+            foreignField: '_id',
+            as: 'student',
+          },
+        },
+        {
+          $lookup: {
+            from: 'hospitals',
+            localField: 'hospital',
+            foreignField: '_id',
+            as: 'hospital',
+          },
+        },
+        {
+          $lookup: {
+            from: 'rotationservices',
+            localField: 'rotationService',
+            foreignField: '_id',
+            as: 'rotationService',
+          },
+        },
+        {
+          $lookup: {
+            from: 'specialties',
+            localField: 'student.specialty',
+            foreignField: '_id',
+            as: 'specialty',
+          },
+        },
+        {
+          //Gets the first element of the specialties, students, hospitals and rotation services
+          $project: {
+            _id: '$_id',
+            specialty: { $arrayElemAt: ['$specialty', 0] },
+            initialDate: '$initialDate',
+            finalDate: '$finalDate',
+            solicitudeDocument: '$solicitudeDocument',
+            presentationOfficeDocument: '$presentationOfficeDocument',
+            acceptanceDocument: '$acceptanceDocument',
+            evaluationDocument: '$evaluationDocument',
+            canceled: '$canceled',
+            student: {
+              $arrayElemAt: ['$student', 0],
             },
-            {
-              finalDate: {
-                $gte: initialDate,
-                $lte: finalDate,
-              },
+            hospital: {
+              $arrayElemAt: ['$hospital', 0],
             },
-          ],
-        },
-      },
-      {
-        //Does an inner join with students
-        $lookup: {
-          from: 'students',
-          localField: 'student',
-          foreignField: '_id',
-          as: 'student',
-        },
-      },
-      {
-        $lookup: {
-          from: 'hospitals',
-          localField: 'hospital',
-          foreignField: '_id',
-          as: 'hospital',
-        },
-      },
-      {
-        $lookup: {
-          from: 'rotationservices',
-          localField: 'rotationService',
-          foreignField: '_id',
-          as: 'rotationService',
-        },
-      },
-      {
-        $lookup: {
-          from: 'specialties',
-          localField: 'student.specialty',
-          foreignField: '_id',
-          as: 'specialty',
-        },
-      },
-      {
-        //Gets the first element of the specialties, students, hospitals and rotation services
-        $project: {
-          _id: '$_id',
-          specialty: { $arrayElemAt: ['$specialty', 0] },
-          initialDate: '$initialDate',
-          finalDate: '$finalDate',
-          solicitudeDocument: '$solicitudeDocument',
-          presentationOfficeDocument: '$presentationOfficeDocument',
-          acceptanceDocument: '$acceptanceDocument',
-          evaluationDocument: '$evaluationDocument',
-          canceled: '$canceled',
-          student: {
-            $arrayElemAt: ['$student', 0],
-          },
-          hospital: {
-            $arrayElemAt: ['$hospital', 0],
-          },
-          rotationService: {
-            $arrayElemAt: ['$rotationService', 0],
-          },
-        },
-      },
-      {
-        //Groups Optional Mobilities by Specialty
-        $group: {
-          _id: '$specialty._id',
-          value: { $first: '$specialty.value' },
-          optionalMobilities: {
-            $push: {
-              _id: '$_id',
-              initialDate: '$initialDate',
-              finalDate: '$finalDate',
-              solicitudeDocument: '$solicitudeDocument',
-              presentationOfficeDocument: '$presentationOfficeDocument',
-              acceptanceDocument: '$acceptanceDocument',
-              evaluationDocument: '$evaluationDocument',
-              canceled: '$canceled',
-              student: {
-                _id: '$student._id',
-                name: '$student.name',
-                firstLastName: '$student.firstLastName',
-                secondLastName: '$student.secondLastName',
-              },
-              hospital: {
-                _id: '$hospital._id',
-                name: '$hospital.name',
-              },
-              rotationService: {
-                _id: '$rotationService._id',
-                value: '$rotationService.value',
-              },
+            rotationService: {
+              $arrayElemAt: ['$rotationService', 0],
             },
           },
         },
-      },
-    ]);
+        {
+          //Groups Optional Mobilities by Specialty
+          $group: {
+            _id: '$specialty._id',
+            value: { $first: '$specialty.value' },
+            optionalMobilities: {
+              $push: {
+                _id: '$_id',
+                initialDate: '$initialDate',
+                finalDate: '$finalDate',
+                solicitudeDocument: '$solicitudeDocument',
+                presentationOfficeDocument: '$presentationOfficeDocument',
+                acceptanceDocument: '$acceptanceDocument',
+                evaluationDocument: '$evaluationDocument',
+                canceled: '$canceled',
+                student: {
+                  _id: '$student._id',
+                  name: '$student.name',
+                  firstLastName: '$student.firstLastName',
+                  secondLastName: '$student.secondLastName',
+                },
+                hospital: {
+                  _id: '$hospital._id',
+                  name: '$hospital.name',
+                },
+                rotationService: {
+                  _id: '$rotationService._id',
+                  value: '$rotationService.value',
+                },
+              },
+            },
+          },
+        },
+      ])) as OptionalMobilityBySpecialtyDto[];
+    optionalMobilitiesBySpecialties.map((optionalMobilitiesBySpecialty) => {
+      optionalMobilitiesBySpecialty.optionalMobilities.sort((a, b) =>
+        a.student.secondLastName.localeCompare(b.student.secondLastName),
+      );
+      optionalMobilitiesBySpecialty.optionalMobilities.sort((a, b) =>
+        a.student.firstLastName.localeCompare(b.student.firstLastName),
+      );
+    });
+    optionalMobilitiesBySpecialties.sort((a, b) =>
+      a.value.localeCompare(b.value),
+    );
+    return optionalMobilitiesBySpecialties;
   }
 
   /**

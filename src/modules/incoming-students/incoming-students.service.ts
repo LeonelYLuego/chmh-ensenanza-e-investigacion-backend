@@ -14,6 +14,7 @@ import {
 } from './incoming-student.schema';
 import { IncomingStudentDocumentTypes } from './types/incoming-student-document.type';
 import * as fs from 'fs';
+import { IncomingStudentsBySpecialtyDto } from './dto/incoming-students-by-specialty.dto';
 
 @Injectable()
 export class IncomingStudentsService {
@@ -45,28 +46,115 @@ export class IncomingStudentsService {
   async findAll(
     initialDate: Date,
     finalDate: Date,
-  ): Promise<IncomingStudent[]> {
-    const incomingStudents = await this.incomingStudentsModel.aggregate([
-      {
-        $match: {
-          $or: [
-            {
-              initialDate: {
-                $gte: initialDate,
-                $lte: finalDate,
+  ): Promise<IncomingStudentsBySpecialtyDto[]> {
+    const incomingStudentsBySpecialties =
+      (await this.incomingStudentsModel.aggregate([
+        {
+          $match: {
+            $or: [
+              {
+                initialDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
               },
-            },
-            {
-              finalDate: {
-                $gte: initialDate,
-                $lte: finalDate,
+              {
+                finalDate: {
+                  $gte: initialDate,
+                  $lte: finalDate,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
-      },
-    ]);
-    return incomingStudents;
+        {
+          $lookup: {
+            from: 'specialties',
+            localField: 'incomingSpecialty',
+            foreignField: '_id',
+            as: 'incomingSpecialty',
+          },
+        },
+        {
+          $lookup: {
+            from: 'hospitals',
+            localField: 'hospital',
+            foreignField: '_id',
+            as: 'hospital',
+          },
+        },
+        {
+          $lookup: {
+            from: 'rotationservices',
+            localField: 'rotationService',
+            foreignField: '_id',
+            as: 'rotationService',
+          },
+        },
+        {
+          $lookup: {
+            from: 'specialties',
+            localField: 'rotationService.specialty',
+            foreignField: '_id',
+            as: 'specialty',
+          },
+        },
+        {
+          $project: {
+            _id: '$_id',
+            name: '$name',
+            firstLastName: '$firstLastName',
+            secondLastName: '$secondLastName',
+            initialDate: '$initialDate',
+            finalDate: '$finalDate',
+            solicitudeVoBo: '$solicitudeVoBo',
+            solicitudeDocument: '$solicitudeDocument',
+            acceptanceDocument: '$acceptanceDocument',
+            evaluationDocument: '$evaluationDocument',
+            canceled: '$canceled',
+            incomingSpecialty: { $arrayElemAt: ['$incomingSpecialty', 0] },
+            hospital: { $arrayElemAt: ['$hospital', 0] },
+            rotationService: { $arrayElemAt: ['$rotationService', 0] },
+            specialty: { $arrayElemAt: ['$specialty', 0] },
+          },
+        },
+        {
+          $group: {
+            _id: '$specialty._id',
+            value: { $first: '$specialty.value' },
+            incomingStudents: {
+              $push: {
+                _id: '$_id',
+                name: '$name',
+                firstLastName: '$firstLastName',
+                secondLastName: '$secondLastName',
+                initialDate: '$initialDate',
+                finalDate: '$finalDate',
+                solicitudeVoBo: '$solicitudeVoBo',
+                solicitudeDocument: '$solicitudeDocument',
+                acceptanceDocument: '$acceptanceDocument',
+                evaluationDocument: '$evaluationDocument',
+                canceled: '$canceled',
+                incomingSpecialty: '$incomingSpecialty',
+                hospital: '$hospital',
+                rotationService: '$rotationService',
+              },
+            },
+          },
+        },
+      ])) as IncomingStudentsBySpecialtyDto[];
+    incomingStudentsBySpecialties.map((incomingStudentsBySpecialty) => {
+      incomingStudentsBySpecialty.incomingStudents.sort((a, b) =>
+        a.secondLastName.localeCompare(b.secondLastName),
+      );
+      incomingStudentsBySpecialty.incomingStudents.sort((a, b) =>
+        a.firstLastName.localeCompare(b.firstLastName),
+      );
+    });
+    incomingStudentsBySpecialties.sort((a, b) =>
+      a.value.localeCompare(b.value),
+    );
+    return incomingStudentsBySpecialties;
   }
 
   async findOne(_id: string): Promise<IncomingStudent> {

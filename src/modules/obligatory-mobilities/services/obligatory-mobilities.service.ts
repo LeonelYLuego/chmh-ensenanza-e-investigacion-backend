@@ -246,9 +246,10 @@ export class ObligatoryMobilitiesService {
       });
     }
     // Deletes the Hospitals that do not have any Obligatory Mobilities
-    for (let i = 0; i < obligatoryMobilitiesByHospital.length; i++)
-      if (obligatoryMobilitiesByHospital[i].obligatoryMobilities.length == 0)
-        obligatoryMobilitiesByHospital.splice(i, 1);
+    obligatoryMobilitiesByHospital = obligatoryMobilitiesByHospital.filter(
+      (obligatoryMobilityByHospital) =>
+        obligatoryMobilityByHospital.obligatoryMobilities.length != 0,
+    );
     // Sort by Hospital name
     obligatoryMobilitiesByHospital.sort((a, b) => a.name.localeCompare(b.name));
     return obligatoryMobilitiesByHospital;
@@ -372,9 +373,13 @@ export class ObligatoryMobilitiesService {
       );
     }
     // Deletes the Students that do not have any Obligatory Mobility
-    for (let i = 0; i < obligatoryMobilitiesByStudent.length; i++)
-      if (obligatoryMobilitiesByStudent[i].obligatoryMobilities.length == 0)
-        obligatoryMobilitiesByStudent.splice(i, 1);
+    obligatoryMobilitiesByStudent = obligatoryMobilitiesByStudent.filter(
+      (obligatoryMobilityByStudent) =>
+        obligatoryMobilityByStudent.obligatoryMobilities.length != 0,
+    );
+    // for (let i = 0; i < obligatoryMobilitiesByStudent.length; i++)
+    //   if (obligatoryMobilitiesByStudent[i].obligatoryMobilities.length == 0)
+    //     obligatoryMobilitiesByStudent.splice(i, 1);
     // Sorts by second last name
     obligatoryMobilitiesByStudent.sort((a, b) =>
       a.secondLastName.localeCompare(b.secondLastName),

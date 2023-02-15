@@ -30,6 +30,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreateIncomingStudentDto } from './dto/create-incoming-student.dto';
 import { IncomingStudentIntervalDto } from './dto/incoming-student-interval.dto';
+import { IncomingStudentsBySpecialtyDto } from './dto/incoming-students-by-specialty.dto';
 import { UpdateIncomingStudentDto } from './dto/update-incoming-student.dto';
 import { IncomingStudent } from './incoming-student.schema';
 import { IncomingStudentsService } from './incoming-students.service';
@@ -81,7 +82,7 @@ export class IncomingStudentsController {
   async findAll(
     @Query('initialDate', ValidateDatePipe) initialDate: Date,
     @Query('finalDate', ValidateDatePipe) finalDate: Date,
-  ): Promise<HttpResponse<IncomingStudent[]>> {
+  ): Promise<HttpResponse<IncomingStudentsBySpecialtyDto[]>> {
     return {
       data: await this.incomingStudentsService.findAll(initialDate, finalDate),
     };

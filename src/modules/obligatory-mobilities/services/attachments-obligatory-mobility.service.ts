@@ -407,7 +407,13 @@ export class AttachmentsObligatoryMobilitiesService {
     attachmentsObligatoryMobility.obligatoryMobilities.map(
       (obligatoryMobility) => {
         students.push({
-          nombre: `${obligatoryMobility.student.name} ${obligatoryMobility.student.firstLastName} ${obligatoryMobility.student.secondLastName}`,
+          nombre: `${obligatoryMobility.student.name} ${
+            obligatoryMobility.student.firstLastName
+          }${
+            obligatoryMobility.student.secondLastName
+              ? ' ' + obligatoryMobility.student.secondLastName
+              : ''
+          }`,
           servicioARotar: obligatoryMobility.rotationService.value,
           periodo: getInterval(
             obligatoryMobility.initialDate,

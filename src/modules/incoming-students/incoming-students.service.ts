@@ -15,6 +15,11 @@ import {
 import { IncomingStudentDocumentTypes } from './types/incoming-student-document.type';
 import * as fs from 'fs';
 import { IncomingStudentsBySpecialtyDto } from './dto/incoming-students-by-specialty.dto';
+import * as JSZip from 'jszip';
+import { Hospital } from '@hospitals/hospital.schema';
+import { dateToString, getInterval, gradeToString } from '@utils/functions';
+import { TemplatesService } from '@templates/templates.service';
+import { TemplateHandler } from 'easy-template-x';
 
 @Injectable()
 export class IncomingStudentsService {
@@ -25,6 +30,7 @@ export class IncomingStudentsService {
     private hospitalsService: HospitalsService,
     private specialtiesService: SpecialtiesService,
     private filesService: FilesService,
+    private templatesService: TemplatesService,
   ) {}
 
   async create(
@@ -330,5 +336,184 @@ export class IncomingStudentsService {
     )
       throw new ForbiddenException('incoming student not modified');
     return await this.findOne(_id);
+  }
+
+  async generateDocuments(
+    initialNumberOfDocuments: number,
+    numberOfDocument: number,
+    dateOfDocuments: Date,
+    dateToPresent: Date,
+    initialDate: Date,
+    finalDate: Date,
+    hospital?: string,
+    specialty?: string,
+  ): Promise<StreamableFile> {
+    if (initialDate.getTime() > finalDate.getTime())
+      throw new ForbiddenException('invalid interval');
+    let counter = initialNumberOfDocuments;
+    const zip = new JSZip();
+    let hospitals: Hospital[] = [];
+    if (hospital) hospitals.push(await this.hospitalsService.findOne(hospital));
+    else hospitals = await this.hospitalsService.findAll();
+    await Promise.all(
+      hospitals.map(async (hospital) => {
+        const incomingStudents = (await this.incomingStudentsModel.aggregate([
+          {
+            $match: {
+              $or: [
+                {
+                  initialDate: {
+                    $gte: initialDate,
+                    $lte: finalDate,
+                  },
+                },
+                {
+                  finalDate: {
+                    $gte: initialDate,
+                    $lte: finalDate,
+                  },
+                },
+              ],
+              hospital: hospital._id,
+              canceled: false,
+            },
+          },
+          {
+            $lookup: {
+              from: 'specialties',
+              localField: 'incomingSpecialty',
+              foreignField: '_id',
+              as: 'incomingSpecialty',
+            },
+          },
+          {
+            $lookup: {
+              from: 'hospitals',
+              localField: 'hospital',
+              foreignField: '_id',
+              as: 'hospital',
+            },
+          },
+          {
+            $lookup: {
+              from: 'rotationservices',
+              localField: 'rotationService',
+              foreignField: '_id',
+              as: 'rotationService',
+            },
+          },
+          {
+            $lookup: {
+              from: 'specialties',
+              localField: 'rotationService.specialty',
+              foreignField: '_id',
+              as: 'specialty',
+            },
+          },
+          {
+            $project: {
+              _id: '$_id',
+              name: '$name',
+              firstLastName: '$firstLastName',
+              secondLastName: '$secondLastName',
+              initialDate: '$initialDate',
+              finalDate: '$finalDate',
+              incomingSpecialty: { $arrayElemAt: ['$incomingSpecialty', 0] },
+              incomingYear: '$incomingYear',
+              hospital: { $arrayElemAt: ['$hospital', 0] },
+              rotationService: { $arrayElemAt: ['$rotationService', 0] },
+              specialty: { $arrayElemAt: ['$specialty', 0] },
+            },
+          },
+          {
+            $addFields: {
+              rotationService: {
+                specialty: '$specialty',
+              },
+            },
+          },
+          {
+            $unset: ['specialty'],
+          },
+        ])) as IncomingStudent[];
+        await Promise.all(
+          incomingStudents.map(async (incomingStudent) => {
+            if (specialty)
+              if (incomingStudent.rotationService.specialty._id != specialty)
+                return;
+            const data = {
+              hospital: hospital.name.toUpperCase(),
+              'principal.nombre': hospital.firstReceiver
+                ? hospital.firstReceiver.name.toUpperCase()
+                : '',
+              'principal.cargo': hospital.firstReceiver
+                ? hospital.firstReceiver.position.toUpperCase()
+                : '',
+              'secundario.nombre': hospital.secondReceiver
+                ? `${hospital.secondReceiver.name.toUpperCase()}`
+                : '',
+              'secundario.cargo': hospital.secondReceiver
+                ? hospital.secondReceiver.position.toUpperCase()
+                : '',
+              'terciario.nombre': hospital.thirdReceiver
+                ? `${hospital.thirdReceiver.name.toUpperCase()}`
+                : '',
+              'terciario.cargo': hospital.thirdReceiver
+                ? hospital.thirdReceiver.position.toUpperCase()
+                : '',
+              numero: counter.toString(),
+              numeroDeOficio: numberOfDocument,
+              fecha: dateToString(dateOfDocuments),
+              fechaDePresentacion: dateToString(dateToPresent),
+              estudiante: `${incomingStudent.name} ${
+                incomingStudent.firstLastName
+              }${
+                incomingStudent.secondLastName
+                  ? ' ' + incomingStudent.secondLastName
+                  : ''
+              }`,
+              especialidad: incomingStudent.rotationService.specialty.value,
+              servicioARotar: incomingStudent.rotationService.value,
+              especialidadExterna: incomingStudent.incomingSpecialty.value,
+              año: gradeToString(incomingStudent.incomingYear),
+              periodo: getInterval(
+                incomingStudent.initialDate,
+                incomingStudent.finalDate,
+              ),
+              departamento:
+                incomingStudent.rotationService.specialty
+                  .headOfDepartmentPosition,
+              jefeDeDepartamento:
+                incomingStudent.rotationService.specialty.headOfDepartment.toUpperCase(),
+              profesor:
+                incomingStudent.rotationService.specialty.tenuredPostgraduateProfessor.toUpperCase(),
+              jefeDeServicio:
+                incomingStudent.rotationService.specialty.headOfService.toUpperCase(),
+            };
+            const template = await this.templatesService.getDocument(
+              'incomingStudent',
+              'acceptanceDocument',
+            );
+            const handler = new TemplateHandler();
+            const doc = await handler.process(template, data);
+            zip.file(
+              `${counter} ${incomingStudent.rotationService.specialty.value} ${
+                incomingStudent.name
+              } ${incomingStudent.firstLastName} ${
+                incomingStudent.secondLastName ?? ''
+              }.docx`,
+              doc,
+            );
+            counter++;
+          }),
+        );
+      }),
+    );
+    const content = await zip.generateAsync({ type: 'nodebuffer' });
+    // Returns the zip file with the name of the documents to generate
+    return new StreamableFile(content, {
+      type: 'application/zip',
+      disposition: `attachment;filename=aceptaciones.zip`,
+    });
   }
 }

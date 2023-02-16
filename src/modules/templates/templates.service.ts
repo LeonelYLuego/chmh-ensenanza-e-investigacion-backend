@@ -22,6 +22,7 @@ export class TemplatesService {
       socialService: {},
       optionalMobility: {},
       obligatoryMobility: {},
+      incomingStudent: {},
     });
     return await createdTemplates.save();
   }
@@ -34,8 +35,15 @@ export class TemplatesService {
    * @throws {ForbiddenException} template must exist
    */
   async getDocument(
-    document: 'socialService' | 'optionalMobility' | 'obligatoryMobility',
-    type: 'solicitudeDocument' | 'presentationOfficeDocument',
+    document:
+      | 'socialService'
+      | 'optionalMobility'
+      | 'obligatoryMobility'
+      | 'incomingStudent',
+    type:
+      | 'solicitudeDocument'
+      | 'presentationOfficeDocument'
+      | 'acceptanceDocument',
   ): Promise<Buffer> {
     const templates = await this.templatesModel.findOne();
     if (templates) {
@@ -59,8 +67,15 @@ export class TemplatesService {
    * @throws
    */
   async updateTemplates(
-    document: string,
-    type: string,
+    document:
+      | 'socialService'
+      | 'optionalMobility'
+      | 'obligatoryMobility'
+      | 'incomingStudent',
+    type:
+      | 'solicitudeDocument'
+      | 'presentationOfficeDocument'
+      | 'acceptanceDocument',
     file: Express.Multer.File,
   ) {
     //Finds the template object

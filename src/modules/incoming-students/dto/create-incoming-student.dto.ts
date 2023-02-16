@@ -6,10 +6,13 @@ import {
   IsDefined,
   IsEmail,
   IsMongoId,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 
@@ -102,11 +105,23 @@ export class CreateIncomingStudentDto {
   @IsDateString()
   finalDate: Date;
 
-  @ApiProperty({ description: 'Incoming Student specialty' })
+  @ApiProperty({ description: 'Incoming Student incoming specialty' })
   @IsDefined()
   @IsString()
   @IsMongoId()
   incomingSpecialty: string;
+
+  @ApiProperty({
+    description: 'Incoming Student incoming year',
+    type: Number,
+    minimum: 1,
+    maximum: 6,
+  })
+  @IsDefined()
+  @IsNumber()
+  @Min(1)
+  @Max(6)
+  incomingYear: number;
 
   @ApiProperty({ description: 'Incoming Student rotation service' })
   @IsDefined()

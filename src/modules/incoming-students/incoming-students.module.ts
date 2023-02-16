@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SpecialtiesModule } from '@specialties/specialties.module';
 import { SpecialtiesService } from '@specialties/specialties.service';
+import { TemplatesModule } from '@templates/templates.module';
 import { FilesService } from '@utils/services';
 import { RotationServicesModule } from 'modules/rotation-services';
 import {
@@ -26,6 +27,7 @@ import { IncomingStudentsService } from './incoming-students.service';
     RotationServicesModule,
     HospitalsModule,
     SpecialtiesModule,
+    TemplatesModule,
   ],
   controllers: [IncomingStudentsController],
   providers: [FilesService, IncomingStudentsService],

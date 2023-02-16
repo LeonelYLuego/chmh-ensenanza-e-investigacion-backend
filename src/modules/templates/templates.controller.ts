@@ -40,13 +40,22 @@ export class TemplatesController {
   @ApiParam({
     name: 'document',
     type: String,
-    enum: ['socialService', 'optionalMobility', 'obligatoryMobility'],
+    enum: [
+      'socialService',
+      'optionalMobility',
+      'obligatoryMobility',
+      'incomingStudent',
+    ],
   })
   @ApiQuery({
     name: 'type',
     description: 'document type',
     type: String,
-    enum: ['presentationOfficeDocument', 'solicitudeDocument'],
+    enum: [
+      'presentationOfficeDocument',
+      'solicitudeDocument',
+      'acceptanceDocument',
+    ],
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -82,9 +91,18 @@ export class TemplatesController {
     description: 'Not authorized to perform the query',
   })
   async updateDocument(
-    @Param('document') document: string,
+    @Param('document')
+    document:
+      | 'socialService'
+      | 'optionalMobility'
+      | 'obligatoryMobility'
+      | 'incomingStudent',
     @UploadedFile() file: Express.Multer.File,
-    @Query('type') type: string,
+    @Query('type')
+    type:
+      | 'solicitudeDocument'
+      | 'presentationOfficeDocument'
+      | 'acceptanceDocument',
   ): Promise<HttpResponse<undefined>> {
     await this.templatesService.updateTemplates(document, type, file);
     return {};

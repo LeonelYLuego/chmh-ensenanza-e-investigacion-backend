@@ -39,7 +39,8 @@ export function lastDayOfTheMonth(date: Date): number {
 }
 
 /** Converts a Date object to string as a `1 de enero de 2023` */
-export function dateToString(date: Date): string {
+export function dateToString(dateToConvert: Date): string {
+  const date = new Date(dateToConvert);
   return `${date.getDate()} de ${
     months[date.getMonth()]
   } de ${date.getFullYear()}`;

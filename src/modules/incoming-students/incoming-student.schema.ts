@@ -101,6 +101,18 @@ export class IncomingStudent {
   incomingSpecialty: Specialty;
 
   @ApiProperty({
+    type: Number,
+    minimum: 1,
+    maximum: 6,
+  })
+  @Prop({
+    type: Number,
+    min: 1,
+    max: 6,
+  })
+  incomingYear: number;
+
+  @ApiProperty({
     type: String,
   })
   @Prop({

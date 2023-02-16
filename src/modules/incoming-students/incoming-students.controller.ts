@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { API_ENDPOINTS, STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
-import { ValidateIdPipe } from '@utils/pipes';
+import { ValidateIdPipe, ValidateNumberPipe } from '@utils/pipes';
 import { ValidateDatePipe } from '@utils/pipes/validate-date.pipe';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -86,6 +86,40 @@ export class IncomingStudentsController {
     return {
       data: await this.incomingStudentsService.findAll(initialDate, finalDate),
     };
+  }
+
+  @Get(API_ENDPOINTS.INCOMING_STUDENTS.GENERATE)
+  @ApiBearerAuth()
+  @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
+  @ApiQuery({ type: Number, name: 'numberOfDocument' })
+  @ApiQuery({ type: Date, name: 'dateOfDocuments' })
+  @ApiQuery({ type: Date, name: 'dateToPresent' })
+  @ApiQuery({ type: Date, name: 'initialDate' })
+  @ApiQuery({ type: Date, name: 'finalDate' })
+  @ApiQuery({ type: String, name: 'hospital', required: false })
+  @ApiQuery({ type: String, name: 'specialty', required: false })
+  async generateDocuments(
+    @Query('initialNumberOfDocuments', ValidateNumberPipe)
+    initialNumberOfDocuments: number,
+    @Query('numberOfDocument', ValidateNumberPipe)
+    numberOfDocument: number,
+    @Query('dateOfDocuments', ValidateDatePipe) dateOfDocuments: Date,
+    @Query('dateToPresent', ValidateDatePipe) dateToPresent: Date,
+    @Query('initialDate', ValidateDatePipe) initialDate: Date,
+    @Query('finalDate', ValidateDatePipe) finalDate: Date,
+    @Query('hospital', ValidateIdPipe) hospital?: string,
+    @Query('specialty', ValidateIdPipe) specialty?: string,
+  ): Promise<StreamableFile> {
+    return await this.incomingStudentsService.generateDocuments(
+      initialNumberOfDocuments,
+      numberOfDocument,
+      dateOfDocuments,
+      dateToPresent,
+      initialDate,
+      finalDate,
+      hospital,
+      specialty,
+    );
   }
 
   @Get(`:${API_ENDPOINTS.INCOMING_STUDENTS.BY_ID}`)

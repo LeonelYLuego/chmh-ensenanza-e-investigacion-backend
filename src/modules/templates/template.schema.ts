@@ -44,6 +44,17 @@ export class ObligatoryMobilitiesTemplates {
   solicitudeDocument?: string;
 }
 
+/** Incoming Students Templates schema */
+@Schema()
+export class IncomingStudentsTemplates {
+  @ApiProperty({
+    type: String,
+    description: 'Incoming Students Acceptance Template',
+  })
+  @Prop({ type: String, required: false, length: 64 })
+  acceptanceDocument?: string;
+}
+
 /** Template schema */
 @Schema()
 export class Templates {
@@ -70,6 +81,13 @@ export class Templates {
   })
   @Prop({ type: ObligatoryMobilitiesTemplates, required: true })
   obligatoryMobility: ObligatoryMobilitiesTemplates;
+
+  @ApiProperty({
+    type: IncomingStudentsTemplates,
+    description: 'Incoming Students Templates',
+  })
+  @Prop({ type: IncomingStudentsTemplates, required: true })
+  incomingStudent: IncomingStudentsTemplates;
 
   @ApiProperty({ type: Number })
   __v?: number;

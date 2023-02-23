@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Specialty } from '@specialties/specialty.schema';
 import {
   IsArray,
   IsDateString,
@@ -16,6 +15,7 @@ import {
   MinLength,
 } from 'class-validator';
 
+/** Crate Incoming Student data transfer object */
 export class CreateIncomingStudentDto {
   @ApiProperty({
     type: String,

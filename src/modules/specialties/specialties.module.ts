@@ -1,3 +1,7 @@
+import {
+  IncomingStudentsModule,
+  IncomingStudentsService,
+} from '@incoming-students/index';
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StudentsModule } from '@students/students.module';
@@ -16,12 +20,21 @@ import { Specialty, SpecialtySchema } from './specialty.schema';
     forwardRef(() =>
       MongooseModule.forFeatureAsync([
         {
-          imports: [StudentsModule, RotationServicesModule],
-          inject: [StudentsService, RotationServicesService],
+          imports: [
+            StudentsModule,
+            RotationServicesModule,
+            IncomingStudentsModule,
+          ],
+          inject: [
+            StudentsService,
+            RotationServicesService,
+            IncomingStudentsService,
+          ],
           name: Specialty.name,
           useFactory: (
             studentsService: StudentsService,
             rotationServicesService: RotationServicesService,
+            incomingStudent: IncomingStudentsService,
           ) => {
             const schema = SpecialtySchema;
             schema.post(
@@ -30,6 +43,7 @@ import { Specialty, SpecialtySchema } from './specialty.schema';
                 // Deletes the associated objects like a cascada way
                 await studentsService.deleteBySpecialty(document._id);
                 await rotationServicesService.deleteBySpecialty(document._id);
+                await incomingStudent.deleteByIncomingSpecialty(document._id);
               },
             );
             return schema;

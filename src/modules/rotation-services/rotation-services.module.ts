@@ -1,3 +1,5 @@
+import { IncomingStudentsModule } from '@incoming-students/incoming-students.module';
+import { IncomingStudentsService } from '@incoming-students/incoming-students.service';
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SpecialtiesModule } from '@specialties/specialties.module';
@@ -20,12 +22,21 @@ import { RotationServicesService } from './rotation-services.service';
     forwardRef(() =>
       MongooseModule.forFeatureAsync([
         {
-          imports: [OptionalMobilitiesModule, ObligatoryMobilitiesModule],
-          inject: [OptionalMobilitiesService, ObligatoryMobilitiesService],
+          imports: [
+            OptionalMobilitiesModule,
+            ObligatoryMobilitiesModule,
+            IncomingStudentsModule,
+          ],
+          inject: [
+            OptionalMobilitiesService,
+            ObligatoryMobilitiesService,
+            IncomingStudentsService,
+          ],
           name: RotationService.name,
           useFactory: (
             optionalMobilitiesService: OptionalMobilitiesService,
             obligatoryMobilitiesService: ObligatoryMobilitiesService,
+            incomingStudentsService: IncomingStudentsService,
           ) => {
             const schema = RotationServiceSchema;
             schema.post(
@@ -35,6 +46,9 @@ import { RotationServicesService } from './rotation-services.service';
                   document._id,
                 );
                 await obligatoryMobilitiesService.deleteByRotationService(
+                  document._id,
+                );
+                await incomingStudentsService.deleteByRotationService(
                   document._id,
                 );
               },

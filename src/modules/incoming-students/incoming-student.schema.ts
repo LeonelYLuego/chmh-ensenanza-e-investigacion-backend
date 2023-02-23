@@ -5,8 +5,10 @@ import { Specialty } from '@specialties/specialty.schema';
 import { RotationService } from 'modules/rotation-services';
 import mongoose from 'mongoose';
 
+/** Incoming Student document */
 export type IncomingStudentDocument = IncomingStudent & Document;
 
+/** Incoming Student Schema */
 @Schema()
 export class IncomingStudent {
   @ApiProperty({ type: String, description: 'Incoming Student primary key' })
@@ -146,5 +148,6 @@ export class IncomingStudent {
   __v?: number;
 }
 
+/** Incoming Student schema */
 export const IncomingStudentSchema =
   SchemaFactory.createForClass(IncomingStudent);

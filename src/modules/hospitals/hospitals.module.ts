@@ -13,6 +13,10 @@ import {
 } from 'modules/optional-mobilities';
 import { ObligatoryMobilitiesModule } from 'modules/obligatory-mobilities/obligatory-mobilities.module';
 import { ObligatoryMobilitiesService } from 'modules/obligatory-mobilities/services/obligatory-mobilities.service';
+import {
+  IncomingStudentsModule,
+  IncomingStudentsService,
+} from '@incoming-students/index';
 
 /** Hospital module */
 @Module({
@@ -24,17 +28,20 @@ import { ObligatoryMobilitiesService } from 'modules/obligatory-mobilities/servi
             SocialServicesModule,
             OptionalMobilitiesModule,
             ObligatoryMobilitiesModule,
+            IncomingStudentsModule,
           ],
           inject: [
             SocialServicesService,
             OptionalMobilitiesService,
             ObligatoryMobilitiesService,
+            IncomingStudentsService,
           ],
           name: Hospital.name,
           useFactory: (
             socialServicesService: SocialServicesService,
             optionalMobilitiesService: OptionalMobilitiesService,
             obligatoryMobilitiesService: ObligatoryMobilitiesService,
+            IncomingStudentsService: IncomingStudentsService,
           ) => {
             const schema = HospitalSchema;
             schema.post(
@@ -46,6 +53,7 @@ import { ObligatoryMobilitiesService } from 'modules/obligatory-mobilities/servi
                 await obligatoryMobilitiesService.deleteByHospital(
                   document._id,
                 );
+                await IncomingStudentsService.deleteByHospital(document._id);
               },
             );
             return schema;

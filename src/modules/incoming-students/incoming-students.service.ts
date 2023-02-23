@@ -20,19 +20,33 @@ import { Hospital } from '@hospitals/hospital.schema';
 import { dateToString, getInterval, gradeToString } from '@utils/functions';
 import { TemplatesService } from '@templates/templates.service';
 import { TemplateHandler } from 'easy-template-x';
+import { Inject } from '@nestjs/common/decorators';
+import { forwardRef } from '@nestjs/common/utils';
 
+/** Incoming Students service */
 @Injectable()
 export class IncomingStudentsService {
   constructor(
     @InjectModel(IncomingStudent.name)
     private incomingStudentsModel: Model<IncomingStudentDocument>,
+    @Inject(forwardRef(() => RotationServicesService))
     private rotationServicesService: RotationServicesService,
+    @Inject(forwardRef(() => HospitalsService))
     private hospitalsService: HospitalsService,
+    @Inject(forwardRef(() => SpecialtiesService))
     private specialtiesService: SpecialtiesService,
     private filesService: FilesService,
+    @Inject(forwardRef(() => TemplatesService))
     private templatesService: TemplatesService,
   ) {}
 
+  /**
+   * Creates a new Incoming Student in the database
+   * @param createIncomingStudentDto 
+   * @returns the created Incoming Student
+   * @throws {ForbiddenException} Incoming Specialty must exist
+   * @throws {ForbiddenException} Rotation Service must exist
+   */
   async create(
     createIncomingStudentDto: CreateIncomingStudentDto,
   ): Promise<IncomingStudent> {
@@ -49,6 +63,12 @@ export class IncomingStudentsService {
     return await createdIncomingStudent.save();
   }
 
+  /**
+   * Finds all Incoming Students in the database
+   * @param initialDate 
+   * @param finalDate 
+   * @returns the found Incoming Students
+   */
   async findAll(
     initialDate: Date,
     finalDate: Date,
@@ -56,6 +76,7 @@ export class IncomingStudentsService {
     const incomingStudentsBySpecialties =
       (await this.incomingStudentsModel.aggregate([
         {
+          // Finds between initial and final date
           $match: {
             $or: [
               {
@@ -73,6 +94,7 @@ export class IncomingStudentsService {
             ],
           },
         },
+        // Populates Specialties
         {
           $lookup: {
             from: 'specialties',
@@ -81,6 +103,7 @@ export class IncomingStudentsService {
             as: 'incomingSpecialty',
           },
         },
+        // Populates Hospitals
         {
           $lookup: {
             from: 'hospitals',
@@ -89,6 +112,7 @@ export class IncomingStudentsService {
             as: 'hospital',
           },
         },
+        // Populates Rotation Services
         {
           $lookup: {
             from: 'rotationservices',
@@ -97,6 +121,7 @@ export class IncomingStudentsService {
             as: 'rotationService',
           },
         },
+        // Populates Specialties based on the Rotation Service
         {
           $lookup: {
             from: 'specialties',
@@ -105,6 +130,7 @@ export class IncomingStudentsService {
             as: 'specialty',
           },
         },
+        // Deletes the arrays
         {
           $project: {
             _id: '$_id',
@@ -124,6 +150,7 @@ export class IncomingStudentsService {
             specialty: { $arrayElemAt: ['$specialty', 0] },
           },
         },
+        // Groups by specialty
         {
           $group: {
             _id: '$specialty._id',
@@ -149,6 +176,7 @@ export class IncomingStudentsService {
           },
         },
       ])) as IncomingStudentsBySpecialtyDto[];
+    // Orders the Incoming Students by name
     incomingStudentsBySpecialties.map((incomingStudentsBySpecialty) => {
       incomingStudentsBySpecialty.incomingStudents.sort((a, b) =>
         a.secondLastName.localeCompare(b.secondLastName),
@@ -157,12 +185,19 @@ export class IncomingStudentsService {
         a.firstLastName.localeCompare(b.firstLastName),
       );
     });
+    // Orders the Incoming Students by specialty
     incomingStudentsBySpecialties.sort((a, b) =>
       a.value.localeCompare(b.value),
     );
     return incomingStudentsBySpecialties;
   }
 
+  /**
+   * Finds an Incoming Student in the database
+   * @param _id 
+   * @returns the found Incoming Student
+   * @throws {ForbiddenException} Incoming Student must exist
+   */
   async findOne(_id: string): Promise<IncomingStudent> {
     const incomingStudent = await this.incomingStudentsModel
       .findOne({ _id })
@@ -176,6 +211,14 @@ export class IncomingStudentsService {
     return incomingStudent;
   }
 
+  /**
+   * Updates an Incoming Student in the database based on the provided _id
+   * @param _id 
+   * @param updateIncomingStudentDto 
+   * @returns the modified Incoming Student
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} Incoming Student must be modified
+   */
   async update(
     _id: string,
     updateIncomingStudentDto: UpdateIncomingStudentDto,
@@ -200,6 +243,13 @@ export class IncomingStudentsService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Deletes an Incoming Student in the database based on the provided _id
+   * @param _id 
+   * @param path 
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} Incoming Student must be deleted
+   */
   async delete(_id: string, path: string): Promise<void> {
     const incomingStudent = await this.findOne(_id);
     if (incomingStudent.acceptanceDocument)
@@ -219,6 +269,41 @@ export class IncomingStudentsService {
       throw new ForbiddenException('incoming student not deleted');
   }
 
+  /**
+   * Deletes Incoming Students by Specialty
+   * @param specialty 
+   */
+  async deleteByIncomingSpecialty(specialty: string): Promise<void> {
+    await this.incomingStudentsModel.deleteMany({
+      incomingSpecialty: specialty,
+    });
+  }
+
+  /**
+   * Deletes Incoming Students by Rotation Service
+   * @param rotationService 
+   */
+  async deleteByRotationService(rotationService: string): Promise<void> {
+    await this.incomingStudentsModel.deleteMany({
+      rotationService,
+    });
+  }
+
+  /**
+   * Deletes Incoming Students by Hospital
+   * @param hospital 
+   */
+  async deleteByHospital(hospital: string): Promise<void> {
+    await this.incomingStudentsModel.deleteMany({
+      hospital,
+    });
+  }
+
+  /**
+   * Gets the interval to find the Incoming Students
+   * @returns the interval
+   * @throws {ForbiddenException} must exist at least one Incoming Student
+   */
   async interval(): Promise<IncomingStudentIntervalDto> {
     const min = await this.incomingStudentsModel.findOne().sort('initialDate');
     const max = await this.incomingStudentsModel.findOne().sort('-finalDate');
@@ -231,6 +316,15 @@ export class IncomingStudentsService {
     throw new ForbiddenException('incoming student interval not found');
   }
 
+  /**
+   * Gets a document from the database of the specified Incoming Student
+   * @param _id 
+   * @param path 
+   * @param document 
+   * @returns the found document
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} document must exist
+   */
   async getDocument(
     _id: string,
     path: string,
@@ -249,6 +343,16 @@ export class IncomingStudentsService {
     throw new ForbiddenException('document not found');
   }
 
+  /**
+   * Updates a document in the database of the specified Incoming Student
+   * @param _id 
+   * @param path 
+   * @param file 
+   * @param document 
+   * @returns the modified Incoming Student
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} Incoming Student must be modified
+   */
   async updateDocument(
     _id: string,
     path: string,
@@ -278,6 +382,15 @@ export class IncomingStudentsService {
     }
   }
 
+  /**
+   * Deletes a document in the database of the specified Incoming Student
+   * @param _id 
+   * @param path 
+   * @param document 
+   * @returns the modified Incoming Student
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} Incoming Student must be modified
+   */
   async deleteDocument(
     _id: string,
     path: string,
@@ -300,6 +413,13 @@ export class IncomingStudentsService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Sets the param VoBo to the opposite at the specified Incoming Student
+   * @param _id 
+   * @returns the modified Incoming Student
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} Incoming Student must be modified
+   */
   async VoBo(_id: string): Promise<IncomingStudent> {
     const incomingStudent = await this.findOne(_id);
     if (
@@ -318,6 +438,13 @@ export class IncomingStudentsService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Cancels the specified Incoming Student
+   * @param _id 
+   * @returns the modified Incoming Student
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} Incoming Student must be modified
+   */
   async cancel(_id: string): Promise<IncomingStudent> {
     await this.findOne(_id);
     if (
@@ -328,6 +455,13 @@ export class IncomingStudentsService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Uncancels the specified Incoming Student
+   * @param _id 
+   * @returns the modified Incoming Student
+   * @throws {ForbiddenException} Incoming Student must exist
+   * @throws {ForbiddenException} Incoming Student must be modified
+   */
   async uncancel(_id: string): Promise<IncomingStudent> {
     await this.findOne(_id);
     if (
@@ -338,6 +472,19 @@ export class IncomingStudentsService {
     return await this.findOne(_id);
   }
 
+  /**
+   * Generates the acceptances documents of the specified Incoming Students
+   * @param initialNumberOfDocuments 
+   * @param numberOfDocument 
+   * @param dateOfDocuments 
+   * @param dateToPresent 
+   * @param initialDate 
+   * @param finalDate 
+   * @param hospital 
+   * @param specialty 
+   * @returns a zip with the generated docx acceptance documents
+   * @throws {ForbiddenException} template must exist
+   */
   async generateDocuments(
     initialNumberOfDocuments: number,
     numberOfDocument: number,
@@ -348,17 +495,24 @@ export class IncomingStudentsService {
     hospital?: string,
     specialty?: string,
   ): Promise<StreamableFile> {
+    // Validates if the dates are valid
     if (initialDate.getTime() > finalDate.getTime())
       throw new ForbiddenException('invalid interval');
+    // Starts the counter
     let counter = initialNumberOfDocuments;
+    // Creates the zip object
     const zip = new JSZip();
+    // Finds the hospitals to find
     let hospitals: Hospital[] = [];
     if (hospital) hospitals.push(await this.hospitalsService.findOne(hospital));
     else hospitals = await this.hospitalsService.findAll();
     await Promise.all(
+      // For each hospital 
       hospitals.map(async (hospital) => {
         const incomingStudents = (await this.incomingStudentsModel.aggregate([
           {
+            // Finds between the initial and final date, hospital and
+            // if is not canceled
             $match: {
               $or: [
                 {
@@ -378,6 +532,7 @@ export class IncomingStudentsService {
               canceled: false,
             },
           },
+          // Populates Specialties
           {
             $lookup: {
               from: 'specialties',
@@ -386,6 +541,7 @@ export class IncomingStudentsService {
               as: 'incomingSpecialty',
             },
           },
+          // Populates Hospitals
           {
             $lookup: {
               from: 'hospitals',
@@ -394,6 +550,7 @@ export class IncomingStudentsService {
               as: 'hospital',
             },
           },
+          // Populates Rotation Services
           {
             $lookup: {
               from: 'rotationservices',
@@ -402,6 +559,7 @@ export class IncomingStudentsService {
               as: 'rotationService',
             },
           },
+          // Populates Specialties
           {
             $lookup: {
               from: 'specialties',
@@ -410,6 +568,7 @@ export class IncomingStudentsService {
               as: 'specialty',
             },
           },
+          // Deletes arrays
           {
             $project: {
               _id: '$_id',
@@ -425,6 +584,7 @@ export class IncomingStudentsService {
               specialty: { $arrayElemAt: ['$specialty', 0] },
             },
           },
+          // Deletes the attribute specialty
           {
             $addFields: {
               rotationService: {
@@ -437,10 +597,12 @@ export class IncomingStudentsService {
           },
         ])) as IncomingStudent[];
         await Promise.all(
+          // For each Incoming Student
           incomingStudents.map(async (incomingStudent) => {
             if (specialty)
               if (incomingStudent.rotationService.specialty._id != specialty)
                 return;
+            // Sets the data
             const data = {
               hospital: hospital.name.toUpperCase(),
               'principal.nombre': hospital.firstReceiver
@@ -490,12 +652,15 @@ export class IncomingStudentsService {
               jefeDeServicio:
                 incomingStudent.rotationService.specialty.headOfService.toUpperCase(),
             };
+            // Gets the template
             const template = await this.templatesService.getDocument(
               'incomingStudent',
               'acceptanceDocument',
             );
             const handler = new TemplateHandler();
+            // Replaces the tags with the data
             const doc = await handler.process(template, data);
+            // Add the document to the zip
             zip.file(
               `${counter} ${incomingStudent.rotationService.specialty.value} ${
                 incomingStudent.name

@@ -4,6 +4,7 @@ import {
   IncomingStudentDocumentTypesArray,
 } from '../types/incoming-student-document.type';
 
+/** Type Incoming Student data transfer object */
 export class TypeIncomingStudentDto {
   @IsString()
   @IsDefined()

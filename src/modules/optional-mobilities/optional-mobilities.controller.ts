@@ -334,7 +334,7 @@ export class OptionalMobilitiesController {
   @ApiOperation({
     summary: '[Users] Delete an Optional Mobility in the database',
     description:
-      'Deletes an `optional mobility` in the database on the provided _id',
+      'Deletes an `optional mobility` in the database based on the provided `_id`',
   })
   @ApiOkResponse()
   @ApiUnauthorizedResponse({

@@ -17,10 +17,13 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { API_ENDPOINTS, STORAGE_PATHS } from '@utils/constants';
 import { HttpResponse } from '@utils/dtos';
@@ -40,6 +43,7 @@ import {
   IncomingStudentDocumentTypesArray,
 } from './types/incoming-student-document.type';
 
+/** Incoming Students controller */
 @ApiTags('Incoming Students')
 @Controller(API_ENDPOINTS.INCOMING_STUDENTS.BASE_PATH)
 export class IncomingStudentsController {
@@ -49,11 +53,24 @@ export class IncomingStudentsController {
 
   @Post()
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[User] Add an Incoming Student in the database',
+    description:
+      'Creates a new `Incoming Student` in the database and returns the created `Incoming Student`',
+  })
   @ApiBody({
     type: CreateIncomingStudentDto,
+    description: 'Incoming Student data',
   })
   @ApiCreatedResponse({
     type: IncomingStudent,
+    description: 'The created `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description: '`specialty not found` `rotation service not found`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
   })
   async create(
     @Body() createIncomingStudentDto: CreateIncomingStudentDto,
@@ -65,8 +82,20 @@ export class IncomingStudentsController {
 
   @Get(API_ENDPOINTS.INCOMING_STUDENTS.INTERVAL)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Get an Incoming Student interval',
+    description:
+      'Gets from `incoming students` the initial and final registered years',
+  })
   @ApiOkResponse({
     type: IncomingStudentIntervalDto,
+    description: 'Incoming Student data',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student interval not found`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
   })
   async interval(): Promise<HttpResponse<IncomingStudentIntervalDto>> {
     return {
@@ -76,9 +105,20 @@ export class IncomingStudentsController {
 
   @Get()
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Find all Incoming Students in the database',
+    description:
+      'Finds in the database all `incoming students` and returns an array of `incoming students`',
+  })
   @ApiQuery({ name: 'initialDate', type: Date })
   @ApiQuery({ name: 'finalDate', type: Date })
-  @ApiOkResponse({ type: [IncomingStudent] })
+  @ApiOkResponse({
+    type: [IncomingStudent],
+    description: 'Array of `incoming students`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async findAll(
     @Query('initialDate', ValidateDatePipe) initialDate: Date,
     @Query('finalDate', ValidateDatePipe) finalDate: Date,
@@ -90,6 +130,11 @@ export class IncomingStudentsController {
 
   @Get(API_ENDPOINTS.INCOMING_STUDENTS.GENERATE)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Generate Incoming Students documents',
+    description:
+      'Generates Incoming Students documents and returns them in a zip file',
+  })
   @ApiQuery({ type: Number, name: 'initialNumberOfDocuments' })
   @ApiQuery({ type: Number, name: 'numberOfDocument' })
   @ApiQuery({ type: Date, name: 'dateOfDocuments' })
@@ -98,6 +143,15 @@ export class IncomingStudentsController {
   @ApiQuery({ type: Date, name: 'finalDate' })
   @ApiQuery({ type: String, name: 'hospital', required: false })
   @ApiQuery({ type: String, name: 'specialty', required: false })
+  @ApiOkResponse({
+    description: 'The generated document',
+  })
+  @ApiForbiddenResponse({
+    description: '`not template found`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async generateDocuments(
     @Query('initialNumberOfDocuments', ValidateNumberPipe)
     initialNumberOfDocuments: number,
@@ -124,8 +178,24 @@ export class IncomingStudentsController {
 
   @Get(`:${API_ENDPOINTS.INCOMING_STUDENTS.BY_ID}`)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Find an Incoming Student in the database',
+    description:
+      'Finds in the database an `incoming student` based on the provided `_id` and returns it',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
+  })
   @ApiOkResponse({
     type: IncomingStudent,
+    description: 'The found `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student not found`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
   })
   async findOne(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
@@ -137,11 +207,28 @@ export class IncomingStudentsController {
 
   @Put(`:${API_ENDPOINTS.INCOMING_STUDENTS.BY_ID}`)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Update an Incoming Student in the database',
+    description:
+      'Updates in the database an `incoming student` based on the provided `_id` and returns the modified `incoming student`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
+  })
   @ApiBody({
     type: UpdateIncomingStudentDto,
+    description: '`incoming student` data',
   })
   @ApiOkResponse({
     type: IncomingStudent,
+    description: 'The modified `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student not found` `incoming student not modified`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
   })
   async update(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
@@ -157,6 +244,22 @@ export class IncomingStudentsController {
 
   @Delete(`:${API_ENDPOINTS.INCOMING_STUDENTS.BY_ID}`)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Deletes an Incoming Student in the database',
+    description:
+      'Deletes an `incoming student` in the database based on the provided `_id`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
+  })
+  @ApiOkResponse({})
+  @ApiForbiddenResponse({
+    description: '`incoming student not found` `incoming student not deleted`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async delete(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<undefined>> {
@@ -169,6 +272,25 @@ export class IncomingStudentsController {
 
   @Put(API_ENDPOINTS.INCOMING_STUDENTS.CANCEL)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Cancel an Incoming Student',
+    description:
+      'Cancels an `incoming student` in the database based on the provided `_id` and return the modified `incoming student`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
+  })
+  @ApiOkResponse({
+    type: IncomingStudent,
+    description: 'The modified `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student not found` `incoming student not modified`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async cancel(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<IncomingStudent>> {
@@ -179,6 +301,25 @@ export class IncomingStudentsController {
 
   @Put(API_ENDPOINTS.INCOMING_STUDENTS.UNCANCEL)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Uncancel an Incoming Student',
+    description:
+      'Uncancels an `incoming student` in the database based on the provided `_id` and return the modified `incoming student`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
+  })
+  @ApiOkResponse({
+    type: IncomingStudent,
+    description: 'The modified `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student not found` `incoming student not modified`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async uncancel(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<IncomingStudent>> {
@@ -189,6 +330,25 @@ export class IncomingStudentsController {
 
   @Put(API_ENDPOINTS.INCOMING_STUDENTS.DOCUMENT_VOBO)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Change the state of the Incoming Student VoBo',
+    description:
+      'Changes the state of the `incoming student` VoBo document from `false` to `true` or from `true` to `false` and returns the modified `incoming student`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
+  })
+  @ApiOkResponse({
+    type: IncomingStudent,
+    description: 'The modified `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student not found` `incoming student not modified`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async VoBo(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
   ): Promise<HttpResponse<IncomingStudent>> {
@@ -199,12 +359,28 @@ export class IncomingStudentsController {
 
   @Get(API_ENDPOINTS.INCOMING_STUDENTS.DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Get an Incoming Student document',
+    description: 'Finds in the database the document and returns it',
+  })
   @ApiParam({
     name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
   })
   @ApiQuery({
     name: 'type',
     enum: IncomingStudentDocumentTypesArray,
+    description: 'Document type',
+  })
+  @ApiOkResponse({
+    type: StreamableFile,
+    description: 'The found document',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student not found` `document not found`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
   })
   async getDocument(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
@@ -220,15 +396,19 @@ export class IncomingStudentsController {
 
   @Put(API_ENDPOINTS.INCOMING_STUDENTS.DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Update an Incoming Student document',
+    description:
+      'Updates in the database the document and return the modified `incoming student`',
+  })
   @ApiParam({
     name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
   })
   @ApiQuery({
     name: 'type',
     enum: IncomingStudentDocumentTypesArray,
-  })
-  @ApiOkResponse({
-    type: IncomingStudent,
+    description: 'Document type',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -257,6 +437,17 @@ export class IncomingStudentsController {
       }),
     }),
   )
+  @ApiOkResponse({
+    type: IncomingStudent,
+    description: 'The modified `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description:
+      '`incoming student not found` `incoming student not modified` `file must be a pdf`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
+  })
   async updateDocument(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,
     @UploadedFile() file: Express.Multer.File,
@@ -275,12 +466,29 @@ export class IncomingStudentsController {
 
   @Delete(API_ENDPOINTS.INCOMING_STUDENTS.DOCUMENT)
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: '[Users] Delete an Incoming Student document',
+    description:
+      'Deletes in the database the document and return the modified `incoming student`',
+  })
+  @ApiParam({
+    name: API_ENDPOINTS.INCOMING_STUDENTS.BY_ID,
+    description: '`incoming student` primary key',
+  })
   @ApiParam({
     name: 'type',
     enum: IncomingStudentDocumentTypesArray,
+    description: 'Document type',
   })
   @ApiOkResponse({
     type: IncomingStudent,
+    description: 'The modified `incoming student`',
+  })
+  @ApiForbiddenResponse({
+    description: '`incoming student not found` `incoming student not modified`',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Not authorized to perform the query',
   })
   async deleteDocument(
     @Param(API_ENDPOINTS.INCOMING_STUDENTS.BY_ID, ValidateIdPipe) _id: string,

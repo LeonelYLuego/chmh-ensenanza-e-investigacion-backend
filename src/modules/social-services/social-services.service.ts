@@ -359,7 +359,7 @@ export class SocialServicesService {
                 'terciario.cargo': hospital.thirdReceiver
                   ? hospital.thirdReceiver.position.toUpperCase()
                   : '',
-                estudiante: `${socialService.student.name} ${
+                alumno: `${socialService.student.name} ${
                   socialService.student.firstLastName
                 }${
                   socialService.student.secondLastName

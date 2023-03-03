@@ -30,7 +30,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let exceptionMsg: any = exception as any;
     if (exceptionMsg.message !== undefined) exceptionMsg = exceptionMsg.message;
 
-    console.log(exception);
+    // console.log(exception);
 
     if (httpStatus != 403 && httpStatus != 401) {
       if (!fs.existsSync(STORAGE_PATHS.LOGS))

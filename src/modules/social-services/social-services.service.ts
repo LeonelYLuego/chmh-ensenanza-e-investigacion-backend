@@ -39,6 +39,7 @@ export class SocialServicesService {
     @Inject(forwardRef(() => StudentsService))
     private studentsService: StudentsService,
     private specialtiesService: SpecialtiesService,
+    @Inject(forwardRef(() => TemplatesService))
     private templatesService: TemplatesService,
     private socialServicesQueries: SocialServicesQueries,
     private filesService: FilesService,
@@ -330,13 +331,12 @@ export class SocialServicesService {
               ),
             )
             .exec()) as SocialService[];
-          await Promise.all(
-            socialServices.map(async (socialService) => {
+          for(let socialService of socialServices) {
               //If a Specialty parameter was provided checks if the social service is of that Specialty
               if (specialty)
-                if ((socialService as any).specialty._id != specialty) return;
+                if ((socialService as any).specialty._id != specialty) break;
 
-              //Replaces tags in the template document with the information
+              // //Replaces tags in the template document with the information
               const data = {
                 hospital: hospital.name.toUpperCase(),
                 numero: counter.toString(),
@@ -406,9 +406,8 @@ export class SocialServicesService {
               );
 
               //Increments the document number
-              counter++;
-            }),
-          );
+              ++counter;
+          }
         }),
       );
 

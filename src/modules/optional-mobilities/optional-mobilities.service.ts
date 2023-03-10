@@ -554,83 +554,80 @@ export class OptionalMobilitiesService {
               $unset: ['specialty'],
             },
           ])) as OptionalMobility[];
-        await Promise.all(
-          // For each Optional Mobility
-          optionalMobilities.map(async (optionalMobility) => {
-            if (specialty)
-              if (optionalMobility.student.specialty._id != specialty) return;
-            // Data to replace in the document in the place of the tags
-            const data = {
-              hospital: hospital.name.toUpperCase(),
-              'principal.nombre': hospital.firstReceiver
-                ? hospital.firstReceiver.name.toUpperCase()
-                : '',
-              'principal.cargo': hospital.firstReceiver
-                ? hospital.firstReceiver.position.toUpperCase()
-                : '',
-              'secundario.nombre': hospital.secondReceiver
-                ? `${hospital.secondReceiver.name.toUpperCase()}`
-                : '',
-              'secundario.cargo': hospital.secondReceiver
-                ? hospital.secondReceiver.position.toUpperCase()
-                : '',
-              'terciario.nombre': hospital.thirdReceiver
-                ? `${hospital.thirdReceiver.name.toUpperCase()}`
-                : '',
-              'terciario.cargo': hospital.thirdReceiver
-                ? hospital.thirdReceiver.position.toUpperCase()
-                : '',
-              numero: counter.toString(),
-              fecha: dateToString(date),
-              estudiante: `${optionalMobility.student.name} ${
-                optionalMobility.student.firstLastName
-              }${
-                optionalMobility.student.secondLastName
-                  ? ' ' + optionalMobility.student.secondLastName
-                  : ''
-              }`.toUpperCase(),
-              especialidad: optionalMobility.student.specialty.value,
-              servicioARotar: optionalMobility.rotationService.value,
-              año: gradeToString(
-                this.specialtiesService.getGrade(
-                  optionalMobility.student.specialty,
-                  optionalMobility.student.lastYearGeneration,
-                ) - 1,
-              ),
-              periodo: getInterval(
-                optionalMobility.initialDate,
-                optionalMobility.finalDate,
-              ),
-              departamento:
-                optionalMobility.student.specialty.headOfDepartmentPosition,
-              jefeDeDepartamento:
-                optionalMobility.student.specialty.headOfDepartment.toUpperCase(),
-              profesor:
-                optionalMobility.student.specialty.tenuredPostgraduateProfessor.toUpperCase(),
-              jefeDeServicio:
-                optionalMobility.student.specialty.headOfService.toUpperCase(),
-            };
-            // Gets the template
-            const template = await this.templatesService.getDocument(
-              'optionalMobility',
-              document,
-            );
-            const handler = new TemplateHandler();
-            // Replaces the tags with the data and gets the final document
-            const doc = await handler.process(template, data);
-            //Adds the document to the zip file with the name of the student
-            zip.file(
-              `${counter} ${optionalMobility.student.specialty.value} ${
-                optionalMobility.student.name
-              } ${optionalMobility.student.firstLastName} ${
-                optionalMobility.student.secondLastName ?? ''
-              }.docx`,
-              doc,
-            );
-            // Increments the number of the document
-            counter++;
-          }),
-        );
+        for (let optionalMobility of optionalMobilities) {
+          if (specialty)
+            if (optionalMobility.student.specialty._id != specialty) return;
+          // Data to replace in the document in the place of the tags
+          const data = {
+            hospital: hospital.name.toUpperCase(),
+            'principal.nombre': hospital.firstReceiver
+              ? hospital.firstReceiver.name.toUpperCase()
+              : '',
+            'principal.cargo': hospital.firstReceiver
+              ? hospital.firstReceiver.position.toUpperCase()
+              : '',
+            'secundario.nombre': hospital.secondReceiver
+              ? `${hospital.secondReceiver.name.toUpperCase()}`
+              : '',
+            'secundario.cargo': hospital.secondReceiver
+              ? hospital.secondReceiver.position.toUpperCase()
+              : '',
+            'terciario.nombre': hospital.thirdReceiver
+              ? `${hospital.thirdReceiver.name.toUpperCase()}`
+              : '',
+            'terciario.cargo': hospital.thirdReceiver
+              ? hospital.thirdReceiver.position.toUpperCase()
+              : '',
+            numero: counter.toString(),
+            fecha: dateToString(date),
+            alumno: `${optionalMobility.student.name} ${
+              optionalMobility.student.firstLastName
+            }${
+              optionalMobility.student.secondLastName
+                ? ' ' + optionalMobility.student.secondLastName
+                : ''
+            }`.toUpperCase(),
+            especialidad: optionalMobility.student.specialty.value,
+            servicioARotar: optionalMobility.rotationService.value,
+            año: gradeToString(
+              this.specialtiesService.getGrade(
+                optionalMobility.student.specialty,
+                optionalMobility.student.lastYearGeneration,
+              ) - 1,
+            ),
+            periodo: getInterval(
+              optionalMobility.initialDate,
+              optionalMobility.finalDate,
+            ),
+            departamento:
+              optionalMobility.student.specialty.headOfDepartmentPosition,
+            jefeDeDepartamento:
+              optionalMobility.student.specialty.headOfDepartment.toUpperCase(),
+            profesor:
+              optionalMobility.student.specialty.tenuredPostgraduateProfessor.toUpperCase(),
+            jefeDeServicio:
+              optionalMobility.student.specialty.headOfService.toUpperCase(),
+          };
+          // Gets the template
+          const template = await this.templatesService.getDocument(
+            'optionalMobility',
+            document,
+          );
+          const handler = new TemplateHandler();
+          // Replaces the tags with the data and gets the final document
+          const doc = await handler.process(template, data);
+          //Adds the document to the zip file with the name of the student
+          zip.file(
+            `${counter} ${optionalMobility.student.specialty.value} ${
+              optionalMobility.student.name
+            } ${optionalMobility.student.firstLastName} ${
+              optionalMobility.student.secondLastName ?? ''
+            }.docx`,
+            doc,
+          );
+          // Increments the number of the document
+          counter++;
+        }
       }),
     );
     const content = await zip.generateAsync({ type: 'nodebuffer' });

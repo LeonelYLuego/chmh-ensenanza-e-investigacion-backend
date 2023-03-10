@@ -398,6 +398,16 @@ export class AttachmentsObligatoryMobilitiesService {
       attachmentsObligatoryMobility.specialty as string,
     );
 
+    attachmentsObligatoryMobility.obligatoryMobilities.sort((a, b) =>
+      a.student.secondLastName.localeCompare(b.student.secondLastName),
+    );
+    attachmentsObligatoryMobility.obligatoryMobilities.sort((a, b) =>
+      a.student.firstLastName.localeCompare(b.student.firstLastName),
+    );
+    attachmentsObligatoryMobility.obligatoryMobilities.sort(
+      (a, b) => a.initialDate.getTime() - b.initialDate.getTime(),
+    );
+
     // Creates an array of objects to fill the students information
     const students: {
       nombre: string;
@@ -452,7 +462,7 @@ export class AttachmentsObligatoryMobilitiesService {
       jefeDeDepartamento: specialty.headOfDepartment.toUpperCase(),
       profesor: specialty.tenuredPostgraduateProfessor.toUpperCase(),
       jefeDeServicio: specialty.headOfService.toUpperCase(),
-      estudiante: students,
+      alumno: students,
     };
 
     // Gets the template

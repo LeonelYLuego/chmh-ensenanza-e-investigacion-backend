@@ -50,7 +50,7 @@ export function dateToString(dateToConvert: Date): string {
 export function getPeriod(period: number, year: number): string {
   switch (period) {
     case 0:
-      return `1° de marzo al 31 de junio de ${year}`;
+      return `1° de marzo al 30 de junio de ${year}`;
     case 1:
       return `1° de julio al 31 de octubre de ${year}`;
     case 2:

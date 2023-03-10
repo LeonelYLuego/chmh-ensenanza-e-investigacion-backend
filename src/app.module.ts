@@ -39,7 +39,7 @@ import { API_ENDPOINTS } from '@utils/constants';
     TemplatesModule,
     ServeStaticModule.forRoot({
       rootPath:
-        'C:/Users/leone/programs/chmh-ensenanza-e-investigacion-frontend/dist',
+        './client',
     }),
   ],
 })

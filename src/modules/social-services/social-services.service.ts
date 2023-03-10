@@ -331,82 +331,82 @@ export class SocialServicesService {
               ),
             )
             .exec()) as SocialService[];
-          for(let socialService of socialServices) {
-              //If a Specialty parameter was provided checks if the social service is of that Specialty
-              if (specialty)
-                if ((socialService as any).specialty._id != specialty) break;
+          for (let socialService of socialServices) {
+            //If a Specialty parameter was provided checks if the social service is of that Specialty
+            if (specialty)
+              if ((socialService as any).specialty._id != specialty) break;
 
-              // //Replaces tags in the template document with the information
-              const data = {
-                hospital: hospital.name.toUpperCase(),
-                numero: counter.toString(),
-                fecha: dateToString(date),
-                'principal.nombre': hospital.firstReceiver
-                  ? hospital.firstReceiver.name.toUpperCase()
-                  : '',
-                'principal.cargo': hospital.firstReceiver
-                  ? hospital.firstReceiver.position.toUpperCase()
-                  : '',
-                'secundario.nombre': hospital.secondReceiver
-                  ? `${hospital.secondReceiver.name.toUpperCase()}`
-                  : '',
-                'secundario.cargo': hospital.secondReceiver
-                  ? hospital.secondReceiver.position.toUpperCase()
-                  : '',
-                'terciario.nombre': hospital.thirdReceiver
-                  ? `${hospital.thirdReceiver.name.toUpperCase()}`
-                  : '',
-                'terciario.cargo': hospital.thirdReceiver
-                  ? hospital.thirdReceiver.position.toUpperCase()
-                  : '',
-                alumno: `${socialService.student.name} ${
-                  socialService.student.firstLastName
-                }${
-                  socialService.student.secondLastName
-                    ? ' ' + socialService.student.secondLastName
-                    : ''
-                }`.toUpperCase(),
-                especialidad: (socialService as any).specialty.value,
-                año: gradeToString(
-                  this.specialtiesService.getGrade(
-                    (socialService as any).specialty,
-                    (socialService.student as any).lastYearGeneration,
-                  ) - 1,
-                ),
-                periodo: getPeriod(socialService.period, socialService.year),
-                departamento: (socialService as any).specialty
-                  .headOfDepartmentPosition,
-                jefeDeDepartamento: (
-                  socialService as any
-                ).specialty.headOfDepartment.toUpperCase(),
-                profesor: (
-                  socialService as any
-                ).specialty.tenuredPostgraduateProfessor.toUpperCase(),
-                jefeDeServicio: (
-                  socialService as any
-                ).specialty.headOfService.toUpperCase(),
-              };
+            // //Replaces tags in the template document with the information
+            const data = {
+              hospital: hospital.name.toUpperCase(),
+              numero: counter.toString(),
+              fecha: dateToString(date),
+              'principal.nombre': hospital.firstReceiver
+                ? hospital.firstReceiver.name.toUpperCase()
+                : '',
+              'principal.cargo': hospital.firstReceiver
+                ? hospital.firstReceiver.position.toUpperCase()
+                : '',
+              'secundario.nombre': hospital.secondReceiver
+                ? `${hospital.secondReceiver.name.toUpperCase()}`
+                : '',
+              'secundario.cargo': hospital.secondReceiver
+                ? hospital.secondReceiver.position.toUpperCase()
+                : '',
+              'terciario.nombre': hospital.thirdReceiver
+                ? `${hospital.thirdReceiver.name.toUpperCase()}`
+                : '',
+              'terciario.cargo': hospital.thirdReceiver
+                ? hospital.thirdReceiver.position.toUpperCase()
+                : '',
+              alumno: `${socialService.student.name} ${
+                socialService.student.firstLastName
+              }${
+                socialService.student.secondLastName
+                  ? ' ' + socialService.student.secondLastName
+                  : ''
+              }`.toUpperCase(),
+              especialidad: (socialService as any).specialty.value,
+              año: gradeToString(
+                this.specialtiesService.getGrade(
+                  (socialService as any).specialty,
+                  (socialService.student as any).lastYearGeneration,
+                ) - 1,
+              ),
+              periodo: getPeriod(socialService.period, socialService.year),
+              departamento: (socialService as any).specialty
+                .headOfDepartmentPosition,
+              jefeDeDepartamento: (
+                socialService as any
+              ).specialty.headOfDepartment.toUpperCase(),
+              profesor: (
+                socialService as any
+              ).specialty.tenuredPostgraduateProfessor.toUpperCase(),
+              jefeDeServicio: (
+                socialService as any
+              ).specialty.headOfService.toUpperCase(),
+            };
 
-              // Gets the template
-              const template = await this.templatesService.getDocument(
-                'socialService',
-                'presentationOfficeDocument',
-              );
-              const handler = new TemplateHandler();
-              const doc = await handler.process(template, data);
+            // Gets the template
+            const template = await this.templatesService.getDocument(
+              'socialService',
+              'presentationOfficeDocument',
+            );
+            const handler = new TemplateHandler();
+            const doc = await handler.process(template, data);
 
-              //Adds the generated document to the zip and saves it with the name of the student
-              zip.file(
-                `${counter} ${(socialService as any).specialty.value} ${
-                  (socialService.student as Student).name
-                } ${(socialService.student as Student).firstLastName} ${
-                  (socialService.student as Student).secondLastName ?? ''
-                }.docx`,
-                doc,
-              );
+            //Adds the generated document to the zip and saves it with the name of the student
+            zip.file(
+              `${counter} ${(socialService as any).specialty.value} ${
+                (socialService.student as Student).name
+              } ${(socialService.student as Student).firstLastName} ${
+                (socialService.student as Student).secondLastName ?? ''
+              }.docx`,
+              doc,
+            );
 
-              //Increments the document number
-              ++counter;
+            //Increments the document number
+            ++counter;
           }
         }),
       );

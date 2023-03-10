@@ -16,7 +16,10 @@ export class FilesService {
 
   /** Validates if the extension of the file is a pdf */
   validateDOCX(file: Express.Multer.File): void {
-    if (file.mimetype != 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    if (
+      file.mimetype !=
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
       throw new ForbiddenException('file must be a docx');
   }
 

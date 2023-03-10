@@ -7,7 +7,7 @@ export class HttpResponse<T> {
   data?: T;
 
   /** @Property Error response */
-  @ApiProperty({description: 'Response error'})
+  @ApiProperty({ description: 'Response error' })
   error?: {
     statusCode: number;
     timestamp: string;

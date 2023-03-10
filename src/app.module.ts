@@ -38,8 +38,7 @@ import { API_ENDPOINTS } from '@utils/constants';
     StudentsModule,
     TemplatesModule,
     ServeStaticModule.forRoot({
-      rootPath:
-        './client',
+      rootPath: './client',
     }),
   ],
 })

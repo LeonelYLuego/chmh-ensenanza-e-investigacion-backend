@@ -623,9 +623,7 @@ export class IncomingStudentsService {
           numeroDeOficio: numberOfDocument,
           fecha: dateToString(dateOfDocuments),
           fechaDePresentacion: dateToString(dateToPresent),
-          alumno: `${incomingStudent.name} ${
-            incomingStudent.firstLastName
-          }${
+          alumno: `${incomingStudent.name} ${incomingStudent.firstLastName}${
             incomingStudent.secondLastName
               ? ' ' + incomingStudent.secondLastName
               : ''
